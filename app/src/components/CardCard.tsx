@@ -21,7 +21,7 @@ export default function CardCard({ card }: CardCardProps) {
       tabIndex={0}
       onClick={() => setSelectedCard(card)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedCard(card) }}
-      className="group flex flex-col rounded-xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-md shadow-black/5 dark:shadow-white/5 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-white/10 transition-all cursor-pointer"
+      className="group flex flex-col rounded-xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-md shadow-black/5 dark:shadow-white/5 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-white/10 active:scale-[0.98] transition-all duration-150 cursor-pointer"
     >
       {/* Top strip: Cost | Power | Attribute */}
       <div className="flex items-center justify-between px-2 py-1.5 shrink-0 bg-slate-50 dark:bg-[#13151f]">

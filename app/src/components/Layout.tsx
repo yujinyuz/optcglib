@@ -100,7 +100,7 @@ export default function Layout() {
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div className="lg:hidden fixed inset-0 z-30 bg-black/50" onClick={() => setSidebarOpen(false)} />
+        <div className="lg:hidden fixed inset-0 z-30 bg-black/50" onClick={() => setSidebarOpen(false)} style={{ animation: 'sidebarOverlayIn 150ms var(--ease-out-quart) forwards' }} />
       )}
 
       {/* Sidebar */}

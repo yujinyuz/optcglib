@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { getCardById, getCardPacks, getCardVariants } from '../db'
 import { useAppStore } from '../store'
 import type { Card } from '../types'
@@ -15,6 +15,8 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
   const [cardPacks, setCardPacks] = useState<{ packId: string; label: string; rawTitle: string }[]>([])
   const [cardVariants, setCardVariants] = useState<{ card: Card; images: { language: string; imgUrl: string | null }[] }[]>([])
   const [loading, setLoading] = useState(true)
+  const [closing, setClosing] = useState(false)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   const cards = useAppStore((state) => state.cards)
   const setSelectedCard = useAppStore((state) => state.setSelectedCard)
@@ -61,40 +63,48 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
     return () => { cancelled = true }
   }, [cardId])
 
+  useEffect(() => {
+    if (contentRef.current) contentRef.current.scrollTop = 0
+  }, [cardId])
+
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') onClose()
+    if (e.key === 'Escape') handleClose()
     if (e.key === 'ArrowLeft') goPrev()
     if (e.key === 'ArrowRight') goNext()
   }, [onClose, goPrev, goNext])
 
+  function handleClose() {
+    setClosing(true)
+    setTimeout(onClose, 150)
+  }
+
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown)
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
     document.body.style.overflow = 'hidden'
+    document.body.style.paddingRight = `${scrollbarWidth}px`
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = ''
+      document.body.style.paddingRight = ''
     }
   }, [handleKeyDown])
 
+  const overlayStyle = closing
+    ? { animation: 'modalOverlayOut 150ms var(--ease-out-quart) forwards' }
+    : { animation: 'modalOverlayIn 150ms var(--ease-out-quart) forwards' }
+
+  let inner: React.ReactNode
   if (loading) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
-        <div className="w-8 h-8 border-2 border-slate-200 dark:border-[#2e303a] border-t-[#3b82f6] rounded-full animate-spin" />
+    inner = <div className="w-8 h-8 border-2 border-slate-200 dark:border-[#2e303a] border-t-[#3b82f6] rounded-full animate-spin" />
+  } else if (!card) {
+    inner = (
+      <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl p-6 text-center">
+        <div className="text-4xl mb-3">🏴‍☠️</div>
+        <div className="text-slate-500 dark:text-[#64748b] text-sm">Card not found</div>
       </div>
     )
-  }
-
-  if (!card) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
-        <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl p-6 text-center">
-          <div className="text-4xl mb-3">🏴‍☠️</div>
-          <div className="text-slate-500 dark:text-[#64748b] text-sm">Card not found</div>
-        </div>
-      </div>
-    )
-  }
-
+  } else {
   const primaryColor = card.colors[0] ? COLOR_HEX[card.colors[0]] : '#64748b'
   const costBg = costCircleBg(card)
 
@@ -109,8 +119,8 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
     .filter((img): img is { language: string; imgUrl: string } => !!img.imgUrl)
     .sort((a, b) => (languagePriority[a.language] ?? 3) - (languagePriority[b.language] ?? 3))[0]?.imgUrl ?? null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-hidden" role="dialog" aria-modal="true" onClick={onClose}>
+  inner = (
+    <>
       {/* Prev arrow */}
       {hasPrev && (
         <button
@@ -138,12 +148,14 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
       )}
 
       <div
-        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-[#1a1d2e] shadow-2xl"
+        ref={contentRef}
+        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-[#1a1d2e] shadow-2xl animate-[modalContentIn_200ms_var(--ease-out-expo)]"
         onClick={(e) => e.stopPropagation()}
+        style={closing ? { animation: 'modalContentOut 150ms var(--ease-out-quart) forwards' } : undefined}
       >
         {/* Close button */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-3 right-3 z-10 p-1.5 rounded-lg text-slate-400 dark:text-[#64748b] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] transition-colors"
           aria-label="Close"
         >
@@ -358,6 +370,19 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
 
         </div>
       </div>
+    </>
+  )
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-hidden"
+      role="dialog"
+      aria-modal="true"
+      onClick={handleClose}
+      style={overlayStyle}
+    >
+      {inner}
     </div>
   )
 }
