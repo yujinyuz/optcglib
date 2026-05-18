@@ -56,7 +56,6 @@ function highlightKeywords(html: string): string {
     "When Attacking",
     "Unblockable",
     "Blocker",
-    "Counter",
     "Trigger",
     "Banish",
     "On Block",
@@ -75,7 +74,11 @@ function highlightKeywords(html: string): string {
   return html
     .split(/(<[^>]+>)/g)
     .map((segment) =>
-      segment.startsWith('<') ? segment : segment.replace(regex, '<span class="kw">$1</span>')
+      segment.startsWith('<')
+        ? segment
+        : segment
+            .replace(/(?<![\w])\[Counter\](?![\w])/g, '<span class="kw-counter">Counter</span>')
+            .replace(regex, '<span class="kw">$1</span>')
     )
     .join('')
 }

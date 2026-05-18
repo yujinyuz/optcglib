@@ -7,6 +7,7 @@ function SettingsMenu() {
   const [open, setOpen] = useState(false)
   const [closing, setClosing] = useState(false)
   const [installTooltip, setInstallTooltip] = useState(false)
+  const [deferredPrompt, setDeferredPrompt] = useState<Event & { prompt: () => Promise<void> } | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const loadExternalImages = useAppStore((state) => state.loadExternalImages)
   const setLoadExternalImages = useAppStore((state) => state.setLoadExternalImages)
@@ -18,18 +19,26 @@ function SettingsMenu() {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
 
+  // Listen for beforeinstallprompt event (Chrome/Android)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault()
+      setDeferredPrompt(e as Event & { prompt: () => Promise<void> })
+    }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
   const handleInstall = useCallback(() => {
     if (isIOS) {
       setInstallTooltip(true)
       return
     }
-    // Android/Chrome: trigger native install prompt
-    const evt = (window as Window & { beforeinstallprompt?: Event }).beforeinstallprompt
-    if (evt) {
-      evt.preventDefault()
-      ;(evt as Event & { prompt: () => Promise<void> }).prompt()
+    if (deferredPrompt) {
+      deferredPrompt.prompt()
+      setDeferredPrompt(null)
     }
-  }, [isIOS])
+  }, [isIOS, deferredPrompt])
 
   useEffect(() => {
     if (!open) setInstallTooltip(false)
