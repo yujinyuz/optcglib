@@ -120,6 +120,48 @@ body {
 .dark .kw-once-per-turn {
   background: #ef4444;
 }
+.kw-activate-main, .kw-end-turn, .kw-opponent-turn, .kw-on-block, .kw-on-ko, .kw-your-turn {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85em;
+  line-height: 1.4;
+  vertical-align: baseline;
+}
+.dark .kw-activate-main, .dark .kw-end-turn, .dark .kw-opponent-turn, .dark .kw-on-block, .dark .kw-on-ko, .dark .kw-your-turn {
+  background: #3b82f6;
+}
+.kw-rush-char, .kw-rush {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: #ea580c;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85em;
+  line-height: 1.4;
+  vertical-align: baseline;
+}
+.dark .kw-rush-char, .dark .kw-rush {
+  background: #f97316;
+}
+.kw-trigger {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: #ca8a04;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85em;
+  line-height: 1.4;
+  vertical-align: baseline;
+}
+.dark .kw-trigger {
+  background: #eab308;
+}
 
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(8px); }

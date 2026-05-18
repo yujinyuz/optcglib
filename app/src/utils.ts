@@ -45,17 +45,8 @@ function highlightKeywords(html: string): string {
   const keywords = [
     "DON!! -10", "DON!! -8", "DON!! -7", "DON!! -6", "DON!! -5",
     "DON!! -4", "DON!! -3", "DON!! -2", "DON!! -1",
-    "Activate: Main",
-    "End of Your Turn",
-    "Opponent's Turn",
-    "Rush: Character",
     "Unblockable",
-    "Trigger",
     "Banish",
-    "On Block",
-    "On K.O.",
-    "Your Turn",
-    "Rush",
   ]
 
   // Build a single regex with all keywords (longest first to avoid partial matches)
@@ -77,6 +68,15 @@ function highlightKeywords(html: string): string {
             .replace(/(?<![\w])\[On Play\](?![\w])/g, '<span class="kw-on-play">On Play</span>')
             .replace(/(?<![\w])\[Once Per Turn\](?![\w])/g, '<span class="kw-once-per-turn">Once Per Turn</span>')
             .replace(/(?<![\w])\[On Your Opponent's Attack\](?![\w])/g, '<span class="kw-on-opponent-attack">On Your Opponent\'s Attack</span>')
+            .replace(/(?<![\w])\[Activate: Main\](?![\w])/g, '<span class="kw-activate-main">Activate: Main</span>')
+            .replace(/(?<![\w])\[End of Your Turn\](?![\w])/g, '<span class="kw-end-turn">End of Your Turn</span>')
+            .replace(/(?<![\w])\[Opponent's Turn\](?![\w])/g, '<span class="kw-opponent-turn">Opponent\'s Turn</span>')
+            .replace(/(?<![\w])\[Rush: Character\](?![\w])/g, '<span class="kw-rush-char">Rush: Character</span>')
+            .replace(/(?<![\w])\[Trigger\](?![\w])/g, '<span class="kw-trigger">Trigger</span>')
+            .replace(/(?<![\w])\[On Block\](?![\w])/g, '<span class="kw-on-block">On Block</span>')
+            .replace(/(?<![\w])\[On K\.O\.\](?![\w])/g, '<span class="kw-on-ko">On K.O.</span>')
+            .replace(/(?<![\w])\[Your Turn\](?![\w])/g, '<span class="kw-your-turn">Your Turn</span>')
+            .replace(/(?<![\w])\[Rush\](?![\w])/g, '<span class="kw-rush">Rush</span>')
             .replace(regex, '<span class="kw">$1</span>')
     )
     .join('')
