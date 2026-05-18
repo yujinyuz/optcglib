@@ -6,6 +6,7 @@ import FilterBar from './FilterBar'
 function SettingsMenu() {
   const [open, setOpen] = useState(false)
   const [closing, setClosing] = useState(false)
+  const [installTooltip, setInstallTooltip] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const loadExternalImages = useAppStore((state) => state.loadExternalImages)
   const setLoadExternalImages = useAppStore((state) => state.setLoadExternalImages)
@@ -13,6 +14,26 @@ function SettingsMenu() {
   const toggleTheme = useAppStore((state) => state.toggleTheme)
   const preferredLanguage = useAppStore((state) => state.preferredLanguage)
   const setPreferredLanguage = useAppStore((state) => state.setPreferredLanguage)
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
+
+  const handleInstall = useCallback(() => {
+    if (isIOS) {
+      setInstallTooltip(true)
+      return
+    }
+    // Android/Chrome: trigger native install prompt
+    const evt = (window as Window & { beforeinstallprompt?: Event }).beforeinstallprompt
+    if (evt) {
+      evt.preventDefault()
+      ;(evt as Event & { prompt: () => Promise<void> }).prompt()
+    }
+  }, [isIOS])
+
+  useEffect(() => {
+    if (!open) setInstallTooltip(false)
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -29,6 +50,8 @@ function SettingsMenu() {
       document.removeEventListener('touchstart', handleClick)
     }
   }, [open])
+
+  if (isStandalone) return null
 
   return (
     <div className="relative" ref={menuRef}>
@@ -104,6 +127,16 @@ function SettingsMenu() {
             </button>
           </div>
           <div className="border-t border-slate-100 dark:border-[#2e303a] my-1" />
+          <button
+            onClick={handleInstall}
+            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-[#cbd5e1] hover:bg-slate-100 dark:hover:bg-[#25283a] transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            Install app
+          </button>
+          <div className="border-t border-slate-100 dark:border-[#2e303a] my-1" />
           <a
             href="https://ko-fi.com/yujinyuz"
             target="_blank"
@@ -115,6 +148,49 @@ function SettingsMenu() {
             </svg>
             Support on Ko-fi
           </a>
+        </div>
+      )}
+      {/* iOS install tooltip */}
+      {installTooltip && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
+          onClick={() => setInstallTooltip(false)}
+        >
+          <div
+            className="bg-white dark:bg-[#1a1d2e] rounded-2xl shadow-xl p-6 max-w-xs mx-4 mb-8 sm:mb-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Install on iOS</h3>
+              <button
+                onClick={() => setInstallTooltip(false)}
+                className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <ol className="text-sm text-slate-600 dark:text-[#cbd5e1] space-y-3">
+              <li className="flex items-start gap-2">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">1</span>
+                <span>Tap the <strong>Share</strong> button in Safari</span>
+              </li>
+              <li className="flex items-center justify-center py-2">
+                <svg className="w-8 h-8 text-[#007aff]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                </svg>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">2</span>
+                <span>Scroll down and tap <strong>"Add to Home Screen"</strong></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">3</span>
+                <span>Tap <strong>"Add"</strong> to confirm</span>
+              </li>
+            </ol>
+          </div>
         </div>
       )}
     </div>
