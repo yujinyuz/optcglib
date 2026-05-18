@@ -20,7 +20,7 @@ export default function ImageLoader({ src, alt, className = '', onClick }: Image
           <img
             src="/loading-logo.webp"
             alt=""
-            className="w-16 opacity-30 animate-pulse"
+            className="w-16 opacity-30 animate-pulse dark:invert"
           />
         </div>
       )}

@@ -218,7 +218,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
                     <img
                       src="/loading-logo.webp"
                       alt=""
-                      className="w-20 opacity-30 animate-pulse"
+                      className="w-20 opacity-30 animate-pulse dark:invert"
                     />
                   </div>
                   <ImageLoader
@@ -239,7 +239,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
                   className="hover:scale-105 transition-all"
                   title="Open card image in new tab"
                 >
-                  <img src="/opcg-favicon.png" alt="" className="w-7 h-7" />
+                  <img src="/loading-logo.webp" alt="" className="w-10 opacity-50 dark:invert" />
                 </a>
               </div>
             )}

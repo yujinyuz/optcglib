@@ -76,7 +76,7 @@ export default function CardCard({ card }: CardCardProps) {
             className="hover:scale-105 transition-all"
             title="Open card image in new tab"
           >
-            <img src="/opcg-favicon.png" alt="" className="w-5 h-5" />
+            <img src="/loading-logo.webp" alt="" className="w-10 opacity-50 dark:invert" />
           </a>
         </div>
       )}
