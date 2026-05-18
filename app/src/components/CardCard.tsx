@@ -35,7 +35,7 @@ export default function CardCard({ card }: CardCardProps) {
         {/* Counter — absolutely positioned on left edge */}
         {card.counter !== null && (
           <span
-            className="absolute left-0.5 top-10 bottom-10 z-10 text-[7px] font-bold text-[#3498db] tracking-tight"
+            className="absolute left-0.5 top-1/2 -translate-y-1/2 z-10 text-[7px] font-bold text-[#3498db] tracking-tight"
             style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
           >
             ＋{card.counter}
