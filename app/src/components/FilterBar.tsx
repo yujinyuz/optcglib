@@ -60,6 +60,7 @@ function RangeInput({
   onMaxChange,
   minPlaceholder,
   maxPlaceholder,
+  step = 1,
 }: {
   min: number | null
   max: number | null
@@ -67,23 +68,26 @@ function RangeInput({
   onMaxChange: (val: number | null) => void
   minPlaceholder: string
   maxPlaceholder: string
+  step?: number
 }) {
   return (
     <div className="flex items-center gap-1.5">
       <input
         type="number"
+        step={step}
         placeholder={minPlaceholder}
         value={min ?? ''}
         onChange={(e) => onMinChange(e.target.value === '' ? null : Number(e.target.value))}
-        className="w-14 bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-[11px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-[#3b82f6] text-center"
+        className="w-16 bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-[11px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-[#3b82f6] text-center"
       />
       <span className="text-slate-400 dark:text-[#64748b] text-[10px]">–</span>
       <input
         type="number"
+        step={step}
         placeholder={maxPlaceholder}
         value={max ?? ''}
         onChange={(e) => onMaxChange(e.target.value === '' ? null : Number(e.target.value))}
-        className="w-14 bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-[11px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-[#3b82f6] text-center"
+        className="w-16 bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-[11px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-[#3b82f6] text-center"
       />
     </div>
   )
@@ -299,6 +303,7 @@ export default function FilterBar() {
           onMaxChange={(v) => setFilters({ powerMax: v })}
           minPlaceholder="0"
           maxPlaceholder="20k"
+          step={1000}
         />
       </FilterSection>
 
@@ -310,7 +315,8 @@ export default function FilterBar() {
           onMinChange={(v) => setFilters({ counterMin: v })}
           onMaxChange={(v) => setFilters({ counterMax: v })}
           minPlaceholder="0"
-          maxPlaceholder="5"
+          maxPlaceholder="2000"
+          step={1000}
         />
       </FilterSection>
     </div>
