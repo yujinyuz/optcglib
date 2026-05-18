@@ -102,7 +102,7 @@ export async function getRelatedCards(cardId: string, types: string[], limit?: n
   return result;
 }
 
-export async function getCardVariants(cardId: string, preferredLanguage?: 'english' | 'japanese'): Promise<{ card: Card; images: { language: string; imgUrl: string | null }[] }[]> {
-  const result = await sendRequest<{ card: Card; images: { language: string; imgUrl: string | null }[] }[]>('getCardVariants', { cardId, preferredLanguage });
+export async function getCardVariants(cardId: string, preferredLanguage?: 'english' | 'japanese'): Promise<{ card: Card; images: { language: string; imgUrl: string | null }[]; packs: string[] }[]> {
+  const result = await sendRequest<{ card: Card; images: { language: string; imgUrl: string | null }[]; packs: string[] }[]>('getCardVariants', { cardId, preferredLanguage });
   return result;
 }

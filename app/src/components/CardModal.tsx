@@ -13,7 +13,7 @@ interface CardModalProps {
 export default function CardModal({ cardId, onClose }: CardModalProps) {
   const [card, setCard] = useState<Card | null>(null)
   const [cardPacks, setCardPacks] = useState<{ packId: string; label: string; rawTitle: string }[]>([])
-  const [cardVariants, setCardVariants] = useState<{ card: Card; images: { language: string; imgUrl: string | null }[] }[]>([])
+  const [cardVariants, setCardVariants] = useState<{ card: Card; images: { language: string; imgUrl: string | null }[]; packs: string[] }[]>([])
   const [loading, setLoading] = useState(true)
   const [closing, setClosing] = useState(false)
   const [zoomedImg, setZoomedImg] = useState<string | null>(null)
@@ -368,7 +368,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                         />
                         <span className="text-[10px] text-slate-500 dark:text-[#64748b]">
-                          {variant.card.id === card.id ? '' : variant.card.id.replace(card.id, '').replace(/^_/, '') || 'Alt'}
+                          {variant.packs[0] || (variant.card.id === card.id ? '' : 'Alt')}
                           {img.language === 'english-asia' ? ' EN-AS' : img.language === 'japanese' ? ' JP' : ' EN'}
                         </span>
                       </div>
@@ -381,7 +381,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
                   {cardVariants.map((variant) => (
                     <div key={variant.card.id} className="flex items-center gap-2 flex-wrap">
                       <span className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold shrink-0">
-                        {variant.card.id === card.id ? 'Base' : variant.card.id.replace(card.id, '').replace(/^_/, '') || 'Alt'}
+                        {variant.packs[0] || (variant.card.id === card.id ? 'Base' : 'Alt')}
                       </span>
                       {variant.images.length > 0 ? (
                         variant.images.map((img) => (

@@ -355,9 +355,21 @@ function getCardVariants(db: Database, cardId: string, preferredLanguage?: 'engl
       ? imagesResult[0].values.map((imgRow) => ({ language: imgRow[0], imgUrl: imgRow[1] }))
       : [];
 
+    const packsResult = db.exec(
+      `SELECT DISTINCT p.raw_title FROM packs p
+       JOIN card_packs cp ON p.id = cp.pack_id
+       WHERE cp.card_id = ?
+       ORDER BY p.id`,
+      [variantId]
+    );
+    const packs = packsResult[0]
+      ? (packsResult[0].values.map((row) => row[0]) as string[])
+      : [];
+
     variants.push({
       card: variantId === cardId ? baseCard : { ...baseCard, id: variantId },
       images,
+      packs,
     });
   }
 
