@@ -1,0 +1,17 @@
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Vendor data (clone separately)
+vendor/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# App
+app/node_modules/
+app/dist/
+app/public/optcg.db
