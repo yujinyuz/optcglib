@@ -213,13 +213,22 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
             {/* Card image or link */}
             {loadExternalImages && bestImageUrl ? (
               <div className="flex items-center justify-center py-2">
-                <ImageLoader
-                  key={bestImageUrl}
-                  src={getExternalImageUrl(bestImageUrl)}
-                  alt={card.name}
-                  className="max-h-[28rem] rounded-lg shadow-md cursor-zoom-in"
-                  onClick={() => setZoomedImg(getExternalImageUrl(bestImageUrl))}
-                />
+                <div className="relative w-full max-w-xs aspect-[5/7] rounded-lg overflow-hidden bg-slate-100 dark:bg-[#1a1d2e] shadow-md">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <img
+                      src="/opcg-favicon.png"
+                      alt=""
+                      className="w-10 h-10 opacity-30 animate-pulse"
+                    />
+                  </div>
+                  <ImageLoader
+                    key={bestImageUrl}
+                    src={getExternalImageUrl(bestImageUrl)}
+                    alt={card.name}
+                    className="absolute inset-0 w-full h-full object-contain cursor-zoom-in"
+                    onClick={() => setZoomedImg(getExternalImageUrl(bestImageUrl))}
+                  />
+                </div>
               </div>
             ) : bestImageUrl && (
               <div className="flex items-center justify-center py-4">
