@@ -125,8 +125,6 @@ function TopSearchBar() {
   const searchInput = useAppStore((state) => state.searchInput)
   const setSearchInput = useAppStore((state) => state.setSearchInput)
   const setFilters = useAppStore((state) => state.setFilters)
-  const searchScope = useAppStore((state) => state.filters.searchScope)
-  const setSearchScope = useAppStore((state) => state.setSearchScope)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleChange = useCallback((value: string) => {
@@ -138,14 +136,14 @@ function TopSearchBar() {
   }, [setSearchInput, setFilters])
 
   return (
-    <div className="relative flex-1 min-w-0 max-w-xs flex items-center gap-1">
+    <div className="relative flex-1 min-w-0 max-w-xs">
       <input
         type="text"
         aria-label="Search cards"
         placeholder="Search..."
         value={searchInput}
         onChange={(e) => handleChange(e.target.value)}
-        className="flex-1 min-w-0 bg-transparent border-0 border-b border-slate-300 dark:border-[#3a3d4a] rounded-none pl-2 pr-9 py-2 text-base sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-slate-900 dark:focus:border-white focus:ring-0 focus-visible:outline-none transition-colors"
+        className="w-full bg-transparent border-0 border-b border-slate-300 dark:border-[#3a3d4a] rounded-none pl-2 pr-9 py-2 text-base sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-slate-900 dark:focus:border-white focus:ring-0 focus-visible:outline-none transition-colors"
       />
       <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
         {searchInput && (
@@ -162,17 +160,6 @@ function TopSearchBar() {
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
-      <select
-        value={searchScope}
-        onChange={(e) => setSearchScope(e.target.value as 'all' | 'name' | 'effect' | 'trigger')}
-        className="shrink-0 text-[10px] font-medium bg-transparent border-0 border-b border-slate-300 dark:border-[#3a3d4a] rounded-none py-2 pr-1 text-slate-600 dark:text-[#94a3b8] focus:outline-none focus:border-slate-900 dark:focus:border-white cursor-pointer"
-        aria-label="Search scope"
-      >
-        <option value="all">All</option>
-        <option value="name">Name</option>
-        <option value="effect">Effect</option>
-        <option value="trigger">Trigger</option>
-      </select>
     </div>
   )
 }
