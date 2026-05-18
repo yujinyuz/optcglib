@@ -1,6 +1,6 @@
 import type { Card } from '../types'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
-import { decodeHtmlEntities, stripHtml, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
+import { decodeHtmlEntities, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
 import { useAppStore } from '../store'
 
 interface CardCardProps {
@@ -86,16 +86,9 @@ export default function CardCard({ card }: CardCardProps) {
 
       {/* Effect -> Category -> Name -> Type */}
       <div className="flex-1 px-2.5 py-2 flex flex-col min-h-0">
-        {/* Effect (only when no image) */}
-        {(!loadExternalImages && card.effect) && (
-          <p className="text-[10px] text-slate-600 dark:text-[#94a3b8] leading-relaxed line-clamp-3">
-            {stripHtml(decodeHtmlEntities(card.effect))}
-          </p>
-        )}
-
         {/* Category */}
         <div
-          className={`text-[10px] font-bold tracking-wider uppercase text-center ${(!loadExternalImages && card.effect) ? 'mt-2' : ''}`}
+          className="text-[10px] font-bold tracking-wider uppercase text-center"
           style={categoryColor ? { color: categoryColor } : undefined}
         >
           {card.category === 'Don' ? 'DON!!' : card.category}
