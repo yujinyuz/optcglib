@@ -13,6 +13,7 @@ No external dependencies required — reads from vendor/punk-records.
 """
 
 import argparse
+import html
 import json
 import sqlite3
 from pathlib import Path
@@ -22,6 +23,11 @@ VENDOR = ROOT / "vendor" / "punk-records"
 DEFAULT_LANGUAGES = ["english-asia", "english", "japanese"]
 DEFAULT_DB = "optcg.db"
 SCHEMA_FILE = ROOT / "schema.sql"
+
+
+def decode_html(text: str) -> str:
+    """Decode HTML entities in text (e.g. &amp; -> &)."""
+    return html.unescape(text) if text else text
 
 
 def load_json(path: Path):
@@ -58,10 +64,10 @@ def seed_packs(conn: sqlite3.Connection, language: str) -> dict:
             (
                 pack_id,
                 language,
-                pack.get("title_parts", {}).get("prefix") or "",
-                pack.get("title_parts", {}).get("title") or "",
-                pack.get("title_parts", {}).get("label") or "",
-                pack.get("raw_title", ""),
+                decode_html(pack.get("title_parts", {}).get("prefix") or ""),
+                decode_html(pack.get("title_parts", {}).get("title") or ""),
+                decode_html(pack.get("title_parts", {}).get("label") or ""),
+                decode_html(pack.get("raw_title", "")),
             ),
         )
         inserted += 1
@@ -149,18 +155,18 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 base_id,
-                card.get("name", ""),
+                decode_html(card.get("name", "")),
                 card.get("rarity", ""),
                 card.get("category", ""),
                 card.get("cost"),
                 card.get("power"),
                 card.get("counter"),
-                card.get("effect"),
-                card.get("trigger"),
+                decode_html(card.get("effect") or ""),
+                decode_html(card.get("trigger") or ""),
                 block_number,
                 json.dumps(card.get("colors", [])),
                 json.dumps(card.get("attributes", [])),
-                json.dumps(card.get("types", [])),
+                json.dumps([decode_html(t) for t in card.get("types", [])]),
                 json.dumps(parallel_ids),
             ),
         )
@@ -227,17 +233,17 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
                 (
                     base_id,
                     language,
-                    card.get("name", ""),
-                    card.get("effect", "") or "",
-                    card.get("trigger", "") or "",
-                    json.dumps(card.get("types", [])),
+                    decode_html(card.get("name", "")),
+                    decode_html(card.get("effect") or ""),
+                    decode_html(card.get("trigger") or ""),
+                    json.dumps([decode_html(t) for t in card.get("types", [])]),
                 ),
             )
             # Also add to FTS so searching in this language works
             search_text = " ".join(filter(None, [
-                card.get("name", ""),
-                card.get("effect", "") or "",
-                card.get("trigger", "") or "",
+                decode_html(card.get("name", "")),
+                decode_html(card.get("effect") or ""),
+                decode_html(card.get("trigger") or ""),
             ]))
             if search_text.strip():
                 conn.execute(
