@@ -53,15 +53,6 @@ export default function CardCard({ card }: CardCardProps) {
   const rarityColor = getRarityColor(card.rarity)
   const isLeader = card.category === 'Leader'
 
-  // Build border style: solid for single color, gradient for multi
-  const borderStyle =
-    card.colors.length === 1
-      ? { borderColor: primaryColor }
-      : {
-          borderImage: `linear-gradient(180deg, ${card.colors.map((c) => COLOR_HEX[c] || c).join(', ')}) 1`,
-          borderImageSlice: 1,
-        }
-
   // Build banner background: solid for single color, split for multi
   const bannerStyle =
     card.colors.length === 1
@@ -82,8 +73,7 @@ export default function CardCard({ card }: CardCardProps) {
   return (
     <Link
       to={`/card/${card.id}`}
-      className="group flex flex-col rounded-xl overflow-hidden border-2 bg-white dark:bg-[#1a1d2e] hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20 transition-all"
-      style={borderStyle}
+      className="group flex flex-col rounded-xl overflow-hidden bg-white dark:bg-[#1a1d2e] hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20 transition-all"
     >
       {/* Top strip: Cost (+ crown) | Power | Attribute | Rarity */}
       <div className="flex items-center justify-between px-2.5 py-2 shrink-0">
