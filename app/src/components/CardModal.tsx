@@ -449,11 +449,11 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
           className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center cursor-zoom-out"
           onClick={(e) => { e.stopPropagation(); setZoomedImg(null) }}
         >
-          <img
+          <ImageLoader
             src={zoomedImg}
             alt="Full view"
             className="max-w-[90vw] max-h-[90vh] object-contain"
-            onClick={(e) => { e.stopPropagation(); setZoomedImg(null) }}
+            onClick={() => setZoomedImg(null)}
           />
         </div>
       )}
