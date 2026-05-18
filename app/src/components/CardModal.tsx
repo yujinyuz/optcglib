@@ -274,27 +274,30 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
               </div>
             )}
 
-            {/* Header: Category -> Name -> Type (only when no image) */}
-            {(!loadExternalImages || !bestImageUrl) && (
-              <div className="px-4 pb-3">
-                <div
-                  className="text-xs font-bold tracking-[0.15em] uppercase text-center"
-                  style={categoryColor ? { color: categoryColor } : undefined}
-                >
-                  {card.category === 'Don' ? 'DON!!' : card.category}
-                </div>
+            {/* Card Name (always shown) */}
+            <div className="px-4 pb-3">
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white text-center leading-tight">
+                {decodeHtmlEntities(card.name)}
+              </h1>
 
-                <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white text-center leading-tight">
-                  {decodeHtmlEntities(card.name)}
-                </h1>
-
-                {card.types.length > 0 && (
-                  <div className="mt-1 text-sm text-center text-slate-500 dark:text-[#94a3b8] truncate">
-                    {card.types.join(' / ')}
+              {/* Category + Types (only when no image) */}
+              {(!loadExternalImages || !bestImageUrl) && (
+                <>
+                  <div
+                    className="mt-1 text-xs font-bold tracking-[0.15em] uppercase text-center"
+                    style={categoryColor ? { color: categoryColor } : undefined}
+                  >
+                    {card.category === 'Don' ? 'DON!!' : card.category}
                   </div>
-                )}
-              </div>
-            )}
+
+                  {card.types.length > 0 && (
+                    <div className="mt-1 text-sm text-center text-slate-500 dark:text-[#94a3b8] truncate">
+                      {card.types.join(' / ')}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
 
             {/* Bottom banner */}
             <div className="px-4 py-3 bg-slate-900 dark:bg-black text-white">
