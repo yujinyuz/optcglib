@@ -199,12 +199,13 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
   const countRes = db.exec(countQ.sql, countQ.params);
   const total = (countRes[0]?.values[0]?.[0] as number) || 0;
 
-  const langOrder = filters.preferredLanguage === 'japanese'
-    ? "CASE language WHEN 'japanese' THEN 1 WHEN 'english-asia' THEN 1 WHEN 'english' THEN 2 ELSE 3 END"
-    : "CASE language WHEN 'english' THEN 1 WHEN 'english-asia' THEN 2 WHEN 'japanese' THEN 3 ELSE 4 END";
-  const imgSubquery = `(SELECT img_full_url FROM card_images WHERE card_id = c.id AND img_full_url IS NOT NULL AND img_full_url != '' ORDER BY ${langOrder} LIMIT 1)`;
+  // Use pre-computed best image URLs from card_best_images table
+  q.leftJoin('card_best_images cbi ON c.id = cbi.card_id');
+  const imgCol = filters.preferredLanguage === 'japanese'
+    ? "COALESCE(NULLIF(cbi.img_url_jp, ''), NULLIF(cbi.img_url_en_asia, ''), cbi.img_url_en)"
+    : "COALESCE(NULLIF(cbi.img_url_en, ''), NULLIF(cbi.img_url_en_asia, ''), cbi.img_url_jp)";
 
-  const dataQ = q.select(buildCardColumns(filters.preferredLanguage) + `, ${imgSubquery} as img_url`, 'cards c', limit, offset);
+  const dataQ = q.select(buildCardColumns(filters.preferredLanguage) + `, ${imgCol} as img_url`, 'cards c', limit, offset);
   const dataRes = db.exec(dataQ.sql, dataQ.params);
 
   const cards: unknown[] = [];

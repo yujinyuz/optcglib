@@ -60,12 +60,12 @@ CREATE TABLE IF NOT EXISTS card_images (
 
 -- Pre-computed best image URLs per card, per language priority.
 -- Eliminates correlated subquery in queryCards.
+-- No FK to cards.id since variant IDs may not exist in the cards table.
 CREATE TABLE IF NOT EXISTS card_best_images (
     card_id TEXT NOT NULL PRIMARY KEY,
     img_url_en TEXT,       -- english priority
     img_url_en_asia TEXT,  -- english-asia fallback
-    img_url_jp TEXT,       -- japanese fallback
-    FOREIGN KEY (card_id) REFERENCES cards(id)
+    img_url_jp TEXT        -- japanese fallback
 );
 
 -- Card translations: localized text per language.

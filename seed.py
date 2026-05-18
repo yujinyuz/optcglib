@@ -266,13 +266,25 @@ def rebuild_fts_index(conn: sqlite3.Connection):
 
 
 def update_search_text(conn: sqlite3.Connection):
-    """Populate search_text column in cards table from FTS data."""
+    """No-op: search_text column removed from cards table.
+    FTS data remains in cards_fts virtual table for search queries.
+    """
+    pass
+
+
+def build_card_best_images(conn: sqlite3.Connection):
+    """Pre-compute best image URLs per card to eliminate correlated subquery at query time."""
+    conn.execute("DELETE FROM card_best_images")
     conn.execute("""
-        UPDATE cards
-        SET search_text = (
-            SELECT search_text FROM cards_fts WHERE cards_fts.card_id = cards.id
-        )
-        WHERE search_text IS NULL
+        INSERT INTO card_best_images (card_id, img_url_en, img_url_en_asia, img_url_jp)
+        SELECT
+            card_id,
+            MAX(CASE WHEN language = 'english' THEN img_full_url END),
+            MAX(CASE WHEN language = 'english-asia' THEN img_full_url END),
+            MAX(CASE WHEN language = 'japanese' THEN img_full_url END)
+        FROM card_images
+        WHERE img_full_url IS NOT NULL AND img_full_url != ''
+        GROUP BY card_id
     """)
     conn.commit()
 
