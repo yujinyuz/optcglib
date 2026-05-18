@@ -118,7 +118,7 @@ export default function CardDetail() {
       {/* Card */}
       <div className="rounded-2xl overflow-hidden border-2 bg-white dark:bg-[#1a1d2e]" style={{ borderColor: primaryColor }}>
         {/* Header: Cost | Name | Power | Attribute */}
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
           {card.cost !== null ? (
             <span
               className="inline-flex items-center justify-center w-10 h-10 rounded-full text-lg font-bold text-white shadow-md"
@@ -130,7 +130,7 @@ export default function CardDetail() {
             <span className="w-10" />
           )}
 
-          <h1 className="flex-1 mx-3 text-center text-xl font-bold text-slate-900 dark:text-white leading-tight">
+          <h1 className="flex-1 mx-3 text-center text-2xl font-bold text-slate-900 dark:text-white leading-tight">
             {decodeHtmlEntities(card.name)}
           </h1>
 
@@ -151,18 +151,30 @@ export default function CardDetail() {
           </div>
         </div>
 
-        {/* Counter */}
-        {card.counter !== null && (
-          <div className="px-4 pb-2">
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-[#3498db] bg-[#3498db]/10 rounded-full px-2.5 py-1">
-              ＋{card.counter} Counter
-            </span>
+        {/* Types as pills */}
+        {card.types.length > 0 && (
+          <div className="px-4 pb-3 flex flex-wrap justify-center gap-1.5">
+            {card.types.map((type) => (
+              <span
+                key={type}
+                className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-[#13151f] text-slate-600 dark:text-[#94a3b8] border border-slate-200 dark:border-[#2e303a]"
+              >
+                {type}
+              </span>
+            ))}
           </div>
         )}
 
+        {/* Category banner */}
+        <div className="py-2 text-center" style={{ backgroundColor: primaryColor }}>
+          <span className="text-xs font-bold tracking-[0.2em] uppercase text-white opacity-95">
+            {card.category === 'Don' ? 'DON!!' : card.category}
+          </span>
+        </div>
+
         {/* Effect */}
         {card.effect && (
-          <div className="mx-4 mb-3 rounded-xl border border-slate-200 dark:border-[#2e303a] bg-slate-50 dark:bg-[#13151f] p-4">
+          <div className="mx-4 mt-3 mb-3 rounded-xl border border-slate-200 dark:border-[#2e303a] bg-slate-50 dark:bg-[#13151f] p-4">
             <div
               className="text-sm text-slate-800 dark:text-[#e2e8f0] leading-relaxed"
               dangerouslySetInnerHTML={{ __html: renderCardText(card.effect) }}
@@ -183,26 +195,13 @@ export default function CardDetail() {
           </div>
         )}
 
-        {/* Category banner */}
-        <div className="py-2.5 text-center" style={{ backgroundColor: primaryColor }}>
-          <span className="text-xs font-bold tracking-[0.2em] uppercase text-white opacity-95">
-            {card.category === 'Don' ? 'DON!!' : card.category}
-          </span>
-        </div>
-
-        {/* Types */}
-        {card.types.length > 0 && (
-          <div className="px-4 pt-3 pb-1 text-center">
-            <span className="text-sm text-slate-600 dark:text-[#94a3b8]">
-              {card.types.join(' / ')}
-            </span>
-          </div>
-        )}
-
         {/* Bottom: ID | Rarity | Block | Counter */}
         <div className="px-4 py-3 flex items-center justify-between border-t border-slate-100 dark:border-[#2e303a]">
           <span className="text-sm font-mono text-slate-500 dark:text-[#64748b]">{card.id}</span>
           <div className="flex items-center gap-2">
+            {card.counter !== null && (
+              <span className="text-xs font-bold text-[#3498db]">＋{card.counter}</span>
+            )}
             <span className="px-2 py-0.5 rounded text-xs font-bold bg-slate-100 dark:bg-[#13151f] text-slate-600 dark:text-[#94a3b8] border border-slate-200 dark:border-[#2e303a]">
               {RARITY_SHORT[card.rarity] || card.rarity}
             </span>
