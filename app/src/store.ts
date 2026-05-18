@@ -88,6 +88,7 @@ interface AppState {
   sets: string[];
   blocks: number[];
   filters: CardFilters;
+  searchInput: string;
   limit: number;
   offset: number;
   hasMore: boolean;
@@ -100,6 +101,7 @@ interface AppState {
 
   init: () => Promise<void>;
   setFilters: (filters: Partial<CardFilters>) => void;
+  setSearchInput: (value: string) => void;
   resetFilters: () => void;
   loadMore: () => Promise<void>;
   setSelectedCard: (card: Card | null) => void;
@@ -120,6 +122,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   sets: [],
   blocks: [],
   filters: readUrlFilters(),
+  searchInput: readUrlFilters().search,
   limit: 50,
   offset: 0,
   hasMore: false,
@@ -153,13 +156,17 @@ export const useAppStore = create<AppState>((set, get) => ({
   setFilters: (filters) => {
     const newFilters = { ...get().filters, ...filters };
     writeUrlFilters(newFilters);
-    set({ filters: newFilters, offset: 0, hasMore: false });
+    set({ filters: newFilters, offset: 0, hasMore: false, ...(filters.search !== undefined ? { searchInput: filters.search } : {}) });
     get().search();
+  },
+
+  setSearchInput: (value) => {
+    set({ searchInput: value });
   },
 
   resetFilters: () => {
     writeUrlFilters(DEFAULT_FILTERS);
-    set({ filters: { ...DEFAULT_FILTERS }, offset: 0, hasMore: false });
+    set({ filters: { ...DEFAULT_FILTERS }, searchInput: '', offset: 0, hasMore: false });
     get().search();
   },
 

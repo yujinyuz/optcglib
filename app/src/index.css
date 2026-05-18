@@ -81,6 +81,9 @@ body {
 .dark *:focus-visible {
   outline-color: #60a5fa;
 }
+input[type="text"]:focus-visible {
+  outline: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

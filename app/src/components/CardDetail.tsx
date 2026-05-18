@@ -30,14 +30,14 @@ export default function CardDetail() {
       }
 
       try {
-        const result = await getCardById(id!)
+        const result = await getCardById(id!, preferredLanguage)
         if (cancelled) return
         setCard(result)
 
         if (result) {
           const [packs, variants, related] = await Promise.all([
             getCardPacks(result.id),
-            getCardVariants(result.id),
+            getCardVariants(result.id, preferredLanguage),
             getRelatedCards(result.id, result.types, 8),
           ])
           if (cancelled) return
@@ -232,29 +232,43 @@ export default function CardDetail() {
       </div>
 
       {/* Price links */}
-      <div className="flex items-center gap-2 mt-3">
+      <div className="flex items-center gap-1.5 mt-3 flex-wrap">
         <span className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold shrink-0">Price</span>
         <a
           href={`https://www.mercardop.jp/product-list?keyword=${encodeURIComponent(baseId)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
+          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
         >
-          mercard
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
+          <img src="/icons/mercard.png" alt="" className="w-4 h-4 rounded-sm shrink-0" />
+          Mercard
         </a>
         <a
           href={`https://yuyu-tei.jp/sell/opc/s/search?search_word=${encodeURIComponent(baseId)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
+          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
         >
-          yuyu-tei
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
+          <img src="/icons/yuyutei.png" alt="" className="w-4 h-4 rounded-sm shrink-0" />
+          Yuyu-Tei
+        </a>
+        <a
+          href={`https://www.tcgplayer.com/search/one-piece-card-game/product?q=${encodeURIComponent(baseId)}&view=grid&productLineName=one-piece-card-game`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
+        >
+          <img src="/icons/tcgplayer.png" alt="" className="w-4 h-4 rounded-sm shrink-0" />
+          TCGPlayer
+        </a>
+        <a
+          href={`https://www.cardrush-op.jp/product-list?keyword=${encodeURIComponent(baseId)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
+        >
+          <img src="/icons/cardrush.png" alt="" className="w-4 h-4 rounded-sm shrink-0" />
+          CardRush
         </a>
       </div>
 

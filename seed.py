@@ -215,6 +215,32 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
                 (card_id, search_text),
             )
 
+        # Translations: store non-primary language text
+        if not is_primary and language != "english":
+            conn.execute(
+                """INSERT OR IGNORE INTO card_translations (card_id, language, name, effect, trigger_text, types_json)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (
+                    base_id,
+                    language,
+                    card.get("name", ""),
+                    card.get("effect", "") or "",
+                    card.get("trigger", "") or "",
+                    json.dumps(card.get("types", [])),
+                ),
+            )
+            # Also add to FTS so searching in this language works
+            search_text = " ".join(filter(None, [
+                card.get("name", ""),
+                card.get("effect", "") or "",
+                card.get("trigger", "") or "",
+            ]))
+            if search_text.strip():
+                conn.execute(
+                    "INSERT INTO cards_fts (card_id, search_text) VALUES (?, ?)",
+                    (base_id, search_text),
+                )
+
         total_cards += 1
 
     conn.commit()

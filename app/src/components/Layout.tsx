@@ -1,75 +1,136 @@
-import { useState, useEffect } from 'react'
-import { Link, Outlet } from 'react-router-dom'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Outlet } from 'react-router-dom'
 import { useAppStore } from '../store'
 import FilterBar from './FilterBar'
 
-function ThemeToggle() {
+function SettingsMenu() {
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const theme = useAppStore((state) => state.theme)
   const toggleTheme = useAppStore((state) => state.toggleTheme)
-
-  return (
-    <button
-      type="button"
-      onClick={toggleTheme}
-      className="p-2 rounded-lg text-slate-400 dark:text-[#64748b] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] transition-colors"
-      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-    >
-      {theme === 'dark' ? (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ) : (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-        </svg>
-      )}
-    </button>
-  )
-}
-
-function OfflineStatus() {
-  const offlineReady = useAppStore((state) => state.offlineReady)
-  const triggerOfflineToast = useAppStore((state) => state.triggerOfflineToast)
-
-  return (
-    <button
-      type="button"
-      onClick={triggerOfflineToast}
-      className={`p-2 rounded-lg transition-colors ${
-        offlineReady
-          ? 'text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20'
-          : 'text-slate-300 dark:text-[#3a3d4a] hover:bg-slate-100 dark:hover:bg-[#1a1d2e]'
-      }`}
-      aria-label={offlineReady ? 'App is ready for offline use' : 'Checking offline status...'}
-      title={offlineReady ? 'Ready for offline use' : 'Not yet available offline'}
-    >
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        {offlineReady ? (
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-        ) : (
-          <>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 010 12.728M5.636 18.364a9 9 0 010-12.728" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 0v2m0-2h.01" />
-          </>
-        )}
-      </svg>
-    </button>
-  )
-}
-
-function LanguageToggle() {
   const preferredLanguage = useAppStore((state) => state.preferredLanguage)
   const setPreferredLanguage = useAppStore((state) => state.setPreferredLanguage)
 
+  useEffect(() => {
+    if (!open) return
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
+
   return (
-    <button
-      type="button"
-      onClick={() => setPreferredLanguage(preferredLanguage === 'english' ? 'japanese' : 'english')}
-      className="p-2 rounded-lg text-xs font-bold text-slate-400 dark:text-[#64748b] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] transition-colors"
-      aria-label={`Switch to ${preferredLanguage === 'english' ? 'Japanese' : 'English'}`}
-    >
-      {preferredLanguage === 'english' ? 'EN' : 'JP'}
-    </button>
+    <div className="relative" ref={menuRef}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="p-2 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] rounded-lg transition-colors"
+        aria-label="Settings"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-xl shadow-lg py-2 z-50">
+          <div className="flex items-center justify-between px-3 py-2">
+            <span className="text-sm text-slate-700 dark:text-[#cbd5e1]">Language</span>
+            <div className="flex rounded-lg border border-slate-200 dark:border-[#2e303a] overflow-hidden">
+              <button
+                onClick={() => setPreferredLanguage('english')}
+                className={`px-2 py-0.5 text-xs font-bold transition-colors ${preferredLanguage === 'english' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => setPreferredLanguage('japanese')}
+                className={`px-2 py-0.5 text-xs font-bold transition-colors ${preferredLanguage === 'japanese' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
+              >
+                JP
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center justify-between px-3 py-2">
+            <span className="text-sm text-slate-700 dark:text-[#cbd5e1]">Theme</span>
+            <div className="flex rounded-lg border border-slate-200 dark:border-[#2e303a] overflow-hidden">
+              <button
+                onClick={() => { if (theme === 'dark') toggleTheme() }}
+                className={`p-1 transition-colors ${theme !== 'dark' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => { if (theme !== 'dark') toggleTheme() }}
+                className={`p-1 transition-colors ${theme === 'dark' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div className="border-t border-slate-100 dark:border-[#2e303a] my-1" />
+          <a
+            href="https://ko-fi.com/yujinyuz"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-[#cbd5e1] hover:bg-slate-100 dark:hover:bg-[#25283a] transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 7.324-.022 11.822c.164 2.424 2.586 2.672 2.586 2.672s8.267-.023 11.966-.049c2.438-.426 2.683-2.566 2.658-3.734 4.352.24 7.422-2.831 6.649-6.916zm-11.062 3.511c-1.246 1.453-4.011 3.976-4.011 3.976s-.121.119-.31.023c-.076-.057-.108-.09-.108-.09-.443-.441-3.368-3.049-4.034-3.954-.709-.965-1.041-2.7-.091-3.71.951-1.01 3.005-1.086 4.363.407 0 0 1.565-1.782 3.468-.963 1.904.82 1.832 3.011.723 4.311zm6.173.478c-.928.116-1.682.028-1.682.028V7.284h1.77s1.971.551 1.971 2.638c0 1.913-.985 2.667-2.059 3.015z"/>
+            </svg>
+            Support on Ko-fi
+          </a>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TopSearchBar() {
+  const searchInput = useAppStore((state) => state.searchInput)
+  const setSearchInput = useAppStore((state) => state.setSearchInput)
+  const setFilters = useAppStore((state) => state.setFilters)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleChange = useCallback((value: string) => {
+    setSearchInput(value)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setFilters({ search: value })
+    }, 150)
+  }, [setSearchInput, setFilters])
+
+  return (
+    <div className="relative flex-1 min-w-0 max-w-xs">
+      <input
+        type="text"
+        aria-label="Search cards"
+        placeholder="Search..."
+        value={searchInput}
+        onChange={(e) => handleChange(e.target.value)}
+        className="w-full bg-transparent border-0 border-b border-slate-300 dark:border-[#3a3d4a] rounded-none pl-2 pr-9 py-2 text-base sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-slate-900 dark:focus:border-white focus:ring-0 focus-visible:outline-none transition-colors"
+      />
+      <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+        {searchInput && (
+          <button
+            onClick={() => handleChange('')}
+            className="p-1 text-slate-400 dark:text-[#64748b] hover:text-slate-900 dark:hover:text-white rounded transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+        <svg className="w-4 h-4 text-slate-400 dark:text-[#64748b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+    </div>
   )
 }
 
@@ -78,77 +139,75 @@ export default function Layout() {
 
   useEffect(() => {
     const handleClose = () => setSidebarOpen(false)
+    const handleOpen = () => setSidebarOpen(true)
     window.addEventListener('optcg-close-sidebar', handleClose)
-    return () => window.removeEventListener('optcg-close-sidebar', handleClose)
+    window.addEventListener('optcg-open-sidebar', handleOpen)
+    return () => {
+      window.removeEventListener('optcg-close-sidebar', handleClose)
+      window.removeEventListener('optcg-open-sidebar', handleOpen)
+    }
   }, [])
 
   return (
     <div className="flex-1 flex min-h-screen overflow-hidden">
-      {/* Mobile filter toggle */}
-      <div className="lg:hidden fixed bottom-4 right-4 z-40">
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          aria-expanded={sidebarOpen}
-          aria-label="Toggle filters"
-          className="p-3 bg-[#3b82f6] text-white rounded-full shadow-lg hover:bg-[#2563eb] transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Mobile sidebar overlay */}
+      {/* Overlay backdrop */}
       {sidebarOpen && (
-        <div className="lg:hidden fixed inset-0 z-30 bg-black/50" onClick={() => setSidebarOpen(false)} style={{ animation: 'sidebarOverlayIn 150ms var(--ease-out-quart) forwards' }} />
+        <div className="fixed inset-0 z-30 bg-black/40" onClick={() => setSidebarOpen(false)} style={{ animation: 'sidebarOverlayIn 150ms var(--ease-out-quart) forwards' }} />
       )}
 
-      {/* Sidebar */}
+      {/* Filter panel: bottom sheet on mobile, right drawer on desktop */}
       <aside
         className={`${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 fixed lg:sticky lg:top-0 left-0 top-0 z-30 h-screen lg:h-screen w-64 bg-slate-50 dark:bg-[#0f1117] border-r border-slate-200 dark:border-[#2e303a] overflow-y-auto transition-transform duration-200 lg:shrink-0`}
+          sidebarOpen ? 'translate-y-0 sm:translate-x-0 sm:translate-y-0' : 'translate-y-full sm:translate-x-full sm:translate-y-0'
+        } fixed z-30 bg-white dark:bg-[#1a1d2e] border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-[#2e303a] overflow-y-auto transition-transform duration-200 shadow-xl inset-x-0 bottom-0 top-1/3 sm:inset-x-auto sm:top-0 sm:right-0 sm:bottom-0 sm:w-80 sm:h-screen rounded-t-2xl sm:rounded-none`}
       >
         <div className="p-4">
-          {/* Header: Title + Theme toggle */}
-          <div className="flex items-center justify-between mb-2">
-            <Link to="/" className="text-base font-bold tracking-tight text-slate-900 dark:text-white hover:opacity-90 transition-opacity">
-              OPTCG DB
-            </Link>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white">Filters</span>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white"
+              className="p-2 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#25283a] rounded-lg transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <div className="flex items-center gap-1.5 mb-4">
-            <OfflineStatus />
-            <a
-              href="https://ko-fi.com/yujinyuz"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 rounded-lg text-slate-400 dark:text-[#64748b] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] transition-colors"
-              aria-label="Support on Ko-fi"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 7.324-.022 11.822c.164 2.424 2.586 2.672 2.586 2.672s8.267-.023 11.966-.049c2.438-.426 2.683-2.566 2.658-3.734 4.352.24 7.422-2.831 6.649-6.916zm-11.062 3.511c-1.246 1.453-4.011 3.976-4.011 3.976s-.121.119-.31.023c-.076-.057-.108-.09-.108-.09-.443-.441-3.368-3.049-4.034-3.954-.709-.965-1.041-2.7-.091-3.71.951-1.01 3.005-1.086 4.363.407 0 0 1.565-1.782 3.468-.963 1.904.82 1.832 3.011.723 4.311zm6.173.478c-.928.116-1.682.028-1.682.028V7.284h1.77s1.971.551 1.971 2.638c0 1.913-.985 2.667-2.059 3.015z"/>
-              </svg>
-            </a>
-            <LanguageToggle />
-            <ThemeToggle />
-          </div>
 
           <FilterBar />
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 min-w-0 overflow-y-auto">
-        <Outlet />
-      </main>
+      {/* Main area: fixed navbar + scrollable content */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Navbar */}
+        <div className="shrink-0 bg-slate-50 dark:bg-[#0f1117] border-b border-slate-200/60 dark:border-[#2e303a]/60 px-4 sm:px-6 py-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-bold tracking-tight text-slate-900 dark:text-white shrink-0">OPTCG DB</span>
+            <div className="flex items-center gap-0.5">
+              <TopSearchBar />
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] rounded-lg active:scale-95 transition-all"
+                aria-label="Open filters"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M17 7h.01M12 7h.01" />
+                </svg>
+              </button>
+              <SettingsMenu />
+            </div>
+          </div>
+        </div>
+
+        {/* Scrollable content */}
+        <main className="flex-1 min-w-0 overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }

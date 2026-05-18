@@ -11,7 +11,8 @@ export default function CardGrid() {
 
   return (
     <div className="px-4 sm:px-6 py-6">
-      <div className="flex items-center justify-between mb-4">
+
+      <div className="flex items-center justify-between mb-4 mt-3">
         <span className="text-sm text-slate-600 dark:text-[#94a3b8]">
           {searching && cards.length === 0 ? (
             'Searching...'
@@ -48,11 +49,10 @@ export default function CardGrid() {
           <button
             onClick={() => loadMore()}
             disabled={searching}
-            className={`px-6 py-2.5 bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-lg text-sm font-medium text-slate-900 dark:text-white transition-all ${
-              searching
-                ? 'opacity-50 cursor-not-allowed pointer-events-none'
-                : 'hover:bg-slate-100 dark:hover:bg-[#25283a] hover:border-slate-300 dark:hover:border-[#3e4050]'
-            }`}
+            className={`px-6 py-2.5 bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-lg text-sm font-medium text-slate-900 dark:text-white transition-all ${searching
+              ? 'opacity-50 cursor-not-allowed pointer-events-none'
+              : 'hover:bg-slate-100 dark:hover:bg-[#25283a] hover:border-slate-300 dark:hover:border-[#3e4050]'
+              }`}
           >
             {searching ? 'Loading...' : 'Load more'}
           </button>

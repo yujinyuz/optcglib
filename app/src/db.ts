@@ -82,8 +82,8 @@ export async function queryBlocks(): Promise<number[]> {
   return result;
 }
 
-export async function getCardById(id: string): Promise<Card | null> {
-  const result = await sendRequest<Card | null>('getCardById', { id });
+export async function getCardById(id: string, preferredLanguage?: 'english' | 'japanese'): Promise<Card | null> {
+  const result = await sendRequest<Card | null>('getCardById', { id, preferredLanguage });
   return result;
 }
 
@@ -102,7 +102,7 @@ export async function getRelatedCards(cardId: string, types: string[], limit?: n
   return result;
 }
 
-export async function getCardVariants(cardId: string): Promise<{ card: Card; images: { language: string; imgUrl: string | null }[] }[]> {
-  const result = await sendRequest<{ card: Card; images: { language: string; imgUrl: string | null }[] }[]>('getCardVariants', { cardId });
+export async function getCardVariants(cardId: string, preferredLanguage?: 'english' | 'japanese'): Promise<{ card: Card; images: { language: string; imgUrl: string | null }[] }[]> {
+  const result = await sendRequest<{ card: Card; images: { language: string; imgUrl: string | null }[] }[]>('getCardVariants', { cardId, preferredLanguage });
   return result;
 }

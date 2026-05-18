@@ -122,7 +122,12 @@ class QueryBuilder {
   }
 }
 
-function buildCardColumns(): string {
+function buildCardColumns(preferredLanguage?: 'english' | 'japanese'): string {
+  if (preferredLanguage === 'japanese') {
+    return `c.id, COALESCE(t.name, c.name), c.rarity, c.category, c.cost, c.power, c.counter,
+            COALESCE(t.effect, c.effect), COALESCE(t.trigger_text, c.trigger_text), c.block_number,
+            c.colors_json, c.attributes_json, COALESCE(t.types_json, c.types_json), c.parallel_json`;
+  }
   return `c.id, c.name, c.rarity, c.category, c.cost, c.power, c.counter,
           c.effect, c.trigger_text, c.block_number,
           c.colors_json, c.attributes_json, c.types_json, c.parallel_json`;
@@ -180,6 +185,10 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
 
   // Cards table now stores one row per base ID; no dedup needed.
 
+  if (filters.preferredLanguage === 'japanese') {
+    q.leftJoin("card_translations t ON c.id = t.card_id AND t.language = 'japanese'");
+  }
+
   const limit = filters.limit || 50;
   const offset = filters.offset || 0;
 
@@ -192,7 +201,7 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
     : "CASE language WHEN 'english' THEN 1 WHEN 'english-asia' THEN 2 WHEN 'japanese' THEN 3 ELSE 4 END";
   const imgSubquery = `(SELECT img_full_url FROM card_images WHERE card_id = c.id AND img_full_url IS NOT NULL AND img_full_url != '' ORDER BY ${langOrder} LIMIT 1)`;
 
-  const dataQ = q.select(buildCardColumns() + `, ${imgSubquery} as img_url`, 'cards c', limit, offset);
+  const dataQ = q.select(buildCardColumns(filters.preferredLanguage) + `, ${imgSubquery} as img_url`, 'cards c', limit, offset);
   const dataRes = db.exec(dataQ.sql, dataQ.params);
 
   const cards: unknown[] = [];
@@ -231,17 +240,27 @@ function queryBlocks(db: Database): number[] {
   return result[0].values.map((row) => row[0] as number);
 }
 
-function getCardById(db: Database, id: string): unknown | null {
+function getCardById(db: Database, id: string, preferredLanguage?: 'english' | 'japanese'): unknown | null {
   const baseId = id.replace(/_[pr]\d+$/, '');
+  const translationJoin = preferredLanguage === 'japanese'
+    ? " LEFT JOIN card_translations t ON cards.id = t.card_id AND t.language = 'japanese'"
+    : '';
+  const cols = preferredLanguage === 'japanese'
+    ? `cards.id, COALESCE(t.name, cards.name), cards.rarity, cards.category, cards.cost, cards.power, cards.counter,
+       COALESCE(t.effect, cards.effect), COALESCE(t.trigger_text, cards.trigger_text), cards.block_number,
+       cards.colors_json, cards.attributes_json, COALESCE(t.types_json, cards.types_json), cards.parallel_json`
+    : `id, name, rarity, category, cost, power, counter,
+       effect, trigger_text, block_number,
+       colors_json, attributes_json, types_json, parallel_json`;
+
   const result = db.exec(
-    `SELECT ${buildCardColumns().replace(/c\./g, '')}
-     FROM cards
+    `SELECT ${cols}
+     FROM cards${translationJoin}
      WHERE id = ?`,
     [baseId]
   );
   if (!result[0]?.values[0]) return null;
   const card = rowToCard(result[0].values[0]);
-  // If querying a variant ID, override the id field
   if (id !== baseId) {
     card.id = id;
   }
@@ -285,11 +304,21 @@ function getCardImages(db: Database, cardId: string): unknown[] {
   return result[0].values.map((row) => ({ language: row[0], imgUrl: row[1] }));
 }
 
-function getCardVariants(db: Database, cardId: string): unknown[] {
-  // Get the base card row (cards table stores only base IDs)
+function getCardVariants(db: Database, cardId: string, preferredLanguage?: 'english' | 'japanese'): unknown[] {
+  const translationJoin = preferredLanguage === 'japanese'
+    ? " LEFT JOIN card_translations t ON cards.id = t.card_id AND t.language = 'japanese'"
+    : '';
+  const cols = preferredLanguage === 'japanese'
+    ? `cards.id, COALESCE(t.name, cards.name), cards.rarity, cards.category, cards.cost, cards.power, cards.counter,
+       COALESCE(t.effect, cards.effect), COALESCE(t.trigger_text, cards.trigger_text), cards.block_number,
+       cards.colors_json, cards.attributes_json, COALESCE(t.types_json, cards.types_json), cards.parallel_json`
+    : `id, name, rarity, category, cost, power, counter,
+       effect, trigger_text, block_number,
+       colors_json, attributes_json, types_json, parallel_json`;
+
   const result = db.exec(
-    `SELECT ${buildCardColumns().replace(/c\./g, '')}
-     FROM cards
+    `SELECT ${cols}
+     FROM cards${translationJoin}
      WHERE id = ?`,
     [cardId]
   );
@@ -395,8 +424,8 @@ self.onmessage = async (e: MessageEvent<{ type: string; id: string; payload?: un
       }
       case 'getCardById': {
         if (!db) throw new Error('DB not initialized');
-        const { id: cardId } = payload as { id: string };
-        const result = getCardById(db, cardId);
+        const { id: cardId, preferredLanguage } = payload as { id: string; preferredLanguage?: 'english' | 'japanese' };
+        const result = getCardById(db, cardId, preferredLanguage);
         self.postMessage({ type: 'result', id, data: result });
         break;
       }
@@ -423,8 +452,8 @@ self.onmessage = async (e: MessageEvent<{ type: string; id: string; payload?: un
       }
       case 'getCardVariants': {
         if (!db) throw new Error('DB not initialized');
-        const { cardId: variantCardId } = payload as { cardId: string };
-        const result = getCardVariants(db, variantCardId);
+        const { cardId: variantCardId, preferredLanguage } = payload as { cardId: string; preferredLanguage?: 'english' | 'japanese' };
+        const result = getCardVariants(db, variantCardId, preferredLanguage);
         self.postMessage({ type: 'result', id, data: result });
         break;
       }

@@ -59,6 +59,18 @@ CREATE TABLE IF NOT EXISTS card_images (
     PRIMARY KEY (card_id, language)
 );
 
+-- Card translations: localized text per language.
+-- Stores name, effect, trigger_text in languages other than the primary (english-asia).
+CREATE TABLE IF NOT EXISTS card_translations (
+    card_id TEXT NOT NULL,
+    language TEXT NOT NULL,
+    name TEXT NOT NULL,
+    effect TEXT,
+    trigger_text TEXT,
+    types_json TEXT NOT NULL DEFAULT '[]',
+    PRIMARY KEY (card_id, language)
+);
+
 -- Card colors (many-to-many, deduplicated across languages)
 CREATE TABLE IF NOT EXISTS card_colors (
     card_id TEXT NOT NULL,
@@ -104,3 +116,4 @@ CREATE INDEX IF NOT EXISTS idx_card_colors_color ON card_colors(color);
 CREATE INDEX IF NOT EXISTS idx_card_attributes_attribute ON card_attributes(attribute);
 CREATE INDEX IF NOT EXISTS idx_card_packs_card_id ON card_packs(card_id);
 CREATE INDEX IF NOT EXISTS idx_card_images_card_id ON card_images(card_id);
+CREATE INDEX IF NOT EXISTS idx_card_translations_card_id ON card_translations(card_id);

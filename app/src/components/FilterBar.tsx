@@ -1,4 +1,3 @@
-import { useState, useCallback, useRef } from 'react'
 import { useAppStore } from '../store'
 import {
   ALL_COLORS,
@@ -106,31 +105,15 @@ export default function FilterBar() {
   const sets = useAppStore((state) => state.sets)
   const blocks = useAppStore((state) => state.blocks)
 
-  const notifySidebar = () => {
-    window.dispatchEvent(new CustomEvent('optcg-close-sidebar'))
-  }
-
   const toggle = (key: 'colors' | 'categories' | 'rarities' | 'attributes' | 'blocks', value: string | number) => {
     const current = filters[key] as (string | number)[]
     const next = current.includes(value as never)
       ? current.filter((v) => v !== value)
       : [...current, value]
     setFilters({ [key]: next } as Partial<typeof filters>)
-    notifySidebar()
   }
 
   // Debounced search input
-  const [localSearch, setLocalSearch] = useState(filters.search)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const handleSearchChange = useCallback((value: string) => {
-    setLocalSearch(value)
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      setFilters({ search: value })
-    }, 150)
-  }, [setFilters])
-
   const hasActiveFilters =
     filters.colors.length > 0 ||
     filters.categories.length > 0 ||
@@ -146,43 +129,12 @@ export default function FilterBar() {
 
   return (
     <div className="space-y-4">
-      {/* Search */}
-      <div className="relative">
-        <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-[#64748b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input
-          type="text"
-          aria-label="Search cards"
-          placeholder="Search cards..."
-          value={localSearch}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              notifySidebar()
-            }
-          }}
-          className="w-full bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-lg pl-8 pr-7 py-1.5 text-base sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-[#3b82f6] transition-colors"
-        />
-        {localSearch && (
-          <button
-            onClick={() => handleSearchChange('')}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#64748b] hover:text-slate-900 dark:hover:text-white"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
-      </div>
-
       {/* Clear all */}
       {hasActiveFilters && (
         <button
           onClick={() => {
             resetFilters()
-            notifySidebar()
-          }}
+                  }}
           className="text-[11px] text-[#3b82f6] dark:text-[#60a5fa] hover:underline font-medium"
         >
           Clear all filters
@@ -223,8 +175,7 @@ export default function FilterBar() {
               active={filters.setPrefix === null}
               onClick={() => {
                 setFilters({ setPrefix: null })
-                notifySidebar()
-              }}
+                          }}
             >
               All
             </TogglePill>
@@ -234,8 +185,7 @@ export default function FilterBar() {
                 active={filters.setPrefix === set}
                 onClick={() => {
                   setFilters({ setPrefix: filters.setPrefix === set ? null : set })
-                  notifySidebar()
-                }}
+                              }}
               >
                 {set}
               </TogglePill>
@@ -319,12 +269,10 @@ export default function FilterBar() {
           max={filters.costMax}
           onMinChange={(v) => {
             setFilters({ costMin: v })
-            notifySidebar()
-          }}
+                  }}
           onMaxChange={(v) => {
             setFilters({ costMax: v })
-            notifySidebar()
-          }}
+                  }}
           minPlaceholder="0"
           maxPlaceholder="15"
         />
@@ -338,12 +286,10 @@ export default function FilterBar() {
           max={filters.powerMax}
           onMinChange={(v) => {
             setFilters({ powerMin: v })
-            notifySidebar()
-          }}
+                  }}
           onMaxChange={(v) => {
             setFilters({ powerMax: v })
-            notifySidebar()
-          }}
+                  }}
           minPlaceholder="0"
           maxPlaceholder="20k"
           step={1000}
@@ -358,12 +304,10 @@ export default function FilterBar() {
           max={filters.counterMax}
           onMinChange={(v) => {
             setFilters({ counterMin: v })
-            notifySidebar()
-          }}
+                  }}
           onMaxChange={(v) => {
             setFilters({ counterMax: v })
-            notifySidebar()
-          }}
+                  }}
           minPlaceholder="0"
           maxPlaceholder="2000"
           step={1000}
