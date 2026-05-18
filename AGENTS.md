@@ -85,6 +85,18 @@ SELECT ... FROM cards c JOIN _search_ids _s ON c.id = _s.id
 
 Queries LEFT JOIN `card_images` filtered to `language = 'english-asia'` to provide a default display image per card.
 
+### Japanese translations
+
+- `card_translations` table stores `name`, `effect`, `trigger_text` per language
+- Worker uses `COALESCE(t.name, c.name)` with LEFT JOIN when `preferredLanguage='japanese'`
+- FTS includes Japanese text with suffixed card_id (e.g., `"ST01-001:japanese"`)
+- Image priority: `langOrder` CASE + `imgSubquery` in `db.worker.ts`, `languagePriority` in `CardDetail`/`CardModal`
+
+### PWA constraints
+
+- DB size: ~10.6MB
+- `vite-plugin-pwa` `maxFileSize` set to 12MB — keep DB under this
+
 ## Filter state architecture
 
 **Filters are URL-synced.** The store reads initial filters from `URLSearchParams` on init, and writes back via `history.replaceState` on every change.
@@ -108,6 +120,13 @@ Queries LEFT JOIN `card_images` filtered to `language = 'english-asia'` to provi
 - `noUnusedParameters: true` — unused params fail build
 
 Always clean up unused imports and variables.
+
+## UI/UX constraints
+
+- **Card display order**: Category → Name → Type (tile and detail view)
+- **Mobile scroll**: Use `min-h-screen`; `dvh` units break DevTools mobile emulation
+- **iOS Safari**: Inputs zoom on font-size < 16px — use `text-base` on mobile, `text-sm` at `sm:` breakpoint
+- **Sidebar**: Filter interactions (pills, ranges, sets, blocks, clear-all) dispatch `optcg-close-sidebar` event; search input does not
 
 ## Data source
 
