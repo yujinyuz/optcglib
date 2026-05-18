@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useAppStore } from './store'
+import Layout from './components/Layout'
 import CardGrid from './components/CardGrid'
 import CardDetail from './components/CardDetail'
 
@@ -39,8 +40,10 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-slate-50 dark:bg-[#0f1117] text-slate-900 dark:text-[#e2e8f0] flex flex-col">
         <Routes>
-          <Route path="/" element={<CardGrid />} />
-          <Route path="/card/:id" element={<CardDetail />} />
+          <Route element={<Layout />}>
+            <Route path="/" element={<CardGrid />} />
+            <Route path="/card/:id" element={<CardDetail />} />
+          </Route>
         </Routes>
       </div>
     </BrowserRouter>
