@@ -100,6 +100,40 @@ export default function CardDetail() {
   }
 
   const primaryColor = card.colors[0] ? COLOR_HEX[card.colors[0]] : '#64748b'
+
+  // Build cost circle background: straight diagonal slash for multi-colored cards
+  const costCircleBg =
+    card.colors.length === 1
+      ? { backgroundColor: primaryColor }
+      : {
+          background: (() => {
+            const colors = card.colors.map((c) => COLOR_HEX[c] || c)
+            const n = colors.length
+            const stops = colors.map((color, i) => {
+              const pct = ((i + 1) / n) * 100
+              return `${color} ${pct}%, ${color} ${pct}%`
+            })
+            return `linear-gradient(135deg, ${stops.join(', ')})`
+          })(),
+        }
+
+  // Build banner background: solid for single color, split for multi
+  const bannerStyle =
+    card.colors.length === 1
+      ? { backgroundColor: primaryColor }
+      : {
+          background: (() => {
+            const colors = card.colors.map((c) => COLOR_HEX[c] || c)
+            const n = colors.length
+            const stops = colors.map((color, i) => {
+              const start = (i / n) * 100
+              const end = ((i + 1) / n) * 100
+              return `${color} ${start}%, ${color} ${end}%`
+            })
+            return `linear-gradient(90deg, ${stops.join(', ')})`
+          })(),
+        }
+
   const baseId = card.id.replace(/_[pr]\d+$/, '')
 
   return (
@@ -122,7 +156,7 @@ export default function CardDetail() {
           {card.cost !== null ? (
             <span
               className="inline-flex items-center justify-center w-10 h-10 rounded-full text-lg font-bold text-white shadow-md"
-              style={{ backgroundColor: primaryColor }}
+              style={costCircleBg}
             >
               {card.cost}
             </span>
@@ -186,7 +220,7 @@ export default function CardDetail() {
         </div>
 
         {/* Bottom banner: Category | Types | ID | Rarity | Block */}
-        <div className="px-4 py-3 text-white" style={{ backgroundColor: primaryColor }}>
+        <div className="px-4 py-3 text-white" style={bannerStyle}>
           <div className="text-xs font-bold tracking-[0.15em] uppercase text-center opacity-95">
             {card.category === 'Don' ? 'DON!!' : card.category}
           </div>
