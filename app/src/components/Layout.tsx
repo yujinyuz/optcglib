@@ -229,12 +229,12 @@ export default function Layout() {
         <div className="shrink-0 bg-slate-50 dark:bg-[#0f1117] border-b border-slate-200/60 dark:border-[#2e303a]/60 px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between gap-2">
             <img
-              src="/logo-op.png"
+              src="/logo-op.svg"
               alt="ONE PIECE CARD GAME"
               className="h-5 w-auto shrink-0 dark:hidden"
             />
             <img
-              src="/logo-op-white.png"
+              src="/logo-op-white.svg"
               alt="ONE PIECE CARD GAME"
               className="h-5 w-auto shrink-0 hidden dark:block"
             />
