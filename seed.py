@@ -132,6 +132,10 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
             base_cards[base_id] = card
             base_parallels[base_id] = []
 
+        # Prefer base cards (no _p suffix) over variants for the canonical name
+        if card_id == base_id:
+            base_cards[base_id] = card
+
         if card_id not in base_parallels[base_id]:
             base_parallels[base_id].append(card_id)
 
