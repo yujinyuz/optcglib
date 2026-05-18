@@ -1,8 +1,33 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAppStore } from '../store'
 import FilterBar from './FilterBar'
 import CardCard from './CardCard'
 import SkeletonCard from './SkeletonCard'
+
+function ThemeToggle() {
+  const theme = useAppStore((state) => state.theme)
+  const toggleTheme = useAppStore((state) => state.toggleTheme)
+
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      className="p-1.5 rounded-lg text-slate-400 dark:text-[#64748b] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] transition-colors"
+      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {theme === 'dark' ? (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      ) : (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+      )}
+    </button>
+  )
+}
 
 export default function CardGrid() {
   const cards = useAppStore((state) => state.cards)
@@ -13,7 +38,7 @@ export default function CardGrid() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex-1 flex">
+    <div className="flex-1 flex min-h-dvh">
       {/* Mobile filter toggle */}
       <div className="lg:hidden fixed bottom-4 right-4 z-40">
         <button
@@ -35,17 +60,27 @@ export default function CardGrid() {
       <aside
         className={`${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 fixed lg:sticky lg:top-14 left-0 top-0 z-30 h-[calc(100dvh-3.5rem)] lg:h-[calc(100dvh-3.5rem)] w-64 bg-slate-50 dark:bg-[#0f1117] border-r border-slate-200 dark:border-[#2e303a] overflow-y-auto transition-transform duration-200 lg:shrink-0`}
+        } lg:translate-x-0 fixed lg:sticky lg:top-0 left-0 top-0 z-30 h-dvh lg:h-dvh w-64 bg-slate-50 dark:bg-[#0f1117] border-r border-slate-200 dark:border-[#2e303a] overflow-y-auto transition-transform duration-200 lg:shrink-0`}
       >
         <div className="p-4">
-          <div className="flex items-center justify-between lg:hidden mb-4">
-            <span className="text-sm font-semibold text-slate-900 dark:text-white">Filters</span>
-            <button onClick={() => setSidebarOpen(false)} className="text-slate-500 dark:text-[#94a3b8]">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          {/* Header: Title + Theme toggle */}
+          <div className="flex items-center justify-between mb-4">
+            <Link to="/" className="text-base font-bold tracking-tight text-slate-900 dark:text-white hover:opacity-90 transition-opacity">
+              OPTCG DB
+            </Link>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden p-1.5 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
+
           <FilterBar />
         </div>
       </aside>
