@@ -145,13 +145,13 @@ export default function FilterBar() {
       {/* Search scope */}
       <FilterSection label="Search in">
         <div className="flex flex-wrap gap-1">
-          {(['all', 'name', 'effect', 'trigger'] as const).map((scope) => (
+          {(['name', 'effect', 'trigger'] as const).map((scope) => (
             <TogglePill
               key={scope}
-              active={filters.searchScope === scope}
+              active={filters.searchScopes.includes(scope)}
               onClick={() => setSearchScope(scope)}
             >
-              {scope === 'all' ? 'All' : scope.charAt(0).toUpperCase() + scope.slice(1)}
+              {scope.charAt(0).toUpperCase() + scope.slice(1)}
             </TogglePill>
           ))}
         </div>

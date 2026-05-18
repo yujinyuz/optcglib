@@ -17,7 +17,7 @@ export type WorkerMessage =
 
 export type QueryCardsFilters = {
   search?: string;
-  searchScope?: 'all' | 'name' | 'effect' | 'trigger';
+  searchScope?: ('name' | 'effect' | 'trigger')[];
   colors?: string[];
   categories?: string[];
   rarities?: string[];
@@ -151,9 +151,9 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
 
   if (filters.search) {
     const raw = filters.search.trim();
-    const scope = filters.searchScope || 'all';
+    const scopes = filters.searchScope;
 
-    if (scope === 'all') {
+    if (!scopes || scopes.length === 0) {
       const ftsQuery = raw.split(/\s+/).map((w) => (w.endsWith('*') ? w : `${w}*`)).join(' ');
       q.withCte(
         '_search_ids',
@@ -163,8 +163,9 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
       );
       q.join('_search_ids _s ON c.id = _s.id');
     } else {
-      const col = scope === 'name' ? 'c.name' : scope === 'effect' ? 'c.effect' : 'c.trigger_text';
-      q.where(`${col} LIKE ?`, `%${raw}%`);
+      const cols = scopes.map((s) => s === 'name' ? 'c.name' : s === 'effect' ? 'c.effect' : 'c.trigger_text');
+      const clauses = cols.map((col) => `${col} LIKE ?`).join(' OR ');
+      q.where(`(${clauses})`, ...scopes.map(() => `%${raw}%`));
     }
   }
 

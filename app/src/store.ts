@@ -25,7 +25,7 @@ function getInitialLanguage(): PreferredLanguage {
 function filtersToParams(filters: CardFilters): URLSearchParams {
   const p = new URLSearchParams();
   if (filters.search) p.set('q', filters.search);
-  if (filters.searchScope !== 'all') p.set('scope', filters.searchScope);
+  if (filters.searchScopes.length) p.set('scope', filters.searchScopes.join(','));
   if (filters.colors.length) p.set('colors', filters.colors.join(','));
   if (filters.categories.length) p.set('categories', filters.categories.join(','));
   if (filters.rarities.length) p.set('rarities', filters.rarities.join(','));
@@ -50,8 +50,11 @@ function safeNum(val: string | null): number | undefined {
 function paramsToFilters(params: URLSearchParams): Partial<CardFilters> {
   const f: Partial<CardFilters> = {};
   if (params.has('q')) f.search = params.get('q')!;
-  const scope = params.get('scope');
-  if (scope === 'name' || scope === 'effect' || scope === 'trigger') f.searchScope = scope;
+  const scopes = params.get('scope');
+  if (scopes) {
+    const valid = scopes.split(',').filter((s) => s === 'name' || s === 'effect' || s === 'trigger') as SearchScope[];
+    if (valid.length) f.searchScopes = valid;
+  }
   if (params.has('colors')) f.colors = params.get('colors')!.split(',');
   if (params.has('categories')) f.categories = params.get('categories')!.split(',') as CardFilters['categories'];
   if (params.has('rarities')) f.rarities = params.get('rarities')!.split(',') as CardFilters['rarities'];
@@ -172,7 +175,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   setSearchScope: (scope) => {
-    const newFilters = { ...get().filters, searchScope: scope };
+    const current = get().filters.searchScopes;
+    const next = current.includes(scope) ? current.filter((s) => s !== scope) : [...current, scope];
+    const newFilters = { ...get().filters, searchScopes: next };
     writeUrlFilters(newFilters);
     set({ filters: newFilters });
     get().search();
@@ -194,7 +199,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const { cards: moreCards, total } = await queryCards({
         search: filters.search || undefined,
-        searchScope: filters.searchScope,
+        searchScope: filters.searchScopes.length ? filters.searchScopes : undefined,
         colors: filters.colors.length ? filters.colors : undefined,
         categories: filters.categories.length ? filters.categories : undefined,
         rarities: filters.rarities.length ? filters.rarities : undefined,
@@ -262,7 +267,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const { cards, total } = await queryCards({
         search: filters.search || undefined,
-        searchScope: filters.searchScope,
+        searchScope: filters.searchScopes.length ? filters.searchScopes : undefined,
         colors: filters.colors.length ? filters.colors : undefined,
         categories: filters.categories.length ? filters.categories : undefined,
         rarities: filters.rarities.length ? filters.rarities : undefined,
