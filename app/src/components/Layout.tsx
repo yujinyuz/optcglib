@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { useAppStore } from '../store'
 import FilterBar from './FilterBar'
@@ -29,6 +29,12 @@ function ThemeToggle() {
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  useEffect(() => {
+    const handleClose = () => setSidebarOpen(false)
+    window.addEventListener('optcg-close-sidebar', handleClose)
+    return () => window.removeEventListener('optcg-close-sidebar', handleClose)
+  }, [])
 
   return (
     <div className="flex-1 flex min-h-dvh">

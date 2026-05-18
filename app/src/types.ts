@@ -22,6 +22,7 @@ export interface Card {
   types: string[];
   block_number: number | null;
   parallel_json: string[];
+  img_url: string | null;
 }
 
 export type CardCategory = 'Leader' | 'Character' | 'Event' | 'Stage' | 'Don';
@@ -84,4 +85,12 @@ export const COLOR_HEX: Record<string, string> = {
   Purple: '#9b59b6',
   Black: '#2c3e50',
   Yellow: '#f1c40f',
+};
+
+export const CATEGORY_COLORS: Record<string, string> = {
+  Leader: '#eab308',
+  Character: '#3b82f6',
+  Event: '#ef4444',
+  Stage: '#22c55e',
+  Don: '#a855f7',
 };

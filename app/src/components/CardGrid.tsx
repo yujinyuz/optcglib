@@ -25,11 +25,11 @@ export default function CardGrid() {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
         {cards.map((card) => (
           <CardCard key={card.id} card={card} />
         ))}
-        {searching && Array.from({ length: 8 }, (_, i) => (
+        {searching && Array.from({ length: 12 }, (_, i) => (
           <SkeletonCard key={`skeleton-${i}`} />
         ))}
       </div>

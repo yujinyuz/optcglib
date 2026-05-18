@@ -67,6 +67,11 @@ class QueryBuilder {
     return this;
   }
 
+  leftJoin(tableExpr: string) {
+    this.joins.push(`LEFT JOIN ${tableExpr}`);
+    return this;
+  }
+
   where(sql: string, ...params: (string | number | null)[]) {
     this.conditions.push({ sql, params });
     return this;
@@ -180,13 +185,17 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
   const countRes = db.exec(countQ.sql, countQ.params);
   const total = (countRes[0]?.values[0]?.[0] as number) || 0;
 
-  const dataQ = q.select(buildCardColumns(), 'cards c', limit, offset);
+  const imgSubquery = `(SELECT img_full_url FROM card_images WHERE card_id = c.id AND img_full_url IS NOT NULL AND img_full_url != '' ORDER BY CASE language WHEN 'english' THEN 1 WHEN 'english-asia' THEN 2 WHEN 'japanese' THEN 3 ELSE 4 END LIMIT 1)`;
+
+  const dataQ = q.select(buildCardColumns() + `, ${imgSubquery} as img_url`, 'cards c', limit, offset);
   const dataRes = db.exec(dataQ.sql, dataQ.params);
 
   const cards: unknown[] = [];
   if (dataRes[0]) {
     for (const row of dataRes[0].values) {
-      cards.push(rowToCard(row));
+      const card = rowToCard(row);
+      (card as Record<string, unknown>).img_url = row[14] || null;
+      cards.push(card);
     }
   }
 
@@ -284,9 +293,21 @@ function getCardVariants(db: Database, cardId: string): unknown[] {
   const baseCard = rowToCard(result[0].values[0]);
   const parallelIds = (baseCard.parallel_json as string[]) || [];
 
+  // Also discover any image-only variants in card_images that aren't in parallel_json
+  const imageVariantResult = db.exec(
+    `SELECT DISTINCT card_id FROM card_images
+     WHERE card_id LIKE ? AND card_id != ? AND img_full_url IS NOT NULL AND img_full_url != ''`,
+    [`${cardId}_%`, cardId]
+  );
+  const imageVariantIds = imageVariantResult[0]
+    ? (imageVariantResult[0].values.map((row) => row[0]) as string[])
+    : [];
+
+  // Merge base + parallel_json + image variants, dedupe
+  const allVariantIds = Array.from(new Set([cardId, ...parallelIds, ...imageVariantIds]));
+
   const variants: unknown[] = [];
-  // Include the base card itself as the first variant
-  for (const variantId of parallelIds) {
+  for (const variantId of allVariantIds) {
     const imagesResult = db.exec(
       `SELECT language, img_full_url FROM card_images
        WHERE card_id = ? AND img_full_url IS NOT NULL AND img_full_url != ''

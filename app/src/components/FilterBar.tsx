@@ -7,6 +7,7 @@ import {
   ALL_ATTRIBUTES,
   RARITY_SHORT,
   COLOR_HEX,
+  CATEGORY_COLORS,
 } from '../types'
 
 function FilterSection({
@@ -100,12 +101,17 @@ export default function FilterBar() {
   const sets = useAppStore((state) => state.sets)
   const blocks = useAppStore((state) => state.blocks)
 
+  const notifySidebar = () => {
+    window.dispatchEvent(new CustomEvent('optcg-close-sidebar'))
+  }
+
   const toggle = (key: 'colors' | 'categories' | 'rarities' | 'attributes' | 'blocks', value: string | number) => {
     const current = filters[key] as (string | number)[]
     const next = current.includes(value as never)
       ? current.filter((v) => v !== value)
       : [...current, value]
     setFilters({ [key]: next } as Partial<typeof filters>)
+    notifySidebar()
   }
 
   // Debounced search input
@@ -145,7 +151,12 @@ export default function FilterBar() {
           placeholder="Search cards..."
           value={localSearch}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="w-full bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-lg pl-8 pr-7 py-1.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-[#3b82f6] transition-colors"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              notifySidebar()
+            }
+          }}
+          className="w-full bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-lg pl-8 pr-7 py-1.5 text-base sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-[#3b82f6] transition-colors"
         />
         {localSearch && (
           <button
@@ -162,7 +173,10 @@ export default function FilterBar() {
       {/* Clear all */}
       {hasActiveFilters && (
         <button
-          onClick={resetFilters}
+          onClick={() => {
+            resetFilters()
+            notifySidebar()
+          }}
           className="text-[11px] text-[#3b82f6] dark:text-[#60a5fa] hover:underline font-medium"
         >
           Clear all filters
@@ -201,7 +215,10 @@ export default function FilterBar() {
           <div className="flex flex-wrap gap-1">
             <TogglePill
               active={filters.setPrefix === null}
-              onClick={() => setFilters({ setPrefix: null })}
+              onClick={() => {
+                setFilters({ setPrefix: null })
+                notifySidebar()
+              }}
             >
               All
             </TogglePill>
@@ -209,9 +226,10 @@ export default function FilterBar() {
               <TogglePill
                 key={set}
                 active={filters.setPrefix === set}
-                onClick={() =>
+                onClick={() => {
                   setFilters({ setPrefix: filters.setPrefix === set ? null : set })
-                }
+                  notifySidebar()
+                }}
               >
                 {set}
               </TogglePill>
@@ -238,13 +256,18 @@ export default function FilterBar() {
       )}
 
       {/* Categories */}
-      <FilterSection label="Types">
+      <FilterSection label="Category">
         <div className="flex flex-wrap gap-1">
           {ALL_CATEGORIES.map((cat) => (
             <TogglePill
               key={cat}
               active={filters.categories.includes(cat)}
               onClick={() => toggle('categories', cat)}
+              style={
+                filters.categories.includes(cat)
+                  ? { backgroundColor: CATEGORY_COLORS[cat] + '20', borderColor: CATEGORY_COLORS[cat] + '60', color: CATEGORY_COLORS[cat] }
+                  : {}
+              }
             >
               {cat === 'Don' ? 'DON!!' : cat}
             </TogglePill>
@@ -287,8 +310,14 @@ export default function FilterBar() {
         <RangeInput
           min={filters.costMin}
           max={filters.costMax}
-          onMinChange={(v) => setFilters({ costMin: v })}
-          onMaxChange={(v) => setFilters({ costMax: v })}
+          onMinChange={(v) => {
+            setFilters({ costMin: v })
+            notifySidebar()
+          }}
+          onMaxChange={(v) => {
+            setFilters({ costMax: v })
+            notifySidebar()
+          }}
           minPlaceholder="0"
           maxPlaceholder="15"
         />
@@ -299,8 +328,14 @@ export default function FilterBar() {
         <RangeInput
           min={filters.powerMin}
           max={filters.powerMax}
-          onMinChange={(v) => setFilters({ powerMin: v })}
-          onMaxChange={(v) => setFilters({ powerMax: v })}
+          onMinChange={(v) => {
+            setFilters({ powerMin: v })
+            notifySidebar()
+          }}
+          onMaxChange={(v) => {
+            setFilters({ powerMax: v })
+            notifySidebar()
+          }}
           minPlaceholder="0"
           maxPlaceholder="20k"
           step={1000}
@@ -312,8 +347,14 @@ export default function FilterBar() {
         <RangeInput
           min={filters.counterMin}
           max={filters.counterMax}
-          onMinChange={(v) => setFilters({ counterMin: v })}
-          onMaxChange={(v) => setFilters({ counterMax: v })}
+          onMinChange={(v) => {
+            setFilters({ counterMin: v })
+            notifySidebar()
+          }}
+          onMaxChange={(v) => {
+            setFilters({ counterMax: v })
+            notifySidebar()
+          }}
           minPlaceholder="0"
           maxPlaceholder="2000"
           step={1000}

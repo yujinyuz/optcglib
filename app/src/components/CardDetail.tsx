@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getCardById, getCardPacks, getCardVariants, getRelatedCards } from '../db'
 import type { Card } from '../types'
-import { COLOR_HEX, RARITY_SHORT } from '../types'
+import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
 import { decodeHtmlEntities, renderCardText } from '../utils'
 
 function getAttributeIcon(attr: string): string {
@@ -110,6 +110,14 @@ export default function CardDetail() {
         }
 
   const baseId = card.id.replace(/_[pr]\d+$/, '')
+  const categoryColor = CATEGORY_COLORS[card.category]
+
+  // Pick best image URL: English > English-Asia > Japanese
+  const languagePriority: Record<string, number> = { english: 0, 'english-asia': 1, japanese: 2 }
+  const bestImageUrl = cardVariants
+    .flatMap((v) => v.images)
+    .filter((img): img is { language: string; imgUrl: string } => !!img.imgUrl)
+    .sort((a, b) => (languagePriority[a.language] ?? 3) - (languagePriority[b.language] ?? 3))[0]?.imgUrl ?? null
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6">
@@ -125,7 +133,10 @@ export default function CardDetail() {
       </Link>
 
       {/* Card — matches tile layout but expanded */}
-      <div className="rounded-2xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-xl shadow-black/10 dark:shadow-black/30">
+      <div
+        className={`rounded-2xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-xl shadow-black/10 dark:shadow-black/30 ${categoryColor ? 'border-l-4' : ''}`}
+        style={categoryColor ? { borderLeftColor: categoryColor } : undefined}
+      >
         {/* Top strip: Cost | Power | Attribute */}
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           {card.cost !== null ? (
@@ -156,57 +167,81 @@ export default function CardDetail() {
           </div>
         </div>
 
-        {/* Body: Name + Effect */}
-        <div className="px-4 pb-3">
-          {/* Name */}
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white text-center leading-tight">
-            {decodeHtmlEntities(card.name)}
-          </h1>
+        {/* Image link — centered icon */}
+        {bestImageUrl && (
+          <div className="flex items-center justify-center py-4">
+            <a
+              href={bestImageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center w-14 h-14 rounded-full bg-white dark:bg-[#1a1d2e] text-slate-400 dark:text-[#64748b] hover:text-[#3b82f6] shadow-md hover:scale-110 transition-all"
+              title="Open card image in new tab"
+            >
+              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          </div>
+        )}
 
-          {/* Effect */}
-          {card.effect && (
+        {/* Card Effect */}
+        {card.effect && (
+          <div className="px-4 pb-3">
             <div className="mt-3 rounded-xl bg-white dark:bg-[#0f1117] p-4">
               <div
                 className="text-sm text-slate-900 dark:text-white leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: renderCardText(card.effect) }}
               />
             </div>
-          )}
 
-          {/* Trigger */}
-          {card.trigger_text && (
-            <div className="mt-3">
-              <div className="text-[10px] font-bold text-slate-400 dark:text-[#64748b] uppercase tracking-wider mb-1">
-                Trigger
+            {/* Trigger */}
+            {card.trigger_text && (
+              <div className="mt-3">
+                <div className="text-[10px] font-bold text-slate-400 dark:text-[#64748b] uppercase tracking-wider mb-1">
+                  Trigger
+                </div>
+                <div
+                  className="text-sm text-slate-700 dark:text-[#94a3b8] leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: renderCardText(card.trigger_text) }}
+                />
               </div>
-              <div
-                className="text-sm text-slate-700 dark:text-[#94a3b8] leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: renderCardText(card.trigger_text) }}
-              />
-            </div>
-          )}
+            )}
 
-          {/* Counter — inline, right-aligned */}
-          {card.counter !== null && (
-            <div className="mt-2 text-right">
-              <span className="text-xs font-bold text-[#3498db]">＋{card.counter}</span>
+            {/* Counter — inline, right-aligned */}
+            {card.counter !== null && (
+              <div className="mt-2 text-right">
+                <span className="text-xs font-bold text-[#3498db]">＋{card.counter}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Header: Category -> Name -> Type */}
+        <div className="px-4 pb-3">
+          {/* Category */}
+          <div
+            className="text-xs font-bold tracking-[0.15em] uppercase text-center"
+            style={categoryColor ? { color: categoryColor } : undefined}
+          >
+            {card.category === 'Don' ? 'DON!!' : card.category}
+          </div>
+
+          {/* Name */}
+          <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white text-center leading-tight">
+            {decodeHtmlEntities(card.name)}
+          </h1>
+
+          {/* Types */}
+          {card.types.length > 0 && (
+            <div className="mt-1 text-sm text-center text-slate-500 dark:text-[#94a3b8] truncate">
+              {card.types.join(' / ')}
             </div>
           )}
         </div>
 
-        {/* Bottom banner: Category | Types | ID | Rarity | Block */}
+        {/* Bottom banner: ID | Rarity | Block */}
         <div className="px-4 py-3 bg-slate-900 dark:bg-black text-white">
-          <div className="text-xs font-bold tracking-[0.15em] uppercase text-center opacity-95">
-            {card.category === 'Don' ? 'DON!!' : card.category}
-          </div>
-
-          {card.types.length > 0 && (
-            <div className="mt-1 text-sm text-center opacity-90 truncate">
-              {card.types.join(' / ')}
-            </div>
-          )}
-
-          <div className="mt-2 flex items-center justify-between text-sm opacity-90">
+          <div className="flex items-center justify-between text-sm opacity-90">
             <span className="font-mono">{card.id}</span>
             <div className="flex items-center gap-2">
               <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-white/20">
@@ -221,37 +256,6 @@ export default function CardDetail() {
           </div>
         </div>
       </div>
-
-      {/* Image variants */}
-      {cardVariants.length > 0 && (
-        <div className="mt-4 space-y-2">
-          {cardVariants.map((variant) => (
-            <div key={variant.card.id} className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold shrink-0">
-                {variant.card.id === card.id ? 'Image' : variant.card.id.replace(card.id, '').replace(/^_/, '') || 'Alt'}
-              </span>
-              {variant.images.length > 0 ? (
-                variant.images.map((img) => (
-                  <a
-                    key={img.language}
-                    href={img.imgUrl || undefined}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
-                  >
-                    {img.language === 'english-asia' ? 'Asia' : img.language === 'japanese' ? 'JP' : 'EN'}
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </a>
-                ))
-              ) : (
-                <span className="text-[10px] text-slate-400 dark:text-[#64748b]">No images</span>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Price links */}
       <div className="flex items-center gap-2 mt-3">
@@ -279,6 +283,42 @@ export default function CardDetail() {
           </svg>
         </a>
       </div>
+
+      {/* Image variants / alternate arts */}
+      {cardVariants.length > 0 && (
+        <div className="mt-4">
+          <h3 className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-2">
+            Alternate arts
+          </h3>
+          <div className="space-y-2">
+            {cardVariants.map((variant) => (
+              <div key={variant.card.id} className="flex items-center gap-2 flex-wrap">
+                <span className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold shrink-0">
+                  {variant.card.id === card.id ? 'Base' : variant.card.id.replace(card.id, '').replace(/^_/, '') || 'Alt'}
+                </span>
+                {variant.images.length > 0 ? (
+                  variant.images.map((img) => (
+                    <a
+                      key={img.language}
+                      href={img.imgUrl || undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
+                    >
+                      {img.language === 'english-asia' ? 'Asia' : img.language === 'japanese' ? 'JP' : 'EN'}
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  ))
+                ) : (
+                  <span className="text-[10px] text-slate-400 dark:text-[#64748b]">No images</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Packs */}
       {cardPacks.length > 0 && (
