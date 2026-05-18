@@ -239,7 +239,7 @@ export default function Layout() {
                 alt="ONE PIECE CARD GAME"
                 className="h-5 w-auto hidden dark:block"
               />
-              <div className="text-[5px] font-bold tracking-wider text-slate-400 dark:text-[#64748b] uppercase leading-none mt-0.5">
+              <div className="text-[5px] font-bold tracking-wider text-slate-400 dark:text-[#64748b] uppercase leading-none mt-0.5 text-center sm:text-left">
                 Offline DB
               </div>
             </div>
