@@ -85,24 +85,24 @@ export default function CardCard({ card }: CardCardProps) {
         className="shrink-0 px-3 py-2 text-white"
         style={{ backgroundColor: primaryColor }}
       >
-        <div className="text-[9px] font-bold tracking-[0.15em] uppercase text-center opacity-90">
+        <div className="text-xs font-bold tracking-[0.15em] uppercase text-center opacity-95">
           {card.category === 'Don' ? 'DON!!' : card.category}
         </div>
 
         {card.types.length > 0 && (
-          <div className="mt-0.5 text-[10px] text-center opacity-80 truncate">
+          <div className="mt-0.5 text-xs text-center opacity-90 truncate">
             {card.types.join(' / ')}
           </div>
         )}
 
-        <div className="mt-1.5 flex items-center justify-between text-[9px] opacity-70">
+        <div className="mt-1.5 flex items-center justify-between text-xs opacity-90">
           <span className="font-mono">{card.id}</span>
           <div className="flex items-center gap-1.5">
-            <span className="px-1 rounded text-[8px] font-bold bg-white/20">
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/20">
               {RARITY_SHORT[card.rarity] || card.rarity}
             </span>
             {card.block_number !== null && (
-              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white/20 text-[8px] font-bold">
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-[10px] font-bold">
                 {card.block_number}
               </span>
             )}
