@@ -180,25 +180,25 @@ export const useAppStore = create<AppState>((set, get) => ({
     const newOffset = offset + limit;
     set({ offset: newOffset, searching: true });
 
-      try {
-        const { cards: moreCards, total } = await queryCards({
-          search: filters.search || undefined,
-          colors: filters.colors.length ? filters.colors : undefined,
-          categories: filters.categories.length ? filters.categories : undefined,
-          rarities: filters.rarities.length ? filters.rarities : undefined,
-          attributes: filters.attributes.length ? filters.attributes : undefined,
-          costMin: filters.costMin,
-          costMax: filters.costMax,
-          powerMin: filters.powerMin,
-          powerMax: filters.powerMax,
-          counterMin: filters.counterMin,
-          counterMax: filters.counterMax,
-          sets: filters.sets.length ? filters.sets : undefined,
-          blocks: filters.blocks.length ? filters.blocks : undefined,
-          preferredLanguage,
-          limit,
-          offset: newOffset,
-        });
+    try {
+      const { cards: moreCards, total } = await queryCards({
+        search: filters.search || undefined,
+        colors: filters.colors.length ? filters.colors : undefined,
+        categories: filters.categories.length ? filters.categories : undefined,
+        rarities: filters.rarities.length ? filters.rarities : undefined,
+        attributes: filters.attributes.length ? filters.attributes : undefined,
+        costMin: filters.costMin,
+        costMax: filters.costMax,
+        powerMin: filters.powerMin,
+        powerMax: filters.powerMax,
+        counterMin: filters.counterMin,
+        counterMax: filters.counterMax,
+        sets: filters.sets.length ? filters.sets : undefined,
+        blocks: filters.blocks.length ? filters.blocks : undefined,
+        preferredLanguage,
+        limit,
+        offset: newOffset,
+      });
       set({
         cards: [...cards, ...moreCards],
         totalCards: total,
@@ -247,25 +247,25 @@ export const useAppStore = create<AppState>((set, get) => ({
   search: async (append = false) => {
     const { filters, limit, offset, preferredLanguage } = get();
     set({ searching: true });
-      try {
-        const { cards, total } = await queryCards({
-          search: filters.search || undefined,
-          colors: filters.colors.length ? filters.colors : undefined,
-          categories: filters.categories.length ? filters.categories : undefined,
-          rarities: filters.rarities.length ? filters.rarities : undefined,
-          attributes: filters.attributes.length ? filters.attributes : undefined,
-          costMin: filters.costMin,
-          costMax: filters.costMax,
-          powerMin: filters.powerMin,
-          powerMax: filters.powerMax,
-          counterMin: filters.counterMin,
-          counterMax: filters.counterMax,
-          sets: filters.sets.length ? filters.sets : undefined,
-          blocks: filters.blocks.length ? filters.blocks : undefined,
-          preferredLanguage,
-          limit,
-          offset,
-        });
+    try {
+      const { cards, total } = await queryCards({
+        search: filters.search || undefined,
+        colors: filters.colors.length ? filters.colors : undefined,
+        categories: filters.categories.length ? filters.categories : undefined,
+        rarities: filters.rarities.length ? filters.rarities : undefined,
+        attributes: filters.attributes.length ? filters.attributes : undefined,
+        costMin: filters.costMin,
+        costMax: filters.costMax,
+        powerMin: filters.powerMin,
+        powerMax: filters.powerMax,
+        counterMin: filters.counterMin,
+        counterMax: filters.counterMax,
+        sets: filters.sets.length ? filters.sets : undefined,
+        blocks: filters.blocks.length ? filters.blocks : undefined,
+        preferredLanguage,
+        limit,
+        offset,
+      });
       set({
         cards: append ? [...get().cards, ...cards] : cards,
         totalCards: total,

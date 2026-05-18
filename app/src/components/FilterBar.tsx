@@ -134,7 +134,7 @@ export default function FilterBar() {
         <button
           onClick={() => {
             resetFilters()
-                  }}
+          }}
           className="text-[11px] text-[#3b82f6] dark:text-[#60a5fa] hover:underline font-medium"
         >
           Clear all filters
@@ -259,10 +259,10 @@ export default function FilterBar() {
           max={filters.costMax}
           onMinChange={(v) => {
             setFilters({ costMin: v })
-                  }}
+          }}
           onMaxChange={(v) => {
             setFilters({ costMax: v })
-                  }}
+          }}
           minPlaceholder="0"
           maxPlaceholder="15"
         />
@@ -276,10 +276,10 @@ export default function FilterBar() {
           max={filters.powerMax}
           onMinChange={(v) => {
             setFilters({ powerMin: v })
-                  }}
+          }}
           onMaxChange={(v) => {
             setFilters({ powerMax: v })
-                  }}
+          }}
           minPlaceholder="0"
           maxPlaceholder="20k"
           step={1000}
@@ -294,10 +294,10 @@ export default function FilterBar() {
           max={filters.counterMax}
           onMinChange={(v) => {
             setFilters({ counterMin: v })
-                  }}
+          }}
           onMaxChange={(v) => {
             setFilters({ counterMax: v })
-                  }}
+          }}
           minPlaceholder="0"
           maxPlaceholder="2000"
           step={1000}

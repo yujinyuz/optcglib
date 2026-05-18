@@ -23,12 +23,6 @@ body {
   color: #e2e8f0;
 }
 
-#root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
 /* OPTCG keyword highlighting */
 .kw {
   font-weight: 600;

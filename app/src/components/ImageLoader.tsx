@@ -16,7 +16,7 @@ export default function ImageLoader({ src, alt, className = '', onClick }: Image
   return (
     <div className={`relative ${className}`}>
       {!loaded && (
-        <div className="absolute inset-0 bg-slate-200 dark:bg-[#25283a] animate-pulse" />
+        <div className="absolute inset-0 bg-slate-200 dark:bg-[#25283a] animate-pulse rounded-lg" />
       )}
       <img
         src={src}

@@ -60,13 +60,13 @@ function SettingsMenu() {
             <div className="flex rounded-lg border border-slate-200 dark:border-[#2e303a] overflow-hidden">
               <button
                 onClick={() => setPreferredLanguage('english')}
-                className={`px-2 py-0.5 text-xs font-bold transition-colors ${preferredLanguage === 'english' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
+                className={`px-2.5 py-1 text-xs font-bold transition-colors ${preferredLanguage === 'english' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
               >
                 EN
               </button>
               <button
                 onClick={() => setPreferredLanguage('japanese')}
-                className={`px-2 py-0.5 text-xs font-bold transition-colors ${preferredLanguage === 'japanese' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
+                className={`px-2.5 py-1 text-xs font-bold transition-colors ${preferredLanguage === 'japanese' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
               >
                 JP
               </button>
@@ -77,7 +77,7 @@ function SettingsMenu() {
             <div className="flex rounded-lg border border-slate-200 dark:border-[#2e303a] overflow-hidden">
               <button
                 onClick={() => { if (theme === 'dark') toggleTheme() }}
-                className={`p-1 transition-colors ${theme !== 'dark' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
+                className={`p-1.5 transition-colors ${theme !== 'dark' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -85,7 +85,7 @@ function SettingsMenu() {
               </button>
               <button
                 onClick={() => { if (theme !== 'dark') toggleTheme() }}
-                className={`p-1 transition-colors ${theme === 'dark' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
+                className={`p-1.5 transition-colors ${theme === 'dark' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
