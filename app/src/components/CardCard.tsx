@@ -106,7 +106,7 @@ export default function CardCard({ card }: CardCardProps) {
         )}
 
         {/* Counter — right-aligned at bottom of content area */}
-        {card.counter !== null && (
+        {(!loadExternalImages && card.counter !== null) && (
           <div className="mt-auto pt-1 text-right">
             <span className="text-[10px] font-bold text-[#3498db]">＋{card.counter}</span>
           </div>
