@@ -68,12 +68,7 @@ function App() {
               <Link to="/" className="text-lg font-bold tracking-tight text-slate-900 dark:text-white hover:opacity-90 transition-opacity">
                 OPTCG DB
               </Link>
-              <div className="flex items-center gap-2">
-                <Link to="/" className="text-sm font-medium text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white transition-colors px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-[#1a1d2e]">
-                  Cards
-                </Link>
-                <ThemeToggle />
-              </div>
+              <ThemeToggle />
             </div>
           </div>
         </nav>
