@@ -3,6 +3,9 @@
 *.db-shm
 *.db-wal
 
+# Root lockfile (app has its own)
+package-lock.json
+
 # Vendor data (clone separately)
 vendor/
 

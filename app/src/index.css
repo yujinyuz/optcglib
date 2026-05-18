@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --color-red: #e74c3c;
+  --color-blue: #3498db;
+  --color-green: #2ecc71;
+  --color-purple: #9b59b6;
+  --color-black: #2c3e50;
+  --color-yellow: #f1c40f;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.dark body {
+  background: #0f1117;
+  color: #e2e8f0;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* OPTCG keyword highlighting */
+.kw {
+  font-weight: 600;
+  color: #3b82f6;
+}
+.dark .kw {
+  color: #60a5fa;
+}
