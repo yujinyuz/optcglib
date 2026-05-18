@@ -274,28 +274,23 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
               </div>
             )}
 
-            {/* Card Name (always shown) */}
+            {/* Category -> Name -> Type (always shown, like card list) */}
             <div className="px-4 pb-3">
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white text-center leading-tight">
+              <div
+                className="text-[10px] font-bold tracking-wider uppercase text-center"
+                style={categoryColor ? { color: categoryColor } : undefined}
+              >
+                {card.category === 'Don' ? 'DON!!' : card.category}
+              </div>
+
+              <h1 className="mt-0.5 text-2xl font-bold text-slate-900 dark:text-white text-center leading-snug">
                 {decodeHtmlEntities(card.name)}
               </h1>
 
-              {/* Category + Types (only when no image) */}
-              {(!loadExternalImages || !bestImageUrl) && (
-                <>
-                  <div
-                    className="mt-1 text-xs font-bold tracking-[0.15em] uppercase text-center"
-                    style={categoryColor ? { color: categoryColor } : undefined}
-                  >
-                    {card.category === 'Don' ? 'DON!!' : card.category}
-                  </div>
-
-                  {card.types.length > 0 && (
-                    <div className="mt-1 text-sm text-center text-slate-500 dark:text-[#94a3b8] truncate">
-                      {card.types.join(' / ')}
-                    </div>
-                  )}
-                </>
+              {card.types.length > 0 && (
+                <div className="mt-0.5 text-sm text-center text-slate-500 dark:text-[#94a3b8] truncate">
+                  {card.types.join(' / ')}
+                </div>
               )}
             </div>
 
