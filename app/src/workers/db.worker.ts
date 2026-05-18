@@ -235,17 +235,27 @@ function getCardById(db: Database, id: string): unknown | null {
 }
 
 function getCardPacks(db: Database, cardId: string): unknown[] {
+  // Get parallel variants from the card row
+  const cardResult = db.exec(
+    `SELECT parallel_json FROM cards WHERE id = ?`,
+    [cardId]
+  );
+  const parallelIds = cardResult[0]?.values[0]?.[0] as string | null;
+  const ids = parseJsonArray(parallelIds);
+  if (ids.length === 0) ids.push(cardId);
+
+  const placeholders = ids.map(() => '?').join(',');
   const result = db.exec(
-    `SELECT DISTINCT p.id, p.label, p.raw_title, cp.language
+    `SELECT DISTINCT p.id, p.label, p.raw_title
      FROM card_packs cp
      JOIN packs p ON cp.pack_id = p.id AND cp.language = p.language
-     WHERE cp.card_id = ?
+     WHERE cp.card_id IN (${placeholders}) AND p.label != '' AND p.label IS NOT NULL
      ORDER BY p.id`,
-    [cardId]
+    ids
   );
   if (!result[0]) return [];
   return result[0].values.map((row) => ({
-    packId: row[0], label: row[1], rawTitle: row[2], language: row[3],
+    packId: row[0], label: row[1], rawTitle: row[2],
   }));
 }
 

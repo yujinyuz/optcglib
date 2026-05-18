@@ -31,7 +31,7 @@ export default function CardDetail() {
   const { id } = useParams<{ id: string }>()
 
   const [card, setCard] = useState<Card | null>(null)
-  const [cardPacks, setCardPacks] = useState<{ packId: string; label: string; rawTitle: string; language: string }[]>([])
+  const [cardPacks, setCardPacks] = useState<{ packId: string; label: string; rawTitle: string }[]>([])
   const [cardVariants, setCardVariants] = useState<{ card: Card; images: { language: string; imgUrl: string | null }[] }[]>([])
   const [relatedCards, setRelatedCards] = useState<Card[]>([])
   const [loading, setLoading] = useState(true)
@@ -281,7 +281,7 @@ export default function CardDetail() {
           <div className="flex flex-wrap gap-1.5">
             {cardPacks.map((pack) => (
               <span
-                key={`${pack.packId}-${pack.language}`}
+                key={pack.packId}
                 className="text-[11px] bg-slate-100 dark:bg-[#13151f] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-0.5 text-slate-600 dark:text-[#94a3b8]"
                 title={pack.rawTitle}
               >
