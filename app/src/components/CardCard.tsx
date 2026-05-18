@@ -62,6 +62,23 @@ export default function CardCard({ card }: CardCardProps) {
           borderImageSlice: 1,
         }
 
+  // Build banner background: solid for single color, split for multi
+  const bannerStyle =
+    card.colors.length === 1
+      ? { backgroundColor: primaryColor }
+      : {
+          background: (() => {
+            const colors = card.colors.map((c) => COLOR_HEX[c] || c)
+            const n = colors.length
+            const stops = colors.map((color, i) => {
+              const start = (i / n) * 100
+              const end = ((i + 1) / n) * 100
+              return `${color} ${start}%, ${color} ${end}%`
+            })
+            return `linear-gradient(90deg, ${stops.join(', ')})`
+          })(),
+        }
+
   return (
     <Link
       to={`/card/${card.id}`}
@@ -135,7 +152,7 @@ export default function CardCard({ card }: CardCardProps) {
       {/* Bottom banner */}
       <div
         className="shrink-0 px-3 py-2 text-white"
-        style={{ backgroundColor: primaryColor }}
+        style={bannerStyle}
       >
         <div className="text-xs font-bold tracking-[0.15em] uppercase text-center opacity-95">
           {card.category === 'Don' ? 'DON!!' : card.category}
