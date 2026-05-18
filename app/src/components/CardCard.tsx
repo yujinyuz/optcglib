@@ -2,6 +2,7 @@ import type { Card } from '../types'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
 import { decodeHtmlEntities, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
 import { useAppStore } from '../store'
+import ImageLoader from './ImageLoader'
 
 interface CardCardProps {
   card: Card
@@ -58,13 +59,11 @@ export default function CardCard({ card }: CardCardProps) {
 
       {/* Card image or link */}
       {loadExternalImages && card.img_url ? (
-        <div className="shrink-0 bg-slate-50 dark:bg-[#13151f]">
-          <img
+        <div className="shrink-0 bg-slate-50 dark:bg-[#13151f] relative">
+          <ImageLoader
             src={getExternalImageUrl(card.img_url)}
             alt={card.name}
             className="w-full aspect-[5/7] object-cover"
-            loading="lazy"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
           />
         </div>
       ) : card.img_url && (

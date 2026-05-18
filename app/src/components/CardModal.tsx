@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { getCardById, getCardPacks, getCardVariants } from '../db'
 import { useAppStore } from '../store'
 import type { Card } from '../types'
+import ImageLoader from './ImageLoader'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
 import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
 
@@ -212,12 +213,11 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
             {/* Card image or link */}
             {loadExternalImages && bestImageUrl ? (
               <div className="flex items-center justify-center py-2">
-                <img
+                <ImageLoader
                   src={getExternalImageUrl(bestImageUrl)}
                   alt={card.name}
                   className="max-h-[28rem] rounded-lg shadow-md cursor-zoom-in"
                   onClick={() => setZoomedImg(getExternalImageUrl(bestImageUrl))}
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                 />
               </div>
             ) : bestImageUrl && (
@@ -359,13 +359,11 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
                   {cardVariants.flatMap((variant) =>
                     variant.images.filter((img) => img.imgUrl).map((img) => (
                       <div key={`${variant.card.id}-${img.language}`} className="flex flex-col items-center gap-1">
-                        <img
+                        <ImageLoader
                           src={getExternalImageUrl(img.imgUrl!)}
                           alt={`${variant.card.id} ${img.language}`}
                           className="w-full rounded-lg shadow-md cursor-zoom-in"
-                          loading="lazy"
                           onClick={() => setZoomedImg(getExternalImageUrl(img.imgUrl!))}
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                         />
                         <span className="text-[10px] text-slate-500 dark:text-[#64748b]">
                           {variant.packs[0] || (variant.card.id === card.id ? '' : 'Alt')}
