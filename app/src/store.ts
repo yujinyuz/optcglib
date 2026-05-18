@@ -26,6 +26,8 @@ function filtersToParams(filters: CardFilters): URLSearchParams {
   if (filters.costMax != null) p.set('costMax', String(filters.costMax));
   if (filters.powerMin != null) p.set('powerMin', String(filters.powerMin));
   if (filters.powerMax != null) p.set('powerMax', String(filters.powerMax));
+  if (filters.counterMin != null) p.set('counterMin', String(filters.counterMin));
+  if (filters.counterMax != null) p.set('counterMax', String(filters.counterMax));
   if (filters.blocks.length) p.set('blocks', filters.blocks.join(','));
   return p;
 }
@@ -42,6 +44,8 @@ function paramsToFilters(params: URLSearchParams): Partial<CardFilters> {
   if (params.has('costMax')) f.costMax = Number(params.get('costMax'));
   if (params.has('powerMin')) f.powerMin = Number(params.get('powerMin'));
   if (params.has('powerMax')) f.powerMax = Number(params.get('powerMax'));
+  if (params.has('counterMin')) f.counterMin = Number(params.get('counterMin'));
+  if (params.has('counterMax')) f.counterMax = Number(params.get('counterMax'));
   if (params.has('blocks')) f.blocks = params.get('blocks')!.split(',').map(Number);
   return f;
 }
@@ -152,6 +156,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           costMax: filters.costMax,
           powerMin: filters.powerMin,
           powerMax: filters.powerMax,
+          counterMin: filters.counterMin,
+          counterMax: filters.counterMax,
           setPrefix: filters.setPrefix || undefined,
           blocks: filters.blocks.length ? filters.blocks : undefined,
           limit,
@@ -194,6 +200,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           costMax: filters.costMax,
           powerMin: filters.powerMin,
           powerMax: filters.powerMax,
+          counterMin: filters.counterMin,
+          counterMax: filters.counterMax,
           setPrefix: filters.setPrefix || undefined,
           blocks: filters.blocks.length ? filters.blocks : undefined,
           limit,

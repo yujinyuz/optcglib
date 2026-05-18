@@ -17,6 +17,8 @@ export type QueryCardsFilters = {
   costMax?: number | null;
   powerMin?: number | null;
   powerMax?: number | null;
+  counterMin?: number | null;
+  counterMax?: number | null;
   setPrefix?: string | null;
   blocks?: number[];
   hideParallels?: boolean;

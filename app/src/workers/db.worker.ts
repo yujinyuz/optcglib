@@ -25,6 +25,8 @@ export type QueryCardsFilters = {
   costMax?: number | null;
   powerMin?: number | null;
   powerMax?: number | null;
+  counterMin?: number | null;
+  counterMax?: number | null;
   setPrefix?: string | null;
   blocks?: number[];
   limit?: number;
@@ -158,6 +160,8 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
   if (filters.costMax != null) q.where('c.cost <= ?', filters.costMax);
   if (filters.powerMin != null) q.where('c.power >= ?', filters.powerMin);
   if (filters.powerMax != null) q.where('c.power <= ?', filters.powerMax);
+  if (filters.counterMin != null) q.where('c.counter >= ?', filters.counterMin);
+  if (filters.counterMax != null) q.where('c.counter <= ?', filters.counterMax);
   if (filters.setPrefix) q.where("c.id LIKE ?", `${filters.setPrefix}-%`);
   if (filters.blocks?.length) {
     q.where(`c.block_number IN (${placeholders(filters.blocks.length)})`, ...filters.blocks);
