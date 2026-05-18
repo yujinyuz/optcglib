@@ -101,20 +101,12 @@ export default function CardDetail() {
 
   const primaryColor = card.colors[0] ? COLOR_HEX[card.colors[0]] : '#64748b'
 
-  // Build cost circle background: straight diagonal slash for multi-colored cards
+  // Build cost circle background: curved diagonal slash for multi-colored cards
   const costCircleBg =
     card.colors.length === 1
       ? { backgroundColor: primaryColor }
       : {
-          background: (() => {
-            const colors = card.colors.map((c) => COLOR_HEX[c] || c)
-            const n = colors.length
-            const stops = colors.map((color, i) => {
-              const pct = ((i + 1) / n) * 100
-              return `${color} ${pct}%, ${color} ${pct}%`
-            })
-            return `linear-gradient(135deg, ${stops.join(', ')})`
-          })(),
+          background: `conic-gradient(from 225deg, ${card.colors.map((c, i) => `${COLOR_HEX[c]} ${i * 180}deg ${(i + 1) * 180}deg`).join(', ')})`,
         }
 
   // Build banner background: solid for single color, split for multi
