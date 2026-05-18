@@ -71,6 +71,13 @@ export default function CardCard({ card }: CardCardProps) {
             {stripHtml(decodeHtmlEntities(card.effect))}
           </p>
         )}
+
+        {/* Counter — tiny, right-aligned at bottom of content area */}
+        {card.counter !== null && (
+          <div className="mt-auto pt-1 text-right">
+            <span className="text-[9px] font-bold text-[#3498db]">＋{card.counter}</span>
+          </div>
+        )}
       </div>
 
       {/* Bottom banner */}
