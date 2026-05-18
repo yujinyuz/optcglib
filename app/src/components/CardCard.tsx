@@ -31,18 +31,23 @@ export default function CardCard({ card }: CardCardProps) {
       className="group flex flex-col rounded-xl overflow-hidden border-2 bg-white dark:bg-[#1a1d2e] hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20 transition-all"
       style={{ borderColor: primaryColor }}
     >
-      {/* Top strip: Cost | Power | Attribute — fixed height */}
+      {/* Top strip: Cost + Counter | Power + Attribute — fixed height */}
       <div className="flex items-center justify-between px-2.5 py-2 shrink-0">
-        {card.cost !== null ? (
-          <span
-            className="inline-flex items-center justify-center w-7 h-7 rounded-full text-sm font-bold text-white shadow-sm"
-            style={{ backgroundColor: primaryColor }}
-          >
-            {card.cost}
-          </span>
-        ) : (
-          <span className="w-7" />
-        )}
+        <div className="flex items-center gap-1.5">
+          {card.cost !== null ? (
+            <span
+              className="inline-flex items-center justify-center w-7 h-7 rounded-full text-sm font-bold text-white shadow-sm"
+              style={{ backgroundColor: primaryColor }}
+            >
+              {card.cost}
+            </span>
+          ) : (
+            <span className="w-7" />
+          )}
+          {card.counter !== null && (
+            <span className="text-[10px] font-bold text-[#3498db]">＋{card.counter}</span>
+          )}
+        </div>
 
         <div className="flex items-center gap-1.5">
           {card.power !== null && (
@@ -58,34 +63,19 @@ export default function CardCard({ card }: CardCardProps) {
         </div>
       </div>
 
-      {/* Middle: Counter (side) + Name + Effect */}
-      <div className="flex-1 flex min-h-0">
-        {/* Counter on left edge — rotated vertically like real cards */}
-        {card.counter !== null && (
-          <div className="shrink-0 w-5 flex items-center justify-center border-r border-slate-100 dark:border-[#2e303a]/50">
-            <span
-              className="text-[9px] font-bold text-[#3498db] whitespace-nowrap"
-              style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
-            >
-              ＋{card.counter} Counter
-            </span>
-          </div>
+      {/* Name + Effect */}
+      <div className="flex-1 px-3 pb-2 flex flex-col min-h-0">
+        {/* Name */}
+        <h3 className="mt-1 text-sm font-bold text-slate-900 dark:text-white leading-snug line-clamp-2">
+          {decodeHtmlEntities(card.name)}
+        </h3>
+
+        {/* Effect */}
+        {card.effect && (
+          <p className="mt-1.5 text-[10px] text-slate-600 dark:text-[#94a3b8] leading-relaxed line-clamp-2">
+            {stripHtml(decodeHtmlEntities(card.effect))}
+          </p>
         )}
-
-        {/* Name + Effect */}
-        <div className={`flex-1 flex flex-col min-h-0 pb-2 ${card.counter !== null ? 'px-2' : 'px-3'}`}>
-          {/* Name */}
-          <h3 className="mt-1 text-sm font-bold text-slate-900 dark:text-white leading-snug line-clamp-2">
-            {decodeHtmlEntities(card.name)}
-          </h3>
-
-          {/* Effect */}
-          {card.effect && (
-            <p className="mt-1.5 text-[10px] text-slate-600 dark:text-[#94a3b8] leading-relaxed line-clamp-2">
-              {stripHtml(decodeHtmlEntities(card.effect))}
-            </p>
-          )}
-        </div>
       </div>
 
       {/* Bottom banner: Category | Types | ID/Block — fixed height, always at bottom */}
