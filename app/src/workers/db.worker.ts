@@ -17,6 +17,7 @@ export type WorkerMessage =
 
 export type QueryCardsFilters = {
   search?: string;
+  searchScope?: 'all' | 'name' | 'effect' | 'trigger';
   colors?: string[];
   categories?: string[];
   rarities?: string[];
@@ -150,14 +151,21 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
 
   if (filters.search) {
     const raw = filters.search.trim();
-    const ftsQuery = raw.split(/\s+/).map((w) => (w.endsWith('*') ? w : `${w}*`)).join(' ');
-    q.withCte(
-      '_search_ids',
-      `SELECT card_id as id FROM cards_fts WHERE search_text MATCH ? UNION SELECT id FROM cards WHERE id LIKE ?`,
-      ftsQuery,
-      `%${raw}%`
-    );
-    q.join('_search_ids _s ON c.id = _s.id');
+    const scope = filters.searchScope || 'all';
+
+    if (scope === 'all') {
+      const ftsQuery = raw.split(/\s+/).map((w) => (w.endsWith('*') ? w : `${w}*`)).join(' ');
+      q.withCte(
+        '_search_ids',
+        `SELECT card_id as id FROM cards_fts WHERE search_text MATCH ? UNION SELECT id FROM cards WHERE id LIKE ?`,
+        ftsQuery,
+        `%${raw}%`
+      );
+      q.join('_search_ids _s ON c.id = _s.id');
+    } else {
+      const col = scope === 'name' ? 'c.name' : scope === 'effect' ? 'c.effect' : 'c.trigger_text';
+      q.where(`${col} LIKE ?`, `%${raw}%`);
+    }
   }
 
   if (filters.categories?.length) {

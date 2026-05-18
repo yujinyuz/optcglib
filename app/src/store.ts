@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { initDB, queryCards, queryPacks, querySets, queryBlocks } from './db';
-import type { Card, Pack, CardFilters } from './types';
+import type { Card, Pack, CardFilters, SearchScope } from './types';
 import { DEFAULT_FILTERS } from './types';
 
 type Theme = 'light' | 'dark';
@@ -25,6 +25,7 @@ function getInitialLanguage(): PreferredLanguage {
 function filtersToParams(filters: CardFilters): URLSearchParams {
   const p = new URLSearchParams();
   if (filters.search) p.set('q', filters.search);
+  if (filters.searchScope !== 'all') p.set('scope', filters.searchScope);
   if (filters.colors.length) p.set('colors', filters.colors.join(','));
   if (filters.categories.length) p.set('categories', filters.categories.join(','));
   if (filters.rarities.length) p.set('rarities', filters.rarities.join(','));
@@ -49,6 +50,8 @@ function safeNum(val: string | null): number | undefined {
 function paramsToFilters(params: URLSearchParams): Partial<CardFilters> {
   const f: Partial<CardFilters> = {};
   if (params.has('q')) f.search = params.get('q')!;
+  const scope = params.get('scope');
+  if (scope === 'name' || scope === 'effect' || scope === 'trigger') f.searchScope = scope;
   if (params.has('colors')) f.colors = params.get('colors')!.split(',');
   if (params.has('categories')) f.categories = params.get('categories')!.split(',') as CardFilters['categories'];
   if (params.has('rarities')) f.rarities = params.get('rarities')!.split(',') as CardFilters['rarities'];
@@ -103,6 +106,7 @@ interface AppState {
   init: () => Promise<void>;
   setFilters: (filters: Partial<CardFilters>) => void;
   setSearchInput: (value: string) => void;
+  setSearchScope: (scope: SearchScope) => void;
   resetFilters: () => void;
   loadMore: () => Promise<void>;
   setSelectedCard: (card: Card | null) => void;
@@ -167,6 +171,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ searchInput: value });
   },
 
+  setSearchScope: (scope) => {
+    const newFilters = { ...get().filters, searchScope: scope };
+    writeUrlFilters(newFilters);
+    set({ filters: newFilters });
+    get().search();
+  },
+
   resetFilters: () => {
     writeUrlFilters(DEFAULT_FILTERS);
     set({ filters: { ...DEFAULT_FILTERS }, searchInput: '', offset: 0, hasMore: false });
@@ -183,6 +194,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const { cards: moreCards, total } = await queryCards({
         search: filters.search || undefined,
+        searchScope: filters.searchScope,
         colors: filters.colors.length ? filters.colors : undefined,
         categories: filters.categories.length ? filters.categories : undefined,
         rarities: filters.rarities.length ? filters.rarities : undefined,
@@ -250,6 +262,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const { cards, total } = await queryCards({
         search: filters.search || undefined,
+        searchScope: filters.searchScope,
         colors: filters.colors.length ? filters.colors : undefined,
         categories: filters.categories.length ? filters.categories : undefined,
         rarities: filters.rarities.length ? filters.rarities : undefined,

@@ -9,6 +9,7 @@ type WorkerResponse = {
 
 export type QueryCardsFilters = {
   search?: string;
+  searchScope?: 'all' | 'name' | 'effect' | 'trigger';
   colors?: string[];
   categories?: string[];
   rarities?: string[];
