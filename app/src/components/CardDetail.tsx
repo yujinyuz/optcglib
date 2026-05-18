@@ -27,21 +27,6 @@ function getAttributeColor(attr: string): string {
   }
 }
 
-function getRarityColor(rarity: string): string {
-  switch (rarity) {
-    case 'Common': return '#64748b'
-    case 'Uncommon': return '#475569'
-    case 'Rare': return '#3b82f6'
-    case 'SuperRare': return '#a855f7'
-    case 'SecretRare': return '#eab308'
-    case 'Leader': return '#e74c3c'
-    case 'Special': return '#ec4899'
-    case 'TreasureRare': return '#f59e0b'
-    case 'Promo': return '#22c55e'
-    default: return '#64748b'
-  }
-}
-
 export default function CardDetail() {
   const { id } = useParams<{ id: string }>()
 
@@ -115,11 +100,10 @@ export default function CardDetail() {
   }
 
   const primaryColor = card.colors[0] ? COLOR_HEX[card.colors[0]] : '#64748b'
-  const rarityColor = getRarityColor(card.rarity)
   const baseId = card.id.replace(/_[pr]\d+$/, '')
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
+    <div className="max-w-lg mx-auto px-4 py-6">
       {/* Back link */}
       <Link
         to="/"
@@ -131,128 +115,117 @@ export default function CardDetail() {
         Back
       </Link>
 
-      {/* Card frame */}
+      {/* Card frame — matches actual OPTCG card layout */}
       <div
-        className="rounded-2xl overflow-hidden border-2 bg-white dark:bg-[#1a1d2e]"
+        className="rounded-2xl overflow-hidden border-[3px] bg-white dark:bg-[#1a1d2e] relative"
         style={{ borderColor: primaryColor }}
       >
-        {/* Top strip: Cost | Power | Attribute | Rarity */}
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            {/* Cost */}
-            {card.cost !== null && (
-              <span
-                className="inline-flex items-center justify-center w-10 h-10 rounded-full text-lg font-bold text-white shadow-md"
-                style={{ backgroundColor: primaryColor }}
-              >
-                {card.cost}
-              </span>
-            )}
-
-            {/* Colors */}
-            <div className="flex items-center gap-1">
-              {card.colors.map((color) => (
-                <span
-                  key={color}
-                  className="w-3 h-3 rounded-full ring-2 ring-white dark:ring-[#1a1d2e]"
-                  style={{ backgroundColor: COLOR_HEX[color] || color }}
-                  title={color}
-                />
-              ))}
-            </div>
+        {/* Counter — vertical strip on left edge */}
+        {card.counter !== null && (
+          <div
+            className="absolute left-0 top-0 bottom-0 w-5 z-10 flex items-center justify-center text-white"
+            style={{ backgroundColor: primaryColor }}
+          >
+            <span
+              className="text-[9px] font-bold tracking-tight"
+              style={{ writingMode: 'vertical-lr' }}
+            >
+              ＋{card.counter}
+            </span>
           </div>
+        )}
 
+        {/* Top strip */}
+        <div className={`flex items-center justify-between py-3 ${card.counter !== null ? 'pl-6 pr-4' : 'px-4'}`}>
+          {/* Cost — white circle with colored number */}
+          {card.cost !== null ? (
+            <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white shadow-md border-2" style={{ borderColor: primaryColor, color: primaryColor }}>
+              <span className="text-xl font-bold">{card.cost}</span>
+            </span>
+          ) : (
+            <span className="w-12" />
+          )}
+
+          {/* Power + Attribute */}
           <div className="flex items-center gap-2">
-            {/* Power */}
             {card.power !== null && (
-              <span className="text-2xl font-bold text-slate-900 dark:text-white">
+              <span className="text-3xl font-bold text-slate-900 dark:text-white leading-none">
                 {card.power}
               </span>
             )}
-
-            {/* Attribute */}
             {card.attributes.length > 0 && (
               <span
-                className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white text-sm font-bold shadow-sm"
+                className="inline-flex items-center justify-center w-9 h-9 rounded-full text-white text-base font-bold shadow-sm"
                 style={{ backgroundColor: getAttributeColor(card.attributes[0]) }}
               >
                 {getAttributeIcon(card.attributes[0])}
               </span>
             )}
-
-            {/* Rarity */}
-            <span
-              className="px-2 py-0.5 rounded text-[10px] font-bold text-white"
-              style={{ backgroundColor: rarityColor }}
-            >
-              {RARITY_SHORT[card.rarity] || card.rarity}
-            </span>
           </div>
         </div>
 
-        {/* Counter */}
-        {card.counter !== null && (
-          <div className="px-4 pb-2">
-            <div className="inline-flex items-center gap-1.5 bg-[#3498db]/10 dark:bg-[#3498db]/20 rounded-lg px-3 py-1">
-              <span className="text-[#3498db] font-bold text-sm">＋{card.counter}</span>
-              <span className="text-[11px] text-slate-500 dark:text-[#94a3b8]">Counter</span>
+        {/* Card body — effect text area */}
+        <div className={`px-4 pb-4 ${card.counter !== null ? 'pl-6' : ''}`}>
+          {/* Effect */}
+          {card.effect && (
+            <div className="rounded-xl border border-slate-200 dark:border-[#2e303a] bg-slate-50 dark:bg-[#13151f] p-3 mb-3">
+              <div
+                className="text-sm text-slate-800 dark:text-[#e2e8f0] leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: renderCardText(card.effect) }}
+              />
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Card name */}
-        <div className="px-4 py-3">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">
-            {decodeHtmlEntities(card.name)}
-          </h1>
+          {/* Trigger */}
+          {card.trigger_text && (
+            <div className="mb-3">
+              <div className="text-[10px] font-bold text-slate-400 dark:text-[#64748b] uppercase tracking-wider mb-1">
+                Trigger
+              </div>
+              <div
+                className="text-sm text-slate-700 dark:text-[#94a3b8] leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: renderCardText(card.trigger_text) }}
+              />
+            </div>
+          )}
         </div>
-
-        {/* Effect box */}
-        {card.effect && (
-          <div className="mx-4 mb-3 rounded-xl border border-slate-200 dark:border-[#2e303a] bg-slate-50 dark:bg-[#13151f] p-3">
-            <div
-              className="text-sm text-slate-800 dark:text-[#e2e8f0] leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: renderCardText(card.effect) }}
-            />
-          </div>
-        )}
-
-        {/* Trigger */}
-        {card.trigger_text && (
-          <div className="mx-4 mb-3">
-            <div className="text-[10px] font-bold text-slate-400 dark:text-[#64748b] uppercase tracking-wider mb-1">
-              Trigger
-            </div>
-            <div
-              className="text-sm text-slate-700 dark:text-[#94a3b8] leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: renderCardText(card.trigger_text) }}
-            />
-          </div>
-        )}
 
         {/* Category banner */}
         <div
-          className="px-4 py-2 text-center"
+          className={`py-2.5 text-center ${card.counter !== null ? 'pl-5' : ''}`}
           style={{ backgroundColor: primaryColor }}
         >
-          <span className="text-xs font-bold tracking-[0.2em] uppercase text-white opacity-90">
+          <span className="text-xs font-bold tracking-[0.2em] uppercase text-white opacity-95">
             {card.category === 'Don' ? 'DON!!' : card.category}
           </span>
         </div>
 
-        {/* Types + ID + Block */}
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div>
-            {card.types.length > 0 && (
-              <div className="text-sm text-slate-600 dark:text-[#94a3b8]">
+        {/* Bottom area: Name | Types | ID */}
+        <div className={`px-4 pt-4 pb-3 ${card.counter !== null ? 'pl-6' : ''}`}>
+          {/* Name */}
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white text-center leading-tight">
+            {decodeHtmlEntities(card.name)}
+          </h1>
+
+          {/* Types */}
+          {card.types.length > 0 && (
+            <div className="mt-2 flex justify-center">
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-medium text-slate-600 dark:text-[#94a3b8] bg-slate-100 dark:bg-[#13151f] border border-slate-200 dark:border-[#2e303a]">
                 {card.types.join(' / ')}
-              </div>
-            )}
-          </div>
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom strip: ID | Rarity | Block */}
+        <div className={`px-4 py-2.5 flex items-center justify-between border-t border-slate-100 dark:border-[#2e303a] ${card.counter !== null ? 'pl-6' : ''}`}>
+          <span className="text-xs font-mono text-slate-500 dark:text-[#64748b]">{card.id}</span>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono text-slate-400 dark:text-[#64748b]">{card.id}</span>
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-[#13151f] text-slate-600 dark:text-[#94a3b8] border border-slate-200 dark:border-[#2e303a]">
+              {RARITY_SHORT[card.rarity] || card.rarity}
+            </span>
             {card.block_number !== null && (
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-500 dark:bg-[#3e4050] text-white text-xs font-bold">
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-500 dark:bg-[#3e4050] text-white text-[10px] font-bold">
                 {card.block_number}
               </span>
             )}
