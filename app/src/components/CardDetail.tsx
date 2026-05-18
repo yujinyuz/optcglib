@@ -109,23 +109,6 @@ export default function CardDetail() {
           background: `conic-gradient(from 225deg, ${card.colors.map((c, i) => `${COLOR_HEX[c]} ${i * 180}deg ${(i + 1) * 180}deg`).join(', ')})`,
         }
 
-  // Build banner background: solid for single color, split for multi
-  const bannerStyle =
-    card.colors.length === 1
-      ? { backgroundColor: primaryColor }
-      : {
-          background: (() => {
-            const colors = card.colors.map((c) => COLOR_HEX[c] || c)
-            const n = colors.length
-            const stops = colors.map((color, i) => {
-              const start = (i / n) * 100
-              const end = ((i + 1) / n) * 100
-              return `${color} ${start}%, ${color} ${end}%`
-            })
-            return `linear-gradient(90deg, ${stops.join(', ')})`
-          })(),
-        }
-
   const baseId = card.id.replace(/_[pr]\d+$/, '')
 
   return (
@@ -142,7 +125,7 @@ export default function CardDetail() {
       </Link>
 
       {/* Card — matches tile layout but expanded */}
-      <div className="rounded-2xl overflow-hidden border-2 bg-white dark:bg-[#1a1d2e]" style={{ borderColor: primaryColor }}>
+      <div className="rounded-2xl overflow-hidden border-2 bg-white dark:bg-[#1a1d2e] shadow-xl shadow-black/10 dark:shadow-black/30" style={{ borderColor: primaryColor }}>
         {/* Top strip: Cost | Power | Attribute */}
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           {card.cost !== null ? (
@@ -212,7 +195,7 @@ export default function CardDetail() {
         </div>
 
         {/* Bottom banner: Category | Types | ID | Rarity | Block */}
-        <div className="px-4 py-3 text-white" style={bannerStyle}>
+        <div className="px-4 py-3 bg-slate-900 dark:bg-black text-white">
           <div className="text-xs font-bold tracking-[0.15em] uppercase text-center opacity-95">
             {card.category === 'Don' ? 'DON!!' : card.category}
           </div>

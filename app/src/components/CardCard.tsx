@@ -36,23 +36,6 @@ interface CardCardProps {
 export default function CardCard({ card }: CardCardProps) {
   const primaryColor = card.colors[0] ? COLOR_HEX[card.colors[0]] : '#64748b'
 
-  // Build banner background: solid for single color, split for multi
-  const bannerStyle =
-    card.colors.length === 1
-      ? { backgroundColor: primaryColor }
-      : {
-          background: (() => {
-            const colors = card.colors.map((c) => COLOR_HEX[c] || c)
-            const n = colors.length
-            const stops = colors.map((color, i) => {
-              const start = (i / n) * 100
-              const end = ((i + 1) / n) * 100
-              return `${color} ${start}%, ${color} ${end}%`
-            })
-            return `linear-gradient(90deg, ${stops.join(', ')})`
-          })(),
-        }
-
   // Build cost circle background: curved diagonal slash for multi-colored cards
   const costCircleBg =
     card.colors.length === 1
@@ -64,7 +47,7 @@ export default function CardCard({ card }: CardCardProps) {
   return (
     <Link
       to={`/card/${card.id}`}
-      className="group flex flex-col rounded-xl overflow-hidden bg-white dark:bg-[#1a1d2e] hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20 transition-all"
+      className="group flex flex-col rounded-xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-md shadow-black/5 dark:shadow-white/5 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-white/10 transition-all"
     >
       {/* Top strip: Cost | Power | Attribute */}
       <div className="flex items-center justify-between px-2.5 py-2 shrink-0">
@@ -118,11 +101,8 @@ export default function CardCard({ card }: CardCardProps) {
         )}
       </div>
 
-      {/* Bottom banner */}
-      <div
-        className="shrink-0 px-3 py-2 text-white"
-        style={bannerStyle}
-      >
+      {/* Bottom banner — always black/dark */}
+      <div className="shrink-0 px-3 py-2 bg-slate-900 dark:bg-black text-white">
         <div className="text-xs font-bold tracking-[0.15em] uppercase text-center opacity-95">
           {card.category === 'Don' ? 'DON!!' : card.category}
         </div>
