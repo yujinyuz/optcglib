@@ -70,10 +70,16 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
   }, [cardId])
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') handleClose()
+    if (e.key === 'Escape') {
+      if (zoomedImg) {
+        setZoomedImg(null)
+      } else {
+        handleClose()
+      }
+    }
     if (e.key === 'ArrowLeft') goPrev()
     if (e.key === 'ArrowRight') goNext()
-  }, [onClose, goPrev, goNext])
+  }, [onClose, goPrev, goNext, zoomedImg])
 
   function handleClose() {
     setClosing(true)
@@ -443,7 +449,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
       {zoomedImg && (
         <div
           className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center cursor-zoom-out"
-          onClick={() => setZoomedImg(null)}
+          onClick={(e) => { e.stopPropagation(); setZoomedImg(null) }}
         >
           <img
             src={zoomedImg}
