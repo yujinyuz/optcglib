@@ -168,7 +168,7 @@ export default function Layout() {
   }, [])
 
   return (
-    <div className="flex-1 flex min-h-screen overflow-hidden">
+    <div className="flex-1 flex h-screen overflow-hidden">
       {/* Overlay backdrop */}
       {sidebarOpen && (
         <div

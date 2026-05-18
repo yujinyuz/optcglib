@@ -19,7 +19,7 @@ export type QueryCardsFilters = {
   powerMax?: number | null;
   counterMin?: number | null;
   counterMax?: number | null;
-  setPrefix?: string | null;
+  sets?: string[];
   blocks?: number[];
   hideParallels?: boolean;
   preferredLanguage?: 'english' | 'japanese';

@@ -29,7 +29,7 @@ function filtersToParams(filters: CardFilters): URLSearchParams {
   if (filters.categories.length) p.set('categories', filters.categories.join(','));
   if (filters.rarities.length) p.set('rarities', filters.rarities.join(','));
   if (filters.attributes.length) p.set('attributes', filters.attributes.join(','));
-  if (filters.setPrefix) p.set('set', filters.setPrefix);
+  if (filters.sets.length) p.set('set', filters.sets.join(','));
   if (filters.costMin != null) p.set('costMin', String(filters.costMin));
   if (filters.costMax != null) p.set('costMax', String(filters.costMax));
   if (filters.powerMin != null) p.set('powerMin', String(filters.powerMin));
@@ -53,7 +53,7 @@ function paramsToFilters(params: URLSearchParams): Partial<CardFilters> {
   if (params.has('categories')) f.categories = params.get('categories')!.split(',') as CardFilters['categories'];
   if (params.has('rarities')) f.rarities = params.get('rarities')!.split(',') as CardFilters['rarities'];
   if (params.has('attributes')) f.attributes = params.get('attributes')!.split(',') as CardFilters['attributes'];
-  if (params.has('set')) f.setPrefix = params.get('set');
+  if (params.has('set')) f.sets = params.get('set')!.split(',');
   if (params.has('costMin')) f.costMin = safeNum(params.get('costMin'));
   if (params.has('costMax')) f.costMax = safeNum(params.get('costMax'));
   if (params.has('powerMin')) f.powerMin = safeNum(params.get('powerMin'));
@@ -190,7 +190,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           powerMax: filters.powerMax,
           counterMin: filters.counterMin,
           counterMax: filters.counterMax,
-          setPrefix: filters.setPrefix || undefined,
+          sets: filters.sets.length ? filters.sets : undefined,
           blocks: filters.blocks.length ? filters.blocks : undefined,
           preferredLanguage,
           limit,
@@ -252,7 +252,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           powerMax: filters.powerMax,
           counterMin: filters.counterMin,
           counterMax: filters.counterMax,
-          setPrefix: filters.setPrefix || undefined,
+          sets: filters.sets.length ? filters.sets : undefined,
           blocks: filters.blocks.length ? filters.blocks : undefined,
           preferredLanguage,
           limit,

@@ -89,7 +89,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-slate-50 dark:bg-[#0f1117] text-slate-900 dark:text-[#e2e8f0] flex flex-col">
+      <div className="h-screen bg-slate-50 dark:bg-[#0f1117] text-slate-900 dark:text-[#e2e8f0] flex flex-col overflow-hidden">
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<CardGrid />} />

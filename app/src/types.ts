@@ -41,7 +41,7 @@ export interface CardFilters {
   powerMax: number | null;
   counterMin: number | null;
   counterMax: number | null;
-  setPrefix: string | null;
+  sets: string[];
   blocks: number[];
 }
 
@@ -57,7 +57,7 @@ export const DEFAULT_FILTERS: CardFilters = {
   powerMax: null,
   counterMin: null,
   counterMax: null,
-  setPrefix: null,
+  sets: [],
   blocks: [],
 };
 

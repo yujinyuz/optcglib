@@ -105,7 +105,7 @@ export default function FilterBar() {
   const sets = useAppStore((state) => state.sets)
   const blocks = useAppStore((state) => state.blocks)
 
-  const toggle = (key: 'colors' | 'categories' | 'rarities' | 'attributes' | 'blocks', value: string | number) => {
+  const toggle = (key: 'colors' | 'categories' | 'rarities' | 'attributes' | 'blocks' | 'sets', value: string | number) => {
     const current = filters[key] as (string | number)[]
     const next = current.includes(value as never)
       ? current.filter((v) => v !== value)
@@ -120,7 +120,7 @@ export default function FilterBar() {
     filters.rarities.length > 0 ||
     filters.attributes.length > 0 ||
     filters.blocks.length > 0 ||
-    filters.setPrefix !== null ||
+    filters.sets.length > 0 ||
     filters.costMin !== null ||
     filters.costMax !== null ||
     filters.powerMin !== null ||
@@ -171,21 +171,11 @@ export default function FilterBar() {
       {sets.length > 0 && (
         <FilterSection label="Sets">
           <div className="flex flex-wrap gap-1">
-            <TogglePill
-              active={filters.setPrefix === null}
-              onClick={() => {
-                setFilters({ setPrefix: null })
-                          }}
-            >
-              All
-            </TogglePill>
             {sets.map((set) => (
               <TogglePill
                 key={set}
-                active={filters.setPrefix === set}
-                onClick={() => {
-                  setFilters({ setPrefix: filters.setPrefix === set ? null : set })
-                              }}
+                active={filters.sets.includes(set)}
+                onClick={() => toggle('sets', set)}
               >
                 {set}
               </TogglePill>

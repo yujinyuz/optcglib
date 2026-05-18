@@ -27,7 +27,7 @@ export type QueryCardsFilters = {
   powerMax?: number | null;
   counterMin?: number | null;
   counterMax?: number | null;
-  setPrefix?: string | null;
+  sets?: string[];
   blocks?: number[];
   hideParallels?: boolean;
   preferredLanguage?: 'english' | 'japanese';
@@ -175,7 +175,10 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
   if (filters.powerMax != null) q.where('c.power <= ?', filters.powerMax);
   if (filters.counterMin != null) q.where('c.counter >= ?', filters.counterMin);
   if (filters.counterMax != null) q.where('c.counter <= ?', filters.counterMax);
-  if (filters.setPrefix) q.where("c.id LIKE ?", `${filters.setPrefix}-%`);
+  if (filters.sets?.length) {
+    const clauses = filters.sets.map(() => 'c.id LIKE ?').join(' OR ');
+    q.where(`(${clauses})`, ...filters.sets.map(s => `${s}-%`));
+  }
   if (filters.blocks?.length) {
     q.where(`c.block_number IN (${placeholders(filters.blocks.length)})`, ...filters.blocks);
   }
