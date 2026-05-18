@@ -239,8 +239,8 @@ export default function Layout() {
                 alt="ONE PIECE CARD GAME"
                 className="h-5 w-auto hidden dark:block"
               />
-              <span className="absolute -right-6 -bottom-0.5 text-[5px] font-bold tracking-wider text-slate-400 dark:text-[#64748b] uppercase">
-                Offline
+              <span className="absolute -right-8 -bottom-0.5 text-[5px] font-bold tracking-wider text-slate-400 dark:text-[#64748b] uppercase">
+                Offline DB
               </span>
             </div>
             <div className="flex items-center gap-0.5">
