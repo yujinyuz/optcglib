@@ -258,7 +258,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
                   </div>
                 )}
 
-                {card.counter !== null && (
+                {(!loadExternalImages && card.counter !== null) && (
                   <div className="mt-2 text-right">
                     <span className="text-xs font-bold text-[#3498db]">＋{card.counter}</span>
                   </div>
