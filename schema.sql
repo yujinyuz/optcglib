@@ -33,8 +33,7 @@ CREATE TABLE IF NOT EXISTS cards (
     colors_json TEXT NOT NULL DEFAULT '[]',       -- JSON array of colors
     attributes_json TEXT NOT NULL DEFAULT '[]',    -- JSON array of attributes
     types_json TEXT NOT NULL DEFAULT '[]',         -- JSON array of types
-    parallel_json TEXT NOT NULL DEFAULT '[]',      -- JSON array of parallel variant IDs
-    search_text TEXT                 -- Pre-built FTS content
+    parallel_json TEXT NOT NULL DEFAULT '[]'      -- JSON array of parallel variant IDs
 );
 
 -- Card packs: which packs (from which language source) contain each card.
@@ -57,6 +56,16 @@ CREATE TABLE IF NOT EXISTS card_images (
     img_url TEXT,
     img_full_url TEXT,
     PRIMARY KEY (card_id, language)
+);
+
+-- Pre-computed best image URLs per card, per language priority.
+-- Eliminates correlated subquery in queryCards.
+CREATE TABLE IF NOT EXISTS card_best_images (
+    card_id TEXT NOT NULL PRIMARY KEY,
+    img_url_en TEXT,       -- english priority
+    img_url_en_asia TEXT,  -- english-asia fallback
+    img_url_jp TEXT,       -- japanese fallback
+    FOREIGN KEY (card_id) REFERENCES cards(id)
 );
 
 -- Card translations: localized text per language.
@@ -109,11 +118,22 @@ CREATE INDEX IF NOT EXISTS idx_cards_rarity ON cards(rarity);
 CREATE INDEX IF NOT EXISTS idx_cards_cost ON cards(cost);
 CREATE INDEX IF NOT EXISTS idx_cards_power ON cards(power);
 CREATE INDEX IF NOT EXISTS idx_cards_block_number ON cards(block_number);
-CREATE INDEX IF NOT EXISTS idx_packs_label ON packs(label);
 
--- Indexes for junction table lookups
+-- Composite indexes for common filter combinations (covering index for card list)
+CREATE INDEX IF NOT EXISTS idx_cards_category_rarity ON cards(category, rarity);
+CREATE INDEX IF NOT EXISTS idx_cards_category_cost ON cards(category, cost);
+CREATE INDEX IF NOT EXISTS idx_cards_list_cover ON cards(
+    category, rarity, cost, power, counter, block_number, id, name
+);
+
+-- Pack indexes
+CREATE INDEX IF NOT EXISTS idx_packs_label ON packs(label);
+CREATE INDEX IF NOT EXISTS idx_packs_label_language ON packs(label, language, raw_title);
+
+-- Junction table indexes
 CREATE INDEX IF NOT EXISTS idx_card_colors_color ON card_colors(color);
 CREATE INDEX IF NOT EXISTS idx_card_attributes_attribute ON card_attributes(attribute);
 CREATE INDEX IF NOT EXISTS idx_card_packs_card_id ON card_packs(card_id);
+CREATE INDEX IF NOT EXISTS idx_card_packs_pack_id ON card_packs(pack_id);
 CREATE INDEX IF NOT EXISTS idx_card_images_card_id ON card_images(card_id);
 CREATE INDEX IF NOT EXISTS idx_card_translations_card_id ON card_translations(card_id);

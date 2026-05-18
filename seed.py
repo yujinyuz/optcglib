@@ -312,6 +312,7 @@ def main():
 
     rebuild_fts_index(conn)
     update_search_text(conn)
+    build_card_best_images(conn)
 
     # Print summary
     cur = conn.cursor()
