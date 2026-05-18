@@ -38,6 +38,8 @@ Offline-first One Piece TCG card database browser. Vite + React 19 + TypeScript 
 
 **Shortcut**: The user has an `rtk` alias that runs commands from the `app/` directory. Use `rtk npm run build` from root.
 
+**Commits**: Use `caveman-commit` skill for terse, conventional commits.
+
 ## Database architecture
 
 ### Seeding (`seed.py`)
