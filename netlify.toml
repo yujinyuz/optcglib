@@ -1,0 +1,18 @@
+[build]
+  base = "app/"
+  command = "cp ../optcg.db public/optcg.db 2>/dev/null || true; bun run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production.environment]
+  NODE_ENV = "production"
+
+[dev]
+  targetPort = 5173
