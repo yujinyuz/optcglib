@@ -347,33 +347,58 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
               <h3 className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-2">
                 Alternate arts
               </h3>
-              <div className="space-y-2">
-                {cardVariants.map((variant) => (
-                  <div key={variant.card.id} className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold shrink-0">
-                      {variant.card.id === card.id ? 'Base' : variant.card.id.replace(card.id, '').replace(/^_/, '') || 'Alt'}
-                    </span>
-                    {variant.images.length > 0 ? (
-                      variant.images.map((img) => (
-                        <a
-                          key={img.language}
-                          href={img.imgUrl || undefined}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
-                        >
-                          {img.language === 'english-asia' ? 'EN-AS' : img.language === 'japanese' ? 'JP' : 'EN'}
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                        </a>
-                      ))
-                    ) : (
-                      <span className="text-[10px] text-slate-400 dark:text-[#64748b]">No images</span>
-                    )}
-                  </div>
-                ))}
-              </div>
+              {loadExternalImages ? (
+                /* Inline images */
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {cardVariants.flatMap((variant) =>
+                    variant.images.filter((img) => img.imgUrl).map((img) => (
+                      <div key={`${variant.card.id}-${img.language}`} className="flex flex-col items-center gap-1">
+                        <img
+                          src={getExternalImageUrl(img.imgUrl!)}
+                          alt={`${variant.card.id} ${img.language}`}
+                          className="w-full rounded-lg shadow-md cursor-zoom-in"
+                          loading="lazy"
+                          onClick={() => setZoomedImg(getExternalImageUrl(img.imgUrl!))}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                        />
+                        <span className="text-[10px] text-slate-500 dark:text-[#64748b]">
+                          {variant.card.id === card.id ? '' : variant.card.id.replace(card.id, '').replace(/^_/, '') || 'Alt'}
+                          {img.language === 'english-asia' ? ' EN-AS' : img.language === 'japanese' ? ' JP' : ' EN'}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              ) : (
+                /* External links */
+                <div className="space-y-2">
+                  {cardVariants.map((variant) => (
+                    <div key={variant.card.id} className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold shrink-0">
+                        {variant.card.id === card.id ? 'Base' : variant.card.id.replace(card.id, '').replace(/^_/, '') || 'Alt'}
+                      </span>
+                      {variant.images.length > 0 ? (
+                        variant.images.map((img) => (
+                          <a
+                            key={img.language}
+                            href={img.imgUrl || undefined}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
+                          >
+                            {img.language === 'english-asia' ? 'EN-AS' : img.language === 'japanese' ? 'JP' : 'EN'}
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                          </a>
+                        ))
+                      ) : (
+                        <span className="text-[10px] text-slate-400 dark:text-[#64748b]">No images</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
