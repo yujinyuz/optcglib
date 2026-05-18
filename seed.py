@@ -248,6 +248,23 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
     return total_cards, new_base_cards
 
 
+def rebuild_fts_index(conn: sqlite3.Connection):
+    """Rebuild cards_fts to include base card text + all translations."""
+    conn.execute("DELETE FROM cards_fts")
+    conn.execute("""
+        INSERT INTO cards_fts (card_id, search_text)
+        SELECT c.id,
+               COALESCE(c.name, '') || ' ' ||
+               COALESCE(c.effect, '') || ' ' ||
+               COALESCE(c.trigger_text, '') || ' ' ||
+               COALESCE((SELECT GROUP_CONCAT(t.name || ' ' || t.effect || ' ' || t.trigger_text, ' ')
+                         FROM card_translations t
+                         WHERE t.card_id = c.id), '')
+        FROM cards c
+    """)
+    conn.commit()
+
+
 def update_search_text(conn: sqlite3.Connection):
     """Populate search_text column in cards table from FTS data."""
     conn.execute("""
@@ -293,6 +310,7 @@ def main():
         total_unique += unique
         print(f"  Total cards for {language}: {total} ({unique} new unique)")
 
+    rebuild_fts_index(conn)
     update_search_text(conn)
 
     # Print summary
