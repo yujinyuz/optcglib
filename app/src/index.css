@@ -104,10 +104,12 @@ body {
   background: #f39c12;
 }
 .kw-trigger {
-  border-radius: 4px;
+  border-radius: 0;
+  clip-path: polygon(4px 0%, calc(100% - 4px) 0%, calc(100% - 8px) 100%, 8px 100%);
   background: #FFF51D;
   color: #1a1a2e;
-  padding: 1px 6px;
+  padding: 2px 10px;
+  font-size: 0.75em;
 }
 .dark .kw-trigger {
   background: #FFF51D;
