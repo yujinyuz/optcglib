@@ -98,6 +98,11 @@ export function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
+/** Strip leading [Trigger] keyword from trigger text (already shown as section label) */
+export function stripTriggerPrefix(text: string): string {
+  return text.replace(/^\[Trigger\]\s*/i, '')
+}
+
 /** Get kanji icon for a card attribute */
 export function getAttributeIcon(attr: string): string {
   switch (attr) {

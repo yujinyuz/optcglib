@@ -4,7 +4,7 @@ import { getCardById, getCardPacks, getCardVariants, getRelatedCards } from '../
 import { useAppStore } from '../store'
 import type { Card } from '../types'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
-import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg } from '../utils'
+import { decodeHtmlEntities, renderCardText, stripTriggerPrefix, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg } from '../utils'
 
 export default function CardDetail() {
   const { id } = useParams<{ id: string }>()
@@ -176,7 +176,7 @@ export default function CardDetail() {
                 </div>
                 <div
                   className="text-sm text-slate-700 dark:text-[#94a3b8] leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: renderCardText(card.trigger_text) }}
+                  dangerouslySetInnerHTML={{ __html: renderCardText(stripTriggerPrefix(card.trigger_text)) }}
                 />
               </div>
             )}
