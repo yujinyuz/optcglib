@@ -45,7 +45,7 @@ body {
   color: #ffffff;
   font-weight: 500;
   font-size: 0.8em;
-  line-height: 1.5;
+  line-height: inherit;
   vertical-align: baseline;
 }
 .kw-counter {
@@ -104,9 +104,10 @@ body {
   background: #f39c12;
 }
 .kw-trigger {
-  border-radius: 4px 0 0 4px;
+  border-radius: 4px;
   background: #fbbf24;
   color: #1a1a2e;
+  padding: 0 6px;
 }
 .dark .kw-trigger {
   background: #f59e0b;

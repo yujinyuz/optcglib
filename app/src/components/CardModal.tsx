@@ -4,7 +4,7 @@ import { useAppStore } from '../store'
 import type { Card } from '../types'
 import ImageLoader from './ImageLoader'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
-import { decodeHtmlEntities, renderCardText, stripTriggerPrefix, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
+import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
 
 interface CardModalProps {
   cardId: string
@@ -256,12 +256,9 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
 
                 {card.trigger_text && (
                   <div className="mt-3">
-                    <div className="text-[10px] font-bold text-slate-400 dark:text-[#64748b] uppercase tracking-wider mb-1">
-                      Trigger
-                    </div>
                     <div
                       className="text-sm text-slate-700 dark:text-[#94a3b8] leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: renderCardText(stripTriggerPrefix(card.trigger_text)) }}
+                      dangerouslySetInnerHTML={{ __html: renderCardText(card.trigger_text) }}
                     />
                   </div>
                 )}
