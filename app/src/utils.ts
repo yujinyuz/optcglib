@@ -29,7 +29,9 @@ export function decodeHtmlEntities(text: string | null | undefined): string {
  */
 export function renderCardText(text: string | null | undefined): string {
   if (!text) return ''
-  const sanitized = DOMPurify.sanitize(text, {
+  // Italicize parenthesized content
+  const italicized = text.replace(/\(([^)]+)\)/g, '<i>($1)</i>')
+  const sanitized = DOMPurify.sanitize(italicized, {
     ALLOWED_TAGS: ['br', 'b', 'i', 'em', 'strong', 'span', 'u'],
     ALLOWED_ATTR: [],
   })
@@ -41,44 +43,53 @@ export function renderCardText(text: string | null | undefined): string {
  * Wraps keywords in a styled span without breaking existing HTML tags.
  * Keywords extracted from english/english-asia source data.
  */
+/**
+ * Highlight OPTCG keywords in rendered HTML text.
+ * Wraps keywords in styled spans without breaking existing HTML tags.
+ */
 function highlightKeywords(html: string): string {
-  const keywords = [
-    "DON!! -10", "DON!! -8", "DON!! -7", "DON!! -6", "DON!! -5",
-    "DON!! -4", "DON!! -3", "DON!! -2", "DON!! -1",
-    "Unblockable",
-    "Banish",
+  // Keyword → CSS class mapping (longest first to avoid partial matches)
+  const keywordMap: [RegExp, string, string][] = [
+    [/\[On Your Opponent's Attack\]/g, 'kw-on-opponent-attack', "On Your Opponent's Attack"],
+    [/\[Activate: Main\]/g, 'kw-activate-main', 'Activate: Main'],
+    [/\[Rush: Character\]/g, 'kw-rush-char', 'Rush: Character'],
+    [/\[End of Your Turn\]/g, 'kw-end-turn', 'End of Your Turn'],
+    [/\[Opponent's Turn\]/g, 'kw-opponent-turn', "Opponent's Turn"],
+    [/\[Once Per Turn\]/g, 'kw-once-per-turn', 'Once Per Turn'],
+    [/\[When Attacking\]/g, 'kw-when-attacking', 'When Attacking'],
+    [/\[DON!! x(\d)\]/g, 'kw-don', 'DON!! x$1'],
+    [/\[DON!! -10\]/g, 'kw-don', 'DON!! -10'],
+    [/\[DON!! -8\]/g, 'kw-don', 'DON!! -8'],
+    [/\[DON!! -7\]/g, 'kw-don', 'DON!! -7'],
+    [/\[DON!! -6\]/g, 'kw-don', 'DON!! -6'],
+    [/\[DON!! -5\]/g, 'kw-don', 'DON!! -5'],
+    [/\[DON!! -4\]/g, 'kw-don', 'DON!! -4'],
+    [/\[DON!! -3\]/g, 'kw-don', 'DON!! -3'],
+    [/\[DON!! -2\]/g, 'kw-don', 'DON!! -2'],
+    [/\[DON!! -1\]/g, 'kw-don', 'DON!! -1'],
+    [/\[Counter\]/g, 'kw-counter', 'Counter'],
+    [/\[Blocker\]/g, 'kw-blocker', 'Blocker'],
+    [/\[Trigger\]/g, 'kw-trigger', 'Trigger'],
+    [/\[Unblockable\]/g, 'kw-unblockable', 'Unblockable'],
+    [/\[Banish\]/g, 'kw-banish', 'Banish'],
+    [/\[On Play\]/g, 'kw-on-play', 'On Play'],
+    [/\[On Block\]/g, 'kw-on-block', 'On Block'],
+    [/\[On K\.O\.\]/g, 'kw-on-ko', 'On K.O.'],
+    [/\[Your Turn\]/g, 'kw-your-turn', 'Your Turn'],
+    [/\[Main\]/g, 'kw-main', 'Main'],
+    [/\[Rush\]/g, 'kw-rush', 'Rush'],
   ]
-
-  // Build a single regex with all keywords (longest first to avoid partial matches)
-  const pattern = keywords.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
-  const regex = new RegExp(`(?<![\\w])(${pattern})(?![\\w])`, 'g')
 
   // Split into HTML tags and text segments, only replace in text
   return html
     .split(/(<[^>]+>)/g)
-    .map((segment) =>
-      segment.startsWith('<')
-        ? segment
-        : segment
-            .replace(/(?<![\w])\[Counter\](?![\w])/g, '<span class="kw-counter">Counter</span>')
-            .replace(/(?<![\w])\[Main\](?![\w])/g, '<span class="kw-main">Main</span>')
-            .replace(/(?<![\w])\[Blocker\](?![\w])/g, '<span class="kw-blocker">Blocker</span>')
-            .replace(/(?<![\w])\[When Attacking\](?![\w])/g, '<span class="kw-when-attacking">When Attacking</span>')
-            .replace(/(?<![\w])\[DON!! x(\d)\](?![\w])/g, '<span class="kw-don">DON!! x$1</span>')
-            .replace(/(?<![\w])\[On Play\](?![\w])/g, '<span class="kw-on-play">On Play</span>')
-            .replace(/(?<![\w])\[Once Per Turn\](?![\w])/g, '<span class="kw-once-per-turn">Once Per Turn</span>')
-            .replace(/(?<![\w])\[On Your Opponent's Attack\](?![\w])/g, '<span class="kw-on-opponent-attack">On Your Opponent\'s Attack</span>')
-            .replace(/(?<![\w])\[Activate: Main\](?![\w])/g, '<span class="kw-activate-main">Activate: Main</span>')
-            .replace(/(?<![\w])\[End of Your Turn\](?![\w])/g, '<span class="kw-end-turn">End of Your Turn</span>')
-            .replace(/(?<![\w])\[Opponent's Turn\](?![\w])/g, '<span class="kw-opponent-turn">Opponent\'s Turn</span>')
-            .replace(/(?<![\w])\[Rush: Character\](?![\w])/g, '<span class="kw-rush-char">Rush: Character</span>')
-            .replace(/(?<![\w])\[Trigger\](?![\w])/g, '<span class="kw-trigger">Trigger</span>')
-            .replace(/(?<![\w])\[On Block\](?![\w])/g, '<span class="kw-on-block">On Block</span>')
-            .replace(/(?<![\w])\[On K\.O\.\](?![\w])/g, '<span class="kw-on-ko">On K.O.</span>')
-            .replace(/(?<![\w])\[Your Turn\](?![\w])/g, '<span class="kw-your-turn">Your Turn</span>')
-            .replace(/(?<![\w])\[Rush\](?![\w])/g, '<span class="kw-rush">Rush</span>')
-            .replace(regex, '<span class="kw">$1</span>')
-    )
+    .map((segment) => {
+      if (segment.startsWith('<')) return segment
+      for (const [regex, cls, replacement] of keywordMap) {
+        segment = segment.replace(regex, `<span class="${cls}">${replacement}</span>`)
+      }
+      return segment
+    })
     .join('')
 }
 
