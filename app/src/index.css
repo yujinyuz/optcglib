@@ -105,12 +105,12 @@ body {
 }
 .kw-trigger {
   border-radius: 4px;
-  background: #fbbf24;
+  background: #f5c518;
   color: #1a1a2e;
-  padding: 0 6px;
+  padding: 1px 6px;
 }
 .dark .kw-trigger {
-  background: #f59e0b;
+  background: #e6b800;
 }
 
 @keyframes fadeInUp {
