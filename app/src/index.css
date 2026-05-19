@@ -45,8 +45,8 @@ body {
   color: #ffffff;
   font-weight: 500;
   font-size: 0.8em;
-  line-height: inherit;
-  vertical-align: baseline;
+  line-height: 1;
+  vertical-align: middle;
 }
 .kw-counter {
   border-radius: 9999px;
