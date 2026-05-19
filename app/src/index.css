@@ -41,7 +41,7 @@ body {
 .kw-rush-char, .kw-rush, .kw-unblockable, .kw-banish, .kw-blocker,
 .kw-trigger {
   display: inline-block;
-  padding: 0 5px;
+  padding: 1px 4px;
   color: #ffffff;
   font-weight: 500;
   font-size: 0.8em;

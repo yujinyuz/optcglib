@@ -166,17 +166,14 @@ export default function CardDetail() {
                 className="text-sm text-slate-900 dark:text-white leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: renderCardText(card.effect) }}
               />
-            </div>
-
-            {/* Trigger */}
-            {card.trigger_text && (
-              <div className="mt-3">
+              {/* Trigger — inline with effect */}
+              {card.trigger_text && (
                 <div
-                  className="text-sm text-slate-700 dark:text-[#94a3b8] leading-relaxed"
+                  className="mt-2 text-sm text-slate-700 dark:text-[#94a3b8] leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: renderCardText(card.trigger_text) }}
                 />
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Counter — inline, right-aligned */}
             {card.counter !== null && (
