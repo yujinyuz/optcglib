@@ -108,7 +108,7 @@ body {
   clip-path: polygon(0% 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
   background: #FFF51D;
   color: #1a1a2e;
-  padding: 2px 10px;
+  padding: 1px 6px;
   font-size: 0.75em;
 }
 .dark .kw-trigger {
