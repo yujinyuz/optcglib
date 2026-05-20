@@ -197,6 +197,16 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
     q.where('c.base_id = c.id');
   }
 
+  if (filters.preferredLanguage) {
+    const languageGroups: Record<string, string[]> = {
+      english: ['english', 'english-asia'],
+      japanese: ['japanese'],
+    };
+    const langs = languageGroups[filters.preferredLanguage] || ['english', 'english-asia'];
+    const ph = langs.map(() => '?').join(',');
+    q.where(`(c.base_id = c.id OR EXISTS (SELECT 1 FROM card_images ci WHERE ci.card_id = c.id AND ci.img_full_url IS NOT NULL AND ci.img_full_url != '' AND ci.language IN (${ph})))`, ...langs);
+  }
+
   if (filters.preferredLanguage === 'japanese') {
     q.leftJoin("card_translations t ON c.base_id = t.card_id AND t.language = 'japanese'");
   }
@@ -360,7 +370,7 @@ function getCardVariants(db: Database, cardId: string, preferredLanguage?: 'engl
       [variantCard.id as string]
     );
     const packs = packsResult[0]
-      ? (packsResult[0].values.map((row) => row[0]) as string[])
+      ? packsResult[0].values.map((row) => ({ title: row[0] as string, language: row[1] as string }))
       : [];
 
     variants.push({

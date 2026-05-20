@@ -22,22 +22,26 @@ interface ArtImage {
 }
 
 function groupImagesByLanguage(
-  variants: { card: Card; images: { language: string; imgUrl: string | null }[]; packs: string[] }[],
+  variants: { card: Card; images: { language: string; imgUrl: string | null }[]; packs: { title: string; language: string }[] }[],
   currentCardId: string
 ): { english: ArtImage[]; japanese: ArtImage[] } {
   const enByUrl = new Map<string, ArtImage>()
   const jpByUrl = new Map<string, ArtImage>()
 
   for (const variant of variants) {
-    const packName = variant.packs[0] ? cleanPackName(variant.packs[0]) : undefined
+    const enPack = variant.packs.find(p => p.language === 'english')
+    const jpPack = variant.packs.find(p => p.language === 'japanese')
     const isCurrent = variant.card.id === currentCardId
 
     for (const img of variant.images) {
       if (!img.imgUrl) continue
-      const entry: ArtImage = { imgUrl: img.imgUrl, isCurrentVariant: isCurrent, packName }
       if (img.language === 'japanese') {
+        const packName = jpPack ? cleanPackName(jpPack.title) : undefined
+        const entry: ArtImage = { imgUrl: img.imgUrl, isCurrentVariant: isCurrent, packName }
         if (!jpByUrl.has(img.imgUrl)) jpByUrl.set(img.imgUrl, entry)
-      } else if (img.language === 'english' || img.language === 'english-asia') {
+      } else if (img.language === 'english') {
+        const packName = enPack ? cleanPackName(enPack.title) : undefined
+        const entry: ArtImage = { imgUrl: img.imgUrl, isCurrentVariant: isCurrent, packName }
         if (!enByUrl.has(img.imgUrl)) enByUrl.set(img.imgUrl, entry)
       }
     }
@@ -56,7 +60,7 @@ export default function CardDetail() {
 
   const [card, setCard] = useState<Card | null>(null)
   const [cardPacks, setCardPacks] = useState<{ packId: string; label: string; rawTitle: string }[]>([])
-  const [cardVariants, setCardVariants] = useState<{ card: Card; images: { language: string; imgUrl: string | null }[]; packs: string[] }[]>([])
+  const [cardVariants, setCardVariants] = useState<{ card: Card; images: { language: string; imgUrl: string | null }[]; packs: { title: string; language: string }[] }[]>([])
   const [relatedCards, setRelatedCards] = useState<Card[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
