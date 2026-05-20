@@ -150,12 +150,15 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
             base_parallels[base_id].append(card_id)
 
     for base_id, card in base_cards.items():
+        # Only primary or gap-fill languages insert into cards table
+        if not is_primary:
+            if language == "english-asia" and existing_ids and base_id in existing_ids:
+                continue
+            if language != "english-asia":
+                continue
+
         block_number = block_map.get(base_id, card.get("block_number"))
         parallel_ids = sorted(base_parallels[base_id])
-
-        # For english-asia: only insert if card doesn't already exist (gap-fill)
-        if language == "english-asia" and existing_ids and base_id in existing_ids:
-            continue
 
         cursor = conn.execute(
             """INSERT OR REPLACE INTO cards
