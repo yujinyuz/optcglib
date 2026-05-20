@@ -146,7 +146,7 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
         base_id = card_id.split("_")[0] if "_" in card_id else card_id
 
         if not is_primary:
-            if language == "english-asia" and existing_ids and base_id in existing_ids:
+            if language == "english-asia" and existing_ids and card_id in existing_ids:
                 continue
             if language != "english-asia":
                 continue
@@ -185,7 +185,8 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
         base_id = card_id.split("_")[0] if "_" in card_id else card_id
 
         # English-asia fills gaps only — skip if english already had this card
-        if language == "english-asia" and existing_ids and base_id in existing_ids:
+        # (check card_id, not base_id, so _p variants get through)
+        if language == "english-asia" and existing_ids and card_id in existing_ids:
             continue
 
         # Pack membership (all languages, all variants)
