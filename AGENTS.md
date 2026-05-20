@@ -1,4 +1,4 @@
-# OPTCG DB — Agent Instructions
+# OPTCG Lib — Agent Instructions
 
 ## What this is
 

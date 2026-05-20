@@ -344,7 +344,7 @@ export default function Layout() {
                 className="h-5 w-auto hidden dark:block"
               />
               <div className="text-[5px] font-bold tracking-wider text-slate-400 dark:text-[#64748b] uppercase leading-none mt-0.5 text-center">
-                Offline DB
+                Offline Library
               </div>
             </div>
             <div className="flex items-center gap-0.5">

@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.webp', 'favicon.svg', 'app-icon.svg', 'icons.svg', 'sql-wasm-browser.wasm', 'optcg.db'],
       manifest: {
-        name: 'OPTCG DB',
+        name: 'OPTCG Lib',
         short_name: 'OPTCG',
-        description: 'offline first one piece card game database',
+        description: 'offline first one piece card game library',
         theme_color: '#0f1117',
         background_color: '#0f1117',
         display: 'standalone',
