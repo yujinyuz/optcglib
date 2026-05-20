@@ -2,12 +2,13 @@
 """
 Seed an SQLite database for One Piece TCG from a local clone of Punk Records.
 
-English-Asia is the primary source (most complete card set).
-English is secondary — cards already in English-Asia are skipped for the main
-cards table, but their pack assignments and image URLs are still recorded.
+English is the primary source (most complete card set).
+English-Asia fills gaps for cards not yet available in English (e.g. ST30).
+Cards from english-asia are stored as 'english' language and are overwritten
+when the English source becomes available.
 
 Usage:
-    python seed.py [--languages english-asia english] [--db optcg.db] [--clean]
+    python seed.py [--languages english english-asia japanese] [--db optcg.db] [--clean]
 
 No external dependencies required — reads from vendor/punk-records.
 """
@@ -20,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent
 VENDOR = ROOT / "vendor" / "punk-records"
-DEFAULT_LANGUAGES = ["english-asia", "english", "japanese"]
+DEFAULT_LANGUAGES = ["english", "english-asia", "japanese"]
 DEFAULT_DB = "optcg.db"
 SCHEMA_FILE = ROOT / "schema.sql"
 
@@ -102,7 +103,7 @@ def build_block_number_map() -> dict[str, int]:
     return block_map
 
 
-def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: dict[str, int], is_primary: bool):
+def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: dict[str, int], is_primary: bool, existing_ids: set[str] | None = None):
     """Insert card data for all packs in a language from local files.
 
     Cards are grouped by base ID (e.g. OP01-001). The cards table stores
@@ -111,6 +112,9 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
 
     All card IDs (base + variants) are inserted into card_packs,
     card_images, junction tables, and FTS.
+
+    existing_ids: set of base_ids that already exist before this pass
+                  (used by english-asia to identify gap-fill cards)
     """
     total_cards = 0
     new_base_cards = 0
@@ -149,8 +153,12 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
         block_number = block_map.get(base_id, card.get("block_number"))
         parallel_ids = sorted(base_parallels[base_id])
 
+        # For english-asia: only insert if card doesn't already exist (gap-fill)
+        if language == "english-asia" and existing_ids and base_id in existing_ids:
+            continue
+
         cursor = conn.execute(
-            """INSERT OR IGNORE INTO cards
+            """INSERT OR REPLACE INTO cards
                (id, name, rarity, category, cost, power, counter, effect, trigger_text, block_number, colors_json, attributes_json, types_json, parallel_json)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
@@ -179,6 +187,10 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
         card_pack_id = card.get("pack_id", card.get("pack", "unknown"))
         base_id = card_id.split("_")[0] if "_" in card_id else card_id
 
+        # English-asia fills gaps only — skip if english already had this card
+        if language == "english-asia" and existing_ids and base_id in existing_ids:
+            continue
+
         # Pack membership (all languages, all variants)
         conn.execute(
             "INSERT OR IGNORE INTO card_packs (card_id, pack_id, language) VALUES (?, ?, ?)",
@@ -193,8 +205,8 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
             (card_id, language, card.get("img_url", ""), card.get("img_full_url", "")),
         )
 
-        # Junction tables: only for primary language, using BASE id
-        if is_primary:
+        # Junction tables: for primary language or english-asia gap-fillers
+        if is_primary or language == "english-asia":
             for color in card.get("colors", []):
                 conn.execute(
                     "INSERT OR IGNORE INTO card_colors (card_id, color) VALUES (?, ?)",
@@ -286,11 +298,10 @@ def build_card_best_images(conn: sqlite3.Connection):
     """Pre-compute best image URLs per card to eliminate correlated subquery at query time."""
     conn.execute("DELETE FROM card_best_images")
     conn.execute("""
-        INSERT INTO card_best_images (card_id, img_url_en, img_url_en_asia, img_url_jp)
+        INSERT INTO card_best_images (card_id, img_url_en, img_url_jp)
         SELECT
             card_id,
             MAX(CASE WHEN language = 'english' THEN img_full_url END),
-            MAX(CASE WHEN language = 'english-asia' THEN img_full_url END),
             MAX(CASE WHEN language = 'japanese' THEN img_full_url END)
         FROM card_images
         WHERE img_full_url IS NOT NULL AND img_full_url != ''
@@ -326,9 +337,18 @@ def main():
     total_unique = 0
     for i, language in enumerate(args.languages):
         is_primary = (i == 0)
+
+        # Track which base_ids exist before each pass (for english-asia gap-fill logic)
+        if is_primary:
+            existing_ids: set[str] | None = None
+        else:
+            existing_ids = set(
+                row[0] for row in conn.execute("SELECT id FROM cards").fetchall()
+            )
+
         print(f"\nProcessing {language}...{' (primary)' if is_primary else ' (secondary)'}")
         packs = seed_packs(conn, language)
-        total, unique = seed_cards(conn, language, packs, block_map, is_primary)
+        total, unique = seed_cards(conn, language, packs, block_map, is_primary, existing_ids)
         total_unique += unique
         print(f"  Total cards for {language}: {total} ({unique} new unique)")
 

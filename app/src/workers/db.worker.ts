@@ -211,8 +211,8 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
   // Use pre-computed best image URLs from card_best_images table
   q.leftJoin('card_best_images cbi ON c.id = cbi.card_id');
   const imgCol = filters.preferredLanguage === 'japanese'
-    ? "COALESCE(NULLIF(cbi.img_url_jp, ''), NULLIF(cbi.img_url_en_asia, ''), cbi.img_url_en)"
-    : "COALESCE(NULLIF(cbi.img_url_en, ''), NULLIF(cbi.img_url_en_asia, ''), cbi.img_url_jp)";
+    ? "COALESCE(NULLIF(cbi.img_url_jp, ''), cbi.img_url_en)"
+    : "COALESCE(NULLIF(cbi.img_url_en, ''), cbi.img_url_jp)";
 
   const dataQ = q.select(buildCardColumns(filters.preferredLanguage) + `, ${imgCol} as img_url`, 'cards c', limit, offset);
   const dataRes = db.exec(dataQ.sql, dataQ.params);
@@ -310,7 +310,7 @@ function getCardImages(db: Database, cardId: string): unknown[] {
   const result = db.exec(
     `SELECT language, img_full_url FROM card_images
      WHERE card_id = ? AND img_full_url IS NOT NULL AND img_full_url != ''
-        ORDER BY CASE WHEN language = 'english' THEN 0 WHEN language = 'english-asia' THEN 1 ELSE 2 END`,
+        ORDER BY CASE WHEN language = 'english' THEN 0 ELSE 1 END`,
     [cardId]
   );
   if (!result[0]) return [];
@@ -358,7 +358,7 @@ function getCardVariants(db: Database, cardId: string, preferredLanguage?: 'engl
     const imagesResult = db.exec(
       `SELECT language, img_full_url FROM card_images
        WHERE card_id = ? AND img_full_url IS NOT NULL AND img_full_url != ''
-       ORDER BY CASE WHEN language = 'english' THEN 0 WHEN language = 'english-asia' THEN 1 ELSE 2 END`,
+       ORDER BY CASE WHEN language = 'english' THEN 0 ELSE 1 END`,
       [variantId]
     );
     const images = imagesResult[0]
@@ -369,7 +369,7 @@ function getCardVariants(db: Database, cardId: string, preferredLanguage?: 'engl
       `SELECT DISTINCT p.raw_title, p.language FROM packs p
        JOIN card_packs cp ON p.id = cp.pack_id
        WHERE cp.card_id = ?
-       ORDER BY CASE WHEN p.language = 'english' THEN 0 WHEN p.language = 'english-asia' THEN 1 ELSE 2 END, p.id`,
+       ORDER BY CASE WHEN p.language = 'english' THEN 0 ELSE 1 END, p.id`,
       [variantId]
     );
     const packs = packsResult[0]

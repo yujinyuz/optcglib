@@ -1,6 +1,6 @@
 -- OPTCG Database Schema
 -- One Piece Trading Card Game - Offline-first SQLite database
--- Deduplicated: English and English-Asia merged; one card row per unique ID
+-- English is primary source; english-asia fills gaps (stored as 'english')
 
 PRAGMA journal_mode = WAL;
 PRAGMA foreign_keys = ON;
@@ -17,8 +17,9 @@ CREATE TABLE IF NOT EXISTS packs (
 );
 
 -- Cards: one row per unique card ID.
--- English-Asia is the canonical source (has the most complete card set).
--- English-only cards are included if they don't exist in English-Asia.
+-- English is the canonical source. English-asia fills gaps for cards
+-- not yet available in English (e.g. ST30), stored as 'english' language.
+-- English data always overrides english-asia on re-seed.
 CREATE TABLE IF NOT EXISTS cards (
     id TEXT NOT NULL PRIMARY KEY,    -- e.g. "OP01-001" or "OP01-001_p1" for variants
     name TEXT NOT NULL,
@@ -63,13 +64,12 @@ CREATE TABLE IF NOT EXISTS card_images (
 -- No FK to cards.id since variant IDs may not exist in the cards table.
 CREATE TABLE IF NOT EXISTS card_best_images (
     card_id TEXT NOT NULL PRIMARY KEY,
-    img_url_en TEXT,       -- english priority
-    img_url_en_asia TEXT,  -- english-asia fallback
-    img_url_jp TEXT        -- japanese fallback
+    img_url_en TEXT,       -- english
+    img_url_jp TEXT        -- japanese
 );
 
 -- Card translations: localized text per language.
--- Stores name, effect, trigger_text in languages other than the primary (english-asia).
+-- Stores name, effect, trigger_text in languages other than english.
 CREATE TABLE IF NOT EXISTS card_translations (
     card_id TEXT NOT NULL,
     language TEXT NOT NULL,
