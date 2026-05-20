@@ -97,3 +97,13 @@ export const CATEGORY_COLORS: Record<string, string> = {
   Stage: '#8b5cf6',     // violet
   Don: '#ec4899',       // pink
 };
+
+export const LANGUAGE_GROUPS = {
+  english: ['english', 'english-asia'],
+  japanese: ['japanese'],
+} as const;
+
+export const LANGUAGE_DISPLAY = {
+  english: 'EN',
+  japanese: 'JP',
+} as const;

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { getCardById, getCardPacks, getCardVariants, getRelatedCards } from '../db'
 import { useAppStore } from '../store'
 import type { Card } from '../types'
-import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
+import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS, LANGUAGE_DISPLAY } from '../types'
 import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg } from '../utils'
 
 export default function CardDetail() {
@@ -12,9 +12,9 @@ export default function CardDetail() {
 
   const [card, setCard] = useState<Card | null>(null)
   const [cardPacks, setCardPacks] = useState<{ packId: string; label: string; rawTitle: string }[]>([])
-  const [cardVariants, setCardVariants] = useState<{ card: Card; images: { language: string; imgUrl: string | null }[] }[]>([])
-  const [exclusiveCount, setExclusiveCount] = useState(0)
-  const [exclusiveLabel, setExclusiveLabel] = useState('')
+  const [cardVariants, setCardVariants] = useState<{ card: Card; images: { language: string; imgUrl: string | null }[]; allImages: { language: string; imgUrl: string | null }[] }[]>([])
+  const [exclusiveByLang, setExclusiveByLang] = useState<Record<string, number>>({})
+  const [expandedLang, setExpandedLang] = useState<string | null>(null)
   const [relatedCards, setRelatedCards] = useState<Card[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -45,8 +45,8 @@ export default function CardDetail() {
           if (cancelled) return
           setCardPacks(packs)
           setCardVariants(variantsResult.variants)
-          setExclusiveCount(variantsResult.exclusiveCount)
-          setExclusiveLabel(preferredLanguage === 'japanese' ? 'EN' : 'JP')
+          setExclusiveByLang(variantsResult.exclusiveByLang)
+          setExpandedLang(null)
           setRelatedCards(related)
         }
 
@@ -307,10 +307,50 @@ export default function CardDetail() {
               )
             })}
           </div>
-          {exclusiveCount > 0 && (
-            <p className="mt-2 text-[10px] text-slate-400 dark:text-[#64748b] italic">
-              ({exclusiveCount} {exclusiveLabel} exclusive)
-            </p>
+          {/* Clickable exclusive language pills */}
+          {Object.keys(exclusiveByLang).length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {Object.entries(exclusiveByLang).map(([langKey, count]) => (
+                <button
+                  key={langKey}
+                  onClick={() => setExpandedLang(expandedLang === langKey ? null : langKey)}
+                  className="text-[10px] text-slate-400 dark:text-[#64748b] italic hover:text-slate-600 dark:hover:text-[#94a3b8] transition-colors cursor-pointer"
+                >
+                  ({count} {LANGUAGE_DISPLAY[langKey as keyof typeof LANGUAGE_DISPLAY] || langKey} exclusive)
+                  {expandedLang === langKey ? ' ▲' : ' ▼'}
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Expanded exclusive variants */}
+          {expandedLang && cardVariants.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {cardVariants.flatMap((variant) => {
+                const exclusiveLangs = variant.allImages?.filter((img) => {
+                  if (expandedLang === 'english') return img.language === 'english' || img.language === 'english-asia'
+                  return img.language === expandedLang
+                })
+                if (!exclusiveLangs?.length) return null
+                return exclusiveLangs.map((img) => (
+                  <div key={`${variant.card.id}-${img.language}`} className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold shrink-0">
+                      {variant.card.id === card.base_id ? 'Base' : variant.card.id.replace(card.base_id, '').replace(/^_/, '') || 'Alt'}
+                    </span>
+                    <a
+                      href={img.imgUrl || undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all opacity-75"
+                    >
+                      {img.language === 'english-asia' ? 'EN-AS' : img.language === 'japanese' ? 'JP' : 'EN'}
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </div>
+                ))
+              })}
+            </div>
           )}
         </div>
       )}

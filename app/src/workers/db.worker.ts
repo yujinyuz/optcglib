@@ -196,11 +196,15 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
   if (filters.hideParallels) {
     q.where('c.base_id = c.id');
   } else {
-    // When showing alternates, only include variants with images in the preferred language
-    const langFilter = filters.preferredLanguage === 'japanese'
-      ? "ci.language = 'japanese'"
-      : "ci.language IN ('english', 'english-asia')";
-    q.where(`(c.base_id = c.id OR EXISTS (SELECT 1 FROM card_images ci WHERE ci.card_id = c.id AND ci.img_full_url IS NOT NULL AND ci.img_full_url != '' AND ${langFilter}))`);
+    const languageGroups: Record<string, string[]> = {
+      english: ['english', 'english-asia'],
+      japanese: ['japanese'],
+    };
+    const preferredLangs = filters.preferredLanguage && languageGroups[filters.preferredLanguage]
+      ? languageGroups[filters.preferredLanguage]
+      : ['english', 'english-asia'];
+    const placeholders = preferredLangs.map(() => '?').join(',');
+    q.where(`(c.base_id = c.id OR EXISTS (SELECT 1 FROM card_images ci WHERE ci.card_id = c.id AND ci.img_full_url IS NOT NULL AND ci.img_full_url != '' AND ci.language IN (${placeholders})))`, ...preferredLangs);
   }
 
   if (filters.preferredLanguage === 'japanese') {
@@ -315,7 +319,16 @@ function getCardImages(db: Database, cardId: string): unknown[] {
   return result[0].values.map((row) => ({ language: row[0], imgUrl: row[1] }));
 }
 
-function getCardVariants(db: Database, cardId: string, preferredLanguage?: 'english' | 'japanese'): { variants: unknown[]; exclusiveCount: number } {
+function getCardVariants(db: Database, cardId: string, preferredLanguage?: 'english' | 'japanese'): { variants: unknown[]; exclusiveByLang: Record<string, number> } {
+  const languageGroups: Record<string, string[]> = {
+    english: ['english', 'english-asia'],
+    japanese: ['japanese'],
+  };
+
+  const preferredLangs = preferredLanguage && languageGroups[preferredLanguage]
+    ? languageGroups[preferredLanguage]
+    : ['english', 'english-asia'];
+
   // Get base_id for the given card
   const baseIdResult = db.exec(
     `SELECT base_id FROM cards WHERE id = ?`,
@@ -343,36 +356,34 @@ function getCardVariants(db: Database, cardId: string, preferredLanguage?: 'engl
     [baseId]
   );
 
-  if (!variantsResult[0]) return { variants: [], exclusiveCount: 0 };
+  if (!variantsResult[0]) return { variants: [], exclusiveByLang: {} };
 
   const variants: unknown[] = [];
-  let exclusiveCount = 0;
+  const exclusiveByLang: Record<string, number> = {};
+
   for (const row of variantsResult[0].values) {
     const variantCard = rowToCard(row);
 
-    const langFilter = preferredLanguage === 'japanese'
-      ? "AND language = 'japanese'"
-      : "AND language IN ('english', 'english-asia')";
-
-    const imagesResult = db.exec(
+    // Get ALL images for this variant (no language filter)
+    const allImagesResult = db.exec(
       `SELECT language, img_full_url FROM card_images
-       WHERE card_id = ? AND img_full_url IS NOT NULL AND img_full_url != '' ${langFilter}
+       WHERE card_id = ? AND img_full_url IS NOT NULL AND img_full_url != ''
        ORDER BY CASE WHEN language = 'english' THEN 0 ELSE 1 END`,
       [variantCard.id as string]
     );
-    const images = imagesResult[0]
-      ? imagesResult[0].values.map((imgRow) => ({ language: imgRow[0], imgUrl: imgRow[1] }))
+    const allImages = allImagesResult[0]
+      ? allImagesResult[0].values.map((imgRow) => ({ language: imgRow[0] as string, imgUrl: imgRow[1] as string | null }))
       : [];
 
-    if (images.length === 0) {
-      // Check if this variant has images in other languages
-      const allImagesResult = db.exec(
-        `SELECT DISTINCT language FROM card_images
-         WHERE card_id = ? AND img_full_url IS NOT NULL AND img_full_url != ''`,
-        [variantCard.id as string]
-      );
-      if (allImagesResult[0] && allImagesResult[0].values.length > 0) {
-        exclusiveCount++;
+    // Filter to preferred language for display
+    const displayImages = allImages.filter((img) => preferredLangs.includes(img.language));
+
+    if (displayImages.length === 0) {
+      // Track which language groups this variant belongs to
+      for (const [langKey, langs] of Object.entries(languageGroups)) {
+        if (allImages.some((img) => langs.includes(img.language))) {
+          exclusiveByLang[langKey] = (exclusiveByLang[langKey] || 0) + 1;
+        }
       }
       continue;
     }
@@ -390,12 +401,13 @@ function getCardVariants(db: Database, cardId: string, preferredLanguage?: 'engl
 
     variants.push({
       card: variantCard,
-      images,
+      images: displayImages,
+      allImages,
       packs,
     });
   }
 
-  return { variants, exclusiveCount };
+  return { variants, exclusiveByLang };
 }
 
 function getRelatedCards(db: Database, cardId: string, types: string[], limit: number): unknown[] {

@@ -3,7 +3,7 @@ import { getCardById, getCardPacks, getCardVariants } from '../db'
 import { useAppStore } from '../store'
 import type { Card } from '../types'
 import ImageLoader from './ImageLoader'
-import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
+import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS, LANGUAGE_DISPLAY } from '../types'
 import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
 
 interface CardModalProps {
@@ -14,9 +14,9 @@ interface CardModalProps {
 export default function CardModal({ cardId, onClose }: CardModalProps) {
   const [card, setCard] = useState<Card | null>(null)
   const [cardPacks, setCardPacks] = useState<{ packId: string; label: string; rawTitle: string }[]>([])
-  const [cardVariants, setCardVariants] = useState<{ card: Card; images: { language: string; imgUrl: string | null }[]; packs: string[] }[]>([])
-  const [exclusiveCount, setExclusiveCount] = useState(0)
-  const [exclusiveLabel, setExclusiveLabel] = useState('')
+  const [cardVariants, setCardVariants] = useState<{ card: Card; images: { language: string; imgUrl: string | null }[]; allImages: { language: string; imgUrl: string | null }[]; packs: string[] }[]>([])
+  const [exclusiveByLang, setExclusiveByLang] = useState<Record<string, number>>({})
+  const [expandedLang, setExpandedLang] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [closing, setClosing] = useState(false)
   const [zoomedImg, setZoomedImg] = useState<string | null>(null)
@@ -56,8 +56,8 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
           if (cancelled) return
           setCardPacks(packs)
           setCardVariants(variantsResult.variants)
-          setExclusiveCount(variantsResult.exclusiveCount)
-          setExclusiveLabel(preferredLanguage === 'japanese' ? 'EN' : 'JP')
+          setExclusiveByLang(variantsResult.exclusiveByLang)
+          setExpandedLang(null)
         }
 
         if (!cancelled) setLoading(false)
@@ -433,10 +433,46 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
                   })}
                 </div>
               )}
-              {exclusiveCount > 0 && (
-                <p className="mt-2 text-[10px] text-slate-400 dark:text-[#64748b] italic">
-                  ({exclusiveCount} {exclusiveLabel} exclusive)
-                </p>
+              {/* Clickable exclusive language pills */}
+              {Object.keys(exclusiveByLang).length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {Object.entries(exclusiveByLang).map(([langKey, count]) => (
+                    <button
+                      key={langKey}
+                      onClick={() => setExpandedLang(expandedLang === langKey ? null : langKey)}
+                      className="text-[10px] text-slate-400 dark:text-[#64748b] italic hover:text-slate-600 dark:hover:text-[#94a3b8] transition-colors cursor-pointer"
+                    >
+                      ({count} {LANGUAGE_DISPLAY[langKey as keyof typeof LANGUAGE_DISPLAY] || langKey} exclusive)
+                      {expandedLang === langKey ? ' ▲' : ' ▼'}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {/* Expanded exclusive variants */}
+              {expandedLang && cardVariants.length > 0 && (
+                <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {cardVariants.flatMap((variant) => {
+                    const exclusiveLangs = variant.allImages?.filter((img) => {
+                      if (expandedLang === 'english') return img.language === 'english' || img.language === 'english-asia'
+                      return img.language === expandedLang
+                    })
+                    if (!exclusiveLangs?.length) return null
+                    return exclusiveLangs.map((img) => (
+                      <div key={`${variant.card.id}-${img.language}`} className="flex flex-col items-center gap-1">
+                        <ImageLoader
+                          src={getExternalImageUrl(img.imgUrl!)}
+                          alt={`${variant.card.id} ${img.language}`}
+                          className="w-full rounded-lg shadow-md cursor-zoom-in opacity-75"
+                          onClick={() => setZoomedImg(getExternalImageUrl(img.imgUrl!))}
+                        />
+                        <span className="text-[10px] text-slate-400 dark:text-[#64748b]">
+                          {variant.packs[0] || (variant.card.id === card.base_id ? '' : 'Alt')}
+                          {img.language === 'english-asia' ? ' EN-AS' : img.language === 'japanese' ? ' JP' : ' EN'}
+                        </span>
+                      </div>
+                    ))
+                  })}
+                </div>
               )}
             </div>
           )}
