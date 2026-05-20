@@ -162,7 +162,7 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
                 card_id,
                 base_id,
                 decode_html(canonical.get("name", "")),
-                canonical.get("rarity", ""),
+                card.get("rarity", ""),
                 canonical.get("category", ""),
                 canonical.get("cost"),
                 canonical.get("power"),

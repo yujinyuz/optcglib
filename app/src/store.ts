@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { initDB, queryCards, queryPacks, querySets, queryBlocks } from './db';
+import type { QueryCardsFilters } from './db';
 import type { Card, Pack, CardFilters, SearchScope } from './types';
 import { DEFAULT_FILTERS } from './types';
 
@@ -81,6 +82,38 @@ function writeUrlFilters(filters: CardFilters) {
   const params = filtersToParams(filters);
   const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}${window.location.hash}`;
   window.history.replaceState(null, '', newUrl);
+}
+
+/* ── Query params builder ───────────────────────────────────── */
+
+function buildQueryParams(
+  filters: CardFilters,
+  limit: number,
+  offset: number,
+  preferredLanguage: PreferredLanguage,
+  showAlternateArts: boolean,
+  loadExternalImages: boolean,
+): QueryCardsFilters {
+  return {
+    search: filters.search || undefined,
+    searchScope: filters.searchScopes.length ? filters.searchScopes : undefined,
+    colors: filters.colors.length ? filters.colors : undefined,
+    categories: filters.categories.length ? filters.categories : undefined,
+    rarities: filters.rarities.length ? filters.rarities : undefined,
+    attributes: filters.attributes.length ? filters.attributes : undefined,
+    costMin: filters.costMin,
+    costMax: filters.costMax,
+    powerMin: filters.powerMin,
+    powerMax: filters.powerMax,
+    counterMin: filters.counterMin,
+    counterMax: filters.counterMax,
+    sets: filters.sets.length ? filters.sets : undefined,
+    blocks: filters.blocks.length ? filters.blocks : undefined,
+    preferredLanguage,
+    hideVariants: !loadExternalImages || !showAlternateArts,
+    limit,
+    offset,
+  };
 }
 
 /* ── Store ────────────────────────────────────────────────────── */
@@ -200,26 +233,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ offset: newOffset, searching: true });
 
     try {
-      const { cards: moreCards, total } = await queryCards({
-        search: filters.search || undefined,
-        searchScope: filters.searchScopes.length ? filters.searchScopes : undefined,
-        colors: filters.colors.length ? filters.colors : undefined,
-        categories: filters.categories.length ? filters.categories : undefined,
-        rarities: filters.rarities.length ? filters.rarities : undefined,
-        attributes: filters.attributes.length ? filters.attributes : undefined,
-        costMin: filters.costMin,
-        costMax: filters.costMax,
-        powerMin: filters.powerMin,
-        powerMax: filters.powerMax,
-        counterMin: filters.counterMin,
-        counterMax: filters.counterMax,
-        sets: filters.sets.length ? filters.sets : undefined,
-        blocks: filters.blocks.length ? filters.blocks : undefined,
-        preferredLanguage,
-        hideParallels: !(loadExternalImages && showAlternateArts),
-        limit,
-        offset: newOffset,
-      });
+      const { cards: moreCards, total } = await queryCards(
+        buildQueryParams(filters, limit, newOffset, preferredLanguage, showAlternateArts, loadExternalImages)
+      );
       set({
         cards: [...cards, ...moreCards],
         totalCards: total,
@@ -281,26 +297,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     const { filters, limit, offset, preferredLanguage, showAlternateArts, loadExternalImages } = get();
     set({ searching: true });
     try {
-      const { cards, total } = await queryCards({
-        search: filters.search || undefined,
-        searchScope: filters.searchScopes.length ? filters.searchScopes : undefined,
-        colors: filters.colors.length ? filters.colors : undefined,
-        categories: filters.categories.length ? filters.categories : undefined,
-        rarities: filters.rarities.length ? filters.rarities : undefined,
-        attributes: filters.attributes.length ? filters.attributes : undefined,
-        costMin: filters.costMin,
-        costMax: filters.costMax,
-        powerMin: filters.powerMin,
-        powerMax: filters.powerMax,
-        counterMin: filters.counterMin,
-        counterMax: filters.counterMax,
-        sets: filters.sets.length ? filters.sets : undefined,
-        blocks: filters.blocks.length ? filters.blocks : undefined,
-        preferredLanguage,
-        hideParallels: !(loadExternalImages && showAlternateArts),
-        limit,
-        offset,
-      });
+      const { cards, total } = await queryCards(
+        buildQueryParams(filters, limit, offset, preferredLanguage, showAlternateArts, loadExternalImages)
+      );
       set({
         cards: append ? [...get().cards, ...cards] : cards,
         totalCards: total,

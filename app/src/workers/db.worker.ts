@@ -30,7 +30,7 @@ export type QueryCardsFilters = {
   counterMax?: number | null;
   sets?: string[];
   blocks?: number[];
-  hideParallels?: boolean;
+  hideVariants?: boolean;
   preferredLanguage?: 'english' | 'japanese';
   limit?: number;
   offset?: number;
@@ -193,7 +193,7 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
   if (filters.colors?.length) {
     q.where(`c.id IN (SELECT card_id FROM card_colors WHERE color IN (${placeholders(filters.colors.length)}))`, ...filters.colors);
   }
-  if (filters.hideParallels) {
+  if (filters.hideVariants) {
     q.where('c.base_id = c.id');
   } else {
     const languageGroups: Record<string, string[]> = {

@@ -52,12 +52,17 @@ export default function CardCard({ card }: CardCardProps) {
             </span>
           )}
           {card.attributes.length > 0 && (
-            <span
-              className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shadow-sm ${getTextColorForBg(getAttributeColor(card.attributes[0]))}`}
-              style={{ backgroundColor: getAttributeColor(card.attributes[0]) }}
-            >
-              {getAttributeIcon(card.attributes[0])}
-            </span>
+            <div className={`inline-flex items-center ${card.attributes.length > 1 ? 'divide-x divide-white/20' : ''}`}>
+              {card.attributes.map((attr, i) => (
+                <span
+                  key={attr}
+                  className={`inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold ${getTextColorForBg(getAttributeColor(attr))} ${card.attributes.length === 1 ? 'rounded-full' : i === 0 ? 'rounded-l-full' : 'rounded-r-full'}`}
+                  style={{ backgroundColor: getAttributeColor(attr) }}
+                >
+                  {getAttributeIcon(attr)}
+                </span>
+              ))}
+            </div>
           )}
         </div>
       </div>
@@ -109,18 +114,26 @@ export default function CardCard({ card }: CardCardProps) {
           </div>
         )}
 
-        {/* Counter — right-aligned at bottom of content area */}
-        {(!loadExternalImages && card.counter !== null) && (
-          <div className="mt-auto pt-1 text-right">
-            <span className="text-[10px] font-bold text-[#3498db]">＋{card.counter}</span>
+        {/* Attributes — text labels below types (no-image mode) */}
+        {!loadExternalImages && card.attributes.length > 0 && (
+          <div className="mt-0.5 text-[10px] text-center truncate">
+            {card.attributes.map((attr, i) => (
+              <span key={attr} style={{ color: getAttributeColor(attr) }}>
+                {attr}{i < card.attributes.length - 1 && <span className="text-slate-500 dark:text-[#64748b]"> / </span>}
+              </span>
+            ))}
           </div>
         )}
+
       </div>
 
       {/* Bottom banner — always black/dark */}
       <div className="shrink-0 px-2.5 py-1.5 bg-slate-900 dark:bg-black text-white flex items-center justify-between text-[10px]">
         <span className="font-mono">{card.id}</span>
         <div className="flex items-center gap-1">
+          {(!loadExternalImages && card.counter !== null) && (
+            <span className="text-[9px] font-bold text-[#3498db]">⚡ +{card.counter}</span>
+          )}
           <span className="px-1 rounded bg-white/20 font-bold">
             {RARITY_SHORT[card.rarity] || card.rarity}
           </span>

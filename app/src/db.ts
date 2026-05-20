@@ -22,7 +22,7 @@ export type QueryCardsFilters = {
   counterMax?: number | null;
   sets?: string[];
   blocks?: number[];
-  hideParallels?: boolean;
+  hideVariants?: boolean;
   preferredLanguage?: 'english' | 'japanese';
   limit?: number;
   offset?: number;
