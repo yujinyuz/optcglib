@@ -1,57 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { getCardById, getCardPacks, getCardVariants, getRelatedCards } from '../db'
+import { getCardById, getCardPacks, getCardVariants } from '../db'
 import { useAppStore } from '../store'
 import type { Card } from '../types'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
-import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg } from '../utils'
-
-function cleanPackName(pack: string): string {
-  return pack
-    .replace(/_p\d+\s*\(Parallel\)/gi, '')
-    .replace(/_r\d+\s*\(Reprint\)/gi, '')
-    .replace(/_p\d+/g, '')
-    .replace(/_r\d+/g, '')
-    .trim()
-}
-
-interface ArtImage {
-  imgUrl: string
-  isCurrentVariant: boolean
-  packName?: string
-}
-
-function groupImagesByLanguage(
-  variants: { card: Card; images: { language: string; imgUrl: string | null }[]; packs: { title: string; language: string }[] }[],
-  currentCardId: string
-): { english: ArtImage[]; japanese: ArtImage[] } {
-  const enByUrl = new Map<string, ArtImage>()
-  const jpByUrl = new Map<string, ArtImage>()
-
-  for (const variant of variants) {
-    const enPack = variant.packs.find(p => p.language === 'english')
-    const jpPack = variant.packs.find(p => p.language === 'japanese')
-    const isCurrent = variant.card.id === currentCardId
-
-    for (const img of variant.images) {
-      if (!img.imgUrl) continue
-      if (img.language === 'japanese') {
-        const packName = jpPack ? cleanPackName(jpPack.title) : undefined
-        const entry: ArtImage = { imgUrl: img.imgUrl, isCurrentVariant: isCurrent, packName }
-        if (!jpByUrl.has(img.imgUrl)) jpByUrl.set(img.imgUrl, entry)
-      } else if (img.language === 'english') {
-        const packName = enPack ? cleanPackName(enPack.title) : undefined
-        const entry: ArtImage = { imgUrl: img.imgUrl, isCurrentVariant: isCurrent, packName }
-        if (!enByUrl.has(img.imgUrl)) enByUrl.set(img.imgUrl, entry)
-      }
-    }
-  }
-
-  return {
-    english: Array.from(enByUrl.values()),
-    japanese: Array.from(jpByUrl.values()),
-  }
-}
+import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, groupImagesByLanguage } from '../utils'
 
 export default function CardDetail() {
   const { id } = useParams<{ id: string }>()
@@ -61,7 +14,6 @@ export default function CardDetail() {
   const [card, setCard] = useState<Card | null>(null)
   const [cardPacks, setCardPacks] = useState<{ packId: string; label: string; rawTitle: string }[]>([])
   const [cardVariants, setCardVariants] = useState<{ card: Card; images: { language: string; imgUrl: string | null }[]; packs: { title: string; language: string }[] }[]>([])
-  const [relatedCards, setRelatedCards] = useState<Card[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -83,15 +35,13 @@ export default function CardDetail() {
         setCard(result)
 
         if (result) {
-          const [packs, variantsResult, related] = await Promise.all([
+          const [packs, variantsResult] = await Promise.all([
             getCardPacks(result.id),
             getCardVariants(result.base_id),
-            getRelatedCards(result.id, result.types, 8),
           ])
           if (cancelled) return
           setCardPacks(packs)
           setCardVariants(variantsResult.variants)
-          setRelatedCards(related)
         }
 
         if (!cancelled) setLoading(false)
@@ -281,7 +231,8 @@ export default function CardDetail() {
           href={`https://www.mercardop.jp/product-list?keyword=${encodeURIComponent(card.base_id)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
+          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] hover:-translate-y-0.5 hover:shadow-sm transition-all"
+          style={{ transition: 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart), border-color 150ms, color 150ms' }}
         >
           <img src="/icons/mercard.png" alt="" className="w-4 h-4 rounded-sm shrink-0" />
           Mercard
@@ -290,7 +241,8 @@ export default function CardDetail() {
           href={`https://yuyu-tei.jp/sell/opc/s/search?search_word=${encodeURIComponent(card.base_id)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
+          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] hover:-translate-y-0.5 hover:shadow-sm transition-all"
+          style={{ transition: 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart), border-color 150ms, color 150ms' }}
         >
           <img src="/icons/yuyutei.png" alt="" className="w-4 h-4 rounded-sm shrink-0" />
           Yuyu-Tei
@@ -299,7 +251,8 @@ export default function CardDetail() {
           href={`https://www.tcgplayer.com/search/one-piece-card-game/product?q=${encodeURIComponent(card.base_id)}&view=grid&productLineName=one-piece-card-game`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
+          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] hover:-translate-y-0.5 hover:shadow-sm transition-all"
+          style={{ transition: 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart), border-color 150ms, color 150ms' }}
         >
           <img src="/icons/tcgplayer.png" alt="" className="w-4 h-4 rounded-sm shrink-0" />
           TCGPlayer
@@ -308,7 +261,8 @@ export default function CardDetail() {
           href={`https://www.cardrush-op.jp/product-list?keyword=${encodeURIComponent(card.base_id)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
+          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] hover:-translate-y-0.5 hover:shadow-sm transition-all"
+          style={{ transition: 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart), border-color 150ms, color 150ms' }}
         >
           <img src="/icons/cardrush.png" alt="" className="w-4 h-4 rounded-sm shrink-0" />
           CardRush
@@ -391,39 +345,6 @@ export default function CardDetail() {
                     {pack.rawTitle}
                   </span>
                 ))}
-          </div>
-        </div>
-      )}
-
-      {/* Related cards */}
-      {relatedCards.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#94a3b8] mb-3">
-            Related cards
-          </h3>
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {relatedCards.map((related) => (
-              <Link
-                key={related.id}
-                to={`/card/${related.id}`}
-                className="shrink-0 w-32 rounded-lg border border-slate-200 dark:border-[#2e303a] bg-white dark:bg-[#1a1d2e] p-2 hover:border-[#3b82f6] transition-colors"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-mono text-slate-400 dark:text-[#64748b]">{related.id}</span>
-                  {related.cost !== null && (
-                    <span
-                      className={`w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center ${getTextColorForBg(COLOR_HEX[related.colors[0]] || '#64748b')}`}
-                      style={{ backgroundColor: COLOR_HEX[related.colors[0]] || '#64748b' }}
-                    >
-                      {related.cost}
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs font-medium text-slate-900 dark:text-white line-clamp-2 leading-snug">
-                  {decodeHtmlEntities(related.name)}
-                </div>
-              </Link>
-            ))}
           </div>
         </div>
       )}

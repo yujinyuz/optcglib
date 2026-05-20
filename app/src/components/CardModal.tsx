@@ -4,54 +4,7 @@ import { useAppStore } from '../store'
 import type { Card } from '../types'
 import ImageLoader from './ImageLoader'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
-import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
-
-function cleanPackName(pack: string): string {
-  return pack
-    .replace(/_p\d+\s*\(Parallel\)/gi, '')
-    .replace(/_r\d+\s*\(Reprint\)/gi, '')
-    .replace(/_p\d+/g, '')
-    .replace(/_r\d+/g, '')
-    .trim()
-}
-
-interface ArtImage {
-  imgUrl: string
-  isCurrentVariant: boolean
-  packName?: string
-}
-
-function groupImagesByLanguage(
-  variants: { card: Card; images: { language: string; imgUrl: string | null }[]; packs: { title: string; language: string }[] }[],
-  currentCardId: string
-): { english: ArtImage[]; japanese: ArtImage[] } {
-  const enByUrl = new Map<string, ArtImage>()
-  const jpByUrl = new Map<string, ArtImage>()
-
-  for (const variant of variants) {
-    const enPack = variant.packs.find(p => p.language === 'english')
-    const jpPack = variant.packs.find(p => p.language === 'japanese')
-    const isCurrent = variant.card.id === currentCardId
-
-    for (const img of variant.images) {
-      if (!img.imgUrl) continue
-      if (img.language === 'japanese') {
-        const packName = jpPack ? cleanPackName(jpPack.title) : undefined
-        const entry: ArtImage = { imgUrl: img.imgUrl, isCurrentVariant: isCurrent, packName }
-        if (!jpByUrl.has(img.imgUrl)) jpByUrl.set(img.imgUrl, entry)
-      } else if (img.language === 'english') {
-        const packName = enPack ? cleanPackName(enPack.title) : undefined
-        const entry: ArtImage = { imgUrl: img.imgUrl, isCurrentVariant: isCurrent, packName }
-        if (!enByUrl.has(img.imgUrl)) enByUrl.set(img.imgUrl, entry)
-      }
-    }
-  }
-
-  return {
-    english: Array.from(enByUrl.values()),
-    japanese: Array.from(jpByUrl.values()),
-  }
-}
+import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl, groupImagesByLanguage } from '../utils'
 
 interface CardModalProps {
   cardId: string
@@ -444,7 +397,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
                                     onClick={() => setZoomedImg(getExternalImageUrl(img.imgUrl))}
                                   />
                                   <span className="text-[10px] text-slate-500 dark:text-[#64748b]">
-                                    {img.packName || ''}
+                                    {img.packName || ''}{img.variantSuffix}
                                   </span>
                                 </div>
                               ))}
@@ -464,7 +417,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
                                     onClick={() => setZoomedImg(getExternalImageUrl(img.imgUrl))}
                                   />
                                   <span className="text-[10px] text-slate-500 dark:text-[#64748b]">
-                                    {img.packName || ''}
+                                    {img.packName || ''}{img.variantSuffix}
                                   </span>
                                 </div>
                               ))}
@@ -494,7 +447,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
                                   rel="noopener noreferrer"
                                   className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
                                 >
-                                  {img.packName || 'Alt'}
+                                  {img.packName || 'Alt'}{img.variantSuffix}
                                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                   </svg>
@@ -515,7 +468,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
                                   rel="noopener noreferrer"
                                   className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
                                 >
-                                  {img.packName || 'Alt'}
+                                  {img.packName || 'Alt'}{img.variantSuffix}
                                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                   </svg>

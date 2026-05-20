@@ -137,3 +137,58 @@ export function costCircleBg(card: Card): React.CSSProperties {
         background: `conic-gradient(from 225deg, ${card.colors.map((c, i) => `${COLOR_HEX[c]} ${i * 180}deg ${(i + 1) * 180}deg`).join(', ')})`,
       }
 }
+
+/** Clean pack name by removing parallel/reprint suffixes */
+export function cleanPackName(pack: string): string {
+  return pack
+    .replace(/_p\d+\s*\(Parallel\)/gi, '')
+    .replace(/_r\d+\s*\(Reprint\)/gi, '')
+    .replace(/_p\d+/g, '')
+    .replace(/_r\d+/g, '')
+    .trim()
+}
+
+/** Group card variant images by language */
+export interface ArtImage {
+  imgUrl: string
+  isCurrentVariant: boolean
+  packName?: string
+  variantSuffix?: string
+}
+
+export function groupImagesByLanguage(
+  variants: { card: Card; images: { language: string; imgUrl: string | null }[]; packs: { title: string; language: string }[] }[],
+  currentCardId: string
+): { english: ArtImage[]; japanese: ArtImage[] } {
+  const enByUrl = new Map<string, ArtImage>()
+  const jpByUrl = new Map<string, ArtImage>()
+
+  for (const variant of variants) {
+    const enPack = variant.packs.find(p => p.language === 'english')
+    const jpPack = variant.packs.find(p => p.language === 'japanese')
+    const isCurrent = variant.card.id === currentCardId
+
+    for (const img of variant.images) {
+      if (!img.imgUrl) continue
+      const variantSuffix = variant.card.id !== variant.card.base_id
+        ? (variant.card.id.match(/_p\d+$/) ? ' (Parallel)'
+        : variant.card.id.match(/_r\d+$/) ? ' (Reprint)'
+        : '')
+        : ''
+      if (img.language === 'japanese') {
+        const packName = jpPack ? cleanPackName(jpPack.title) : undefined
+        const entry: ArtImage = { imgUrl: img.imgUrl, isCurrentVariant: isCurrent, packName, variantSuffix }
+        if (!jpByUrl.has(img.imgUrl)) jpByUrl.set(img.imgUrl, entry)
+      } else if (img.language === 'english') {
+        const packName = enPack ? cleanPackName(enPack.title) : undefined
+        const entry: ArtImage = { imgUrl: img.imgUrl, isCurrentVariant: isCurrent, packName, variantSuffix }
+        if (!enByUrl.has(img.imgUrl)) enByUrl.set(img.imgUrl, entry)
+      }
+    }
+  }
+
+  return {
+    english: Array.from(enByUrl.values()),
+    japanese: Array.from(jpByUrl.values()),
+  }
+}

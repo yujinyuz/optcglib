@@ -1,3 +1,4 @@
+- op08-106, eb02-010
 - option to use card kaizoku cdn images..
 - have an option to only search in card effect, trigger, name only so we get a more granulated
   filter
