@@ -146,13 +146,13 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
         base_id = card_id.split("_")[0] if "_" in card_id else card_id
 
         if not is_primary:
-            if language == "english-asia" and existing_ids and card_id in existing_ids:
+            if language in ("english-asia", "japanese") and existing_ids and card_id in existing_ids:
                 continue
-            if language != "english-asia":
+            if language not in ("english-asia", "japanese"):
                 continue
 
         canonical = base_cards[base_id]
-        block_number = block_map.get(base_id, canonical.get("block_number"))
+        block_number = block_map.get(card_id, block_map.get(base_id, canonical.get("block_number")))
 
         cursor = conn.execute(
             """INSERT OR REPLACE INTO cards

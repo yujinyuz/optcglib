@@ -3,8 +3,51 @@ import { getCardById, getCardPacks, getCardVariants } from '../db'
 import { useAppStore } from '../store'
 import type { Card } from '../types'
 import ImageLoader from './ImageLoader'
-import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS, LANGUAGE_DISPLAY } from '../types'
+import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
 import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
+
+function cleanPackName(pack: string): string {
+  return pack
+    .replace(/_p\d+\s*\(Parallel\)/gi, '')
+    .replace(/_r\d+\s*\(Reprint\)/gi, '')
+    .replace(/_p\d+/g, '')
+    .replace(/_r\d+/g, '')
+    .trim()
+}
+
+interface ArtImage {
+  imgUrl: string
+  isCurrentVariant: boolean
+  packName?: string
+}
+
+function groupImagesByLanguage(
+  variants: { card: Card; images: { language: string; imgUrl: string | null }[]; packs: string[] }[],
+  currentCardId: string
+): { english: ArtImage[]; japanese: ArtImage[] } {
+  const enByUrl = new Map<string, ArtImage>()
+  const jpByUrl = new Map<string, ArtImage>()
+
+  for (const variant of variants) {
+    const packName = variant.packs[0] ? cleanPackName(variant.packs[0]) : undefined
+    const isCurrent = variant.card.id === currentCardId
+
+    for (const img of variant.images) {
+      if (!img.imgUrl) continue
+      const entry: ArtImage = { imgUrl: img.imgUrl, isCurrentVariant: isCurrent, packName }
+      if (img.language === 'japanese') {
+        if (!jpByUrl.has(img.imgUrl)) jpByUrl.set(img.imgUrl, entry)
+      } else if (img.language === 'english' || img.language === 'english-asia') {
+        if (!enByUrl.has(img.imgUrl)) enByUrl.set(img.imgUrl, entry)
+      }
+    }
+  }
+
+  return {
+    english: Array.from(enByUrl.values()),
+    japanese: Array.from(jpByUrl.values()),
+  }
+}
 
 interface CardModalProps {
   cardId: string
@@ -14,9 +57,7 @@ interface CardModalProps {
 export default function CardModal({ cardId, onClose }: CardModalProps) {
   const [card, setCard] = useState<Card | null>(null)
   const [cardPacks, setCardPacks] = useState<{ packId: string; label: string; rawTitle: string }[]>([])
-  const [cardVariants, setCardVariants] = useState<{ card: Card; images: { language: string; imgUrl: string | null }[]; allImages: { language: string; imgUrl: string | null }[]; packs: string[] }[]>([])
-  const [exclusiveByLang, setExclusiveByLang] = useState<Record<string, number>>({})
-  const [expandedLang, setExpandedLang] = useState<string | null>(null)
+  const [cardVariants, setCardVariants] = useState<{ card: Card; images: { language: string; imgUrl: string | null }[]; packs: string[] }[]>([])
   const [loading, setLoading] = useState(true)
   const [closing, setClosing] = useState(false)
   const [zoomedImg, setZoomedImg] = useState<string | null>(null)
@@ -51,13 +92,11 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
         if (result) {
           const [packs, variantsResult] = await Promise.all([
             getCardPacks(result.id),
-            getCardVariants(result.base_id, preferredLanguage),
+            getCardVariants(result.base_id),
           ])
           if (cancelled) return
           setCardPacks(packs)
           setCardVariants(variantsResult.variants)
-          setExclusiveByLang(variantsResult.exclusiveByLang)
-          setExpandedLang(null)
         }
 
         if (!cancelled) setLoading(false)
@@ -383,109 +422,107 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
               </h3>
               {loadExternalImages ? (
                 /* Inline images */
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {cardVariants.flatMap((variant) => {
-                    const langMatch = preferredLanguage === 'japanese'
-                      ? (img: { language: string }) => img.language === 'japanese'
-                      : (img: { language: string }) => img.language === 'english' || img.language === 'english-asia'
-                    const matchingImages = variant.images.filter((img) => img.imgUrl && langMatch(img))
-                    if (matchingImages.length === 0) return null
-                    return matchingImages.map((img) => {
-                      const isCurrentVariant = variant.card.id === card.id
-                      const variantSuffix = variant.card.id.match(/_p\d+$/) ? ' (Parallel)'
-                        : variant.card.id.match(/_r\d+$/) ? ' (Reprint)'
-                        : ''
-                      return (
-                        <div key={`${variant.card.id}-${img.language}`} className="flex flex-col items-center gap-1">
-                          <ImageLoader
-                            src={getExternalImageUrl(img.imgUrl!)}
-                            alt={`${variant.card.id} ${img.language}`}
-                            className={`w-full rounded-lg shadow-md cursor-zoom-in ${isCurrentVariant ? 'ring-2 ring-[#3b82f6]' : ''}`}
-                            onClick={() => setZoomedImg(getExternalImageUrl(img.imgUrl!))}
-                          />
-                          <span className="text-[10px] text-slate-500 dark:text-[#64748b]">
-                            {variant.packs[0] || (variant.card.id === card.base_id ? '' : 'Alt')}{variantSuffix}
-                            {img.language === 'english-asia' ? ' EN-AS' : img.language === 'japanese' ? ' JP' : ' EN'}
-                          </span>
-                        </div>
-                      )
-                    })
-                  })}
+                <div className="space-y-4">
+                  {(() => {
+                    const { english, japanese } = groupImagesByLanguage(cardVariants, card.id)
+                    return (
+                      <>
+                        {english.length > 0 && (
+                          <div>
+                            <div className="text-[10px] text-slate-400 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-1.5">English</div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {english.map((img) => (
+                                <div key={img.imgUrl} className="flex flex-col items-center gap-1">
+                                  <ImageLoader
+                                    src={getExternalImageUrl(img.imgUrl)}
+                                    alt=""
+                                    className={`w-full rounded-lg shadow-md cursor-zoom-in ${img.isCurrentVariant ? 'ring-2 ring-[#3b82f6]' : ''}`}
+                                    onClick={() => setZoomedImg(getExternalImageUrl(img.imgUrl))}
+                                  />
+                                  <span className="text-[10px] text-slate-500 dark:text-[#64748b]">
+                                    {img.packName || ''}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {japanese.length > 0 && (
+                          <div>
+                            <div className="text-[10px] text-slate-400 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-1.5">Japanese</div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {japanese.map((img) => (
+                                <div key={img.imgUrl} className="flex flex-col items-center gap-1">
+                                  <ImageLoader
+                                    src={getExternalImageUrl(img.imgUrl)}
+                                    alt=""
+                                    className={`w-full rounded-lg shadow-md cursor-zoom-in ${img.isCurrentVariant ? 'ring-2 ring-[#3b82f6]' : ''}`}
+                                    onClick={() => setZoomedImg(getExternalImageUrl(img.imgUrl))}
+                                  />
+                                  <span className="text-[10px] text-slate-500 dark:text-[#64748b]">
+                                    {img.packName || ''}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )
+                  })()}
                 </div>
               ) : (
                 /* External links */
-                <div className="space-y-2">
-                  {cardVariants.map((variant) => {
-                    const variantSuffix = variant.card.id.match(/_p\d+$/) ? ' (Parallel)'
-                      : variant.card.id.match(/_r\d+$/) ? ' (Reprint)'
-                      : ''
+                <div className="space-y-3">
+                  {(() => {
+                    const { english, japanese } = groupImagesByLanguage(cardVariants, card.id)
                     return (
-                      <div key={variant.card.id} className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold shrink-0">
-                          {variant.packs[0] || (variant.card.id === card.base_id ? 'Base' : 'Alt')}{variantSuffix}
-                        </span>
-                        {variant.images.length > 0 ? (
-                          variant.images.map((img) => (
-                            <a
-                              key={img.language}
-                              href={img.imgUrl || undefined}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
-                            >
-                              {img.language === 'english-asia' ? 'EN-AS' : img.language === 'japanese' ? 'JP' : 'EN'}
-                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                              </svg>
-                            </a>
-                          ))
-                        ) : (
-                          <span className="text-[10px] text-slate-400 dark:text-[#64748b]">No images</span>
+                      <>
+                        {english.length > 0 && (
+                          <div>
+                            <div className="text-[10px] text-slate-400 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-1.5">English</div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {english.map((img) => (
+                                <a
+                                  key={img.imgUrl}
+                                  href={img.imgUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
+                                >
+                                  {img.packName || 'Alt'}
+                                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                  </svg>
+                                </a>
+                              ))}
+                            </div>
+                          </div>
                         )}
-                      </div>
+                        {japanese.length > 0 && (
+                          <div>
+                            <div className="text-[10px] text-slate-400 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-1.5">Japanese</div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {japanese.map((img) => (
+                                <a
+                                  key={img.imgUrl}
+                                  href={img.imgUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
+                                >
+                                  {img.packName || 'Alt'}
+                                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                  </svg>
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )
-                  })}
-                </div>
-              )}
-              {/* Clickable exclusive language pills */}
-              {Object.keys(exclusiveByLang).length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {Object.entries(exclusiveByLang).map(([langKey, count]) => (
-                    <button
-                      key={langKey}
-                      onClick={() => setExpandedLang(expandedLang === langKey ? null : langKey)}
-                      className="text-[10px] text-slate-400 dark:text-[#64748b] italic hover:text-slate-600 dark:hover:text-[#94a3b8] transition-colors cursor-pointer"
-                    >
-                      ({count} {LANGUAGE_DISPLAY[langKey as keyof typeof LANGUAGE_DISPLAY] || langKey} exclusive)
-                      {expandedLang === langKey ? ' ▲' : ' ▼'}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {/* Expanded exclusive variants */}
-              {expandedLang && cardVariants.length > 0 && (
-                <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {cardVariants.flatMap((variant) => {
-                    const exclusiveLangs = variant.allImages?.filter((img) => {
-                      if (expandedLang === 'english') return img.language === 'english' || img.language === 'english-asia'
-                      return img.language === expandedLang
-                    })
-                    if (!exclusiveLangs?.length) return null
-                    return exclusiveLangs.map((img) => (
-                      <div key={`${variant.card.id}-${img.language}`} className="flex flex-col items-center gap-1">
-                        <ImageLoader
-                          src={getExternalImageUrl(img.imgUrl!)}
-                          alt={`${variant.card.id} ${img.language}`}
-                          className="w-full rounded-lg shadow-md cursor-zoom-in opacity-75"
-                          onClick={() => setZoomedImg(getExternalImageUrl(img.imgUrl!))}
-                        />
-                        <span className="text-[10px] text-slate-400 dark:text-[#64748b]">
-                          {variant.packs[0] || (variant.card.id === card.base_id ? '' : 'Alt')}
-                          {img.language === 'english-asia' ? ' EN-AS' : img.language === 'japanese' ? ' JP' : ' EN'}
-                        </span>
-                      </div>
-                    ))
-                  })}
+                  })()}
                 </div>
               )}
             </div>
