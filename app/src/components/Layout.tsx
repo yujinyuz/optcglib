@@ -2,8 +2,12 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useAppStore } from '../store'
 import FilterBar from './FilterBar'
-import { useSwipe } from '../lib/gesture'
 import { prefersReducedMotion } from '../lib/spring'
+import {
+  RARITY_SHORT,
+  COLOR_HEX,
+  CATEGORY_COLORS,
+} from '../types'
 
 function SettingsMenu() {
   const [open, setOpen] = useState(false)
@@ -237,7 +241,7 @@ function SettingsMenu() {
   )
 }
 
-function TopSearchBar() {
+function TopSearchBar({ onFocusChange }: { onFocusChange: (focused: boolean) => void }) {
   const searchInput = useAppStore((state) => state.searchInput)
   const setSearchInput = useAppStore((state) => state.setSearchInput)
   const setFilters = useAppStore((state) => state.setFilters)
@@ -259,6 +263,8 @@ function TopSearchBar() {
         placeholder="Search..."
         value={searchInput}
         onChange={(e) => handleChange(e.target.value)}
+        onFocus={() => onFocusChange(true)}
+        onBlur={() => onFocusChange(false)}
         className="w-full bg-transparent border-0 border-b border-slate-300 dark:border-[#3a3d4a] rounded-none pl-2 pr-9 py-2 text-base sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-slate-900 dark:focus:border-white focus:ring-0 focus-visible:outline-none transition-colors"
       />
       <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
@@ -280,10 +286,102 @@ function TopSearchBar() {
   )
 }
 
+/** Active filter chips shown below navbar */
+function ActiveFilterChips() {
+  const filters = useAppStore((state) => state.filters)
+  const setFilters = useAppStore((state) => state.setFilters)
+  const resetFilters = useAppStore((state) => state.resetFilters)
+
+  const chips: { label: string; onRemove: () => void; color?: string }[] = []
+
+  if (filters.search) {
+    chips.push({
+      label: `"${filters.search}"`,
+      onRemove: () => { setFilters({ search: '' }); useAppStore.getState().setSearchInput('') },
+    })
+  }
+
+  filters.colors.forEach((c) => chips.push({
+    label: c,
+    onRemove: () => setFilters({ colors: filters.colors.filter((v) => v !== c) }),
+    color: COLOR_HEX[c],
+  }))
+
+  filters.categories.forEach((c) => chips.push({
+    label: c === 'Don' ? 'DON!!' : c,
+    onRemove: () => setFilters({ categories: filters.categories.filter((v) => v !== c) }),
+    color: CATEGORY_COLORS[c],
+  }))
+
+  filters.rarities.forEach((r) => chips.push({
+    label: RARITY_SHORT[r] || r,
+    onRemove: () => setFilters({ rarities: filters.rarities.filter((v) => v !== r) }),
+  }))
+
+  filters.attributes.forEach((a) => chips.push({
+    label: a,
+    onRemove: () => setFilters({ attributes: filters.attributes.filter((v) => v !== a) }),
+  }))
+
+  filters.sets.forEach((s) => chips.push({
+    label: s,
+    onRemove: () => setFilters({ sets: filters.sets.filter((v) => v !== s) }),
+  }))
+
+  filters.blocks.forEach((b) => chips.push({
+    label: `Block ${b}`,
+    onRemove: () => setFilters({ blocks: filters.blocks.filter((v) => v !== b) }),
+  }))
+
+  if (filters.costMin != null || filters.costMax != null) {
+    const label = [filters.costMin ?? '0', filters.costMax ?? '15'].join('–')
+    chips.push({ label: `Cost ${label}`, onRemove: () => setFilters({ costMin: null, costMax: null }) })
+  }
+
+  if (filters.powerMin != null || filters.powerMax != null) {
+    const min = filters.powerMin != null ? (filters.powerMin >= 1000 ? `${filters.powerMin / 1000}k` : filters.powerMin) : '0'
+    const max = filters.powerMax != null ? (filters.powerMax >= 1000 ? `${filters.powerMax / 1000}k` : filters.powerMax) : '20k'
+    chips.push({ label: `Power ${min}–${max}`, onRemove: () => setFilters({ powerMin: null, powerMax: null }) })
+  }
+
+  if (chips.length === 0) return null
+
+  return (
+    <div className="shrink-0 bg-slate-50/80 dark:bg-[#0f1117]/80 border-b border-slate-200/40 dark:border-[#2e303a]/40 px-3 sm:px-6 py-2">
+      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+        {chips.map((chip, i) => (
+          <button
+            key={`${chip.label}-${i}`}
+            onClick={chip.onRemove}
+            className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium transition-all active:scale-95 border"
+            style={chip.color
+              ? { backgroundColor: chip.color + '18', borderColor: chip.color + '40', color: chip.color }
+              : { backgroundColor: 'rgba(59,130,246,0.08)', borderColor: 'rgba(59,130,246,0.25)', color: '#3b82f6' }
+            }
+          >
+            {chip.label}
+            <svg className="w-3 h-3 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        ))}
+        {chips.length > 1 && (
+          <button
+            onClick={resetFilters}
+            className="shrink-0 text-xs text-slate-400 dark:text-[#64748b] hover:text-slate-600 dark:hover:text-[#94a3b8] transition-colors ml-1"
+          >
+            Clear all
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarClosing, setSidebarClosing] = useState(false)
-  const [swipeOffset, setSwipeOffset] = useState(0)
+  const [searchFocused, setSearchFocused] = useState(false)
   const reducedMotion = prefersReducedMotion()
 
   useEffect(() => {
@@ -296,31 +394,6 @@ export default function Layout() {
       window.removeEventListener('optcg-open-sidebar', handleOpen)
     }
   }, [reducedMotion])
-
-  // Swipe-to-dismiss for mobile filter panel
-  const { handlers: swipeHandlers } = useSwipe({
-    threshold: 100,
-    maxDistance: 200,
-    direction: 'y',
-    onSwipe: (_velocity, _distance, direction) => {
-      if (direction === 'down') {
-        setSidebarClosing(true)
-        setTimeout(() => { setSidebarOpen(false); setSidebarClosing(false); setSwipeOffset(0) }, reducedMotion ? 100 : 200)
-      } else {
-        setSwipeOffset(0)
-      }
-    },
-    onDrag: (_offsetX, offsetY) => {
-      // Only track downward drag on mobile
-      if (offsetY > 0) setSwipeOffset(offsetY)
-    },
-    onRelease: () => {
-      if (swipeOffset > 0 && swipeOffset < 100) {
-        setSwipeOffset(0)
-      }
-    },
-    resistance: 0.4,
-  })
 
   const duration = reducedMotion ? 100 : 200
 
@@ -346,20 +419,12 @@ export default function Layout() {
         }`}
         style={{
           transition: sidebarOpen && !sidebarClosing ? `transform ${duration}ms var(--ease-spring-default)` : `transform ${duration}ms var(--ease-out-quart)`,
-          transform: swipeOffset > 0 && !sidebarClosing ? `translateY(${swipeOffset}px)` : undefined,
         }}
-        {...swipeHandlers}
       >
         <div className="p-4">
-          {/* Mobile drag handle with progress indicator */}
-          <div className="flex justify-center mb-3 sm:hidden relative">
-            <div className="w-8 h-1 rounded-full bg-slate-300 dark:bg-[#3a3d4a]" />
-            {swipeOffset > 0 && (
-              <div
-                className="absolute top-0 left-1/2 -translate-x-1/2 h-1 rounded-full bg-[#3b82f6]/50 transition-all duration-75"
-                style={{ width: `${Math.min(swipeOffset / 2, 32)}px` }}
-              />
-            )}
+          {/* Mobile drag handle */}
+          <div className="flex justify-center mb-4 sm:hidden">
+            <div className="w-10 h-1.5 rounded-full bg-slate-300 dark:bg-[#3a3d4a]" />
           </div>
 
           {/* Header */}
@@ -382,9 +447,19 @@ export default function Layout() {
       {/* Main area: fixed navbar + scrollable content */}
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Navbar */}
-        <div className="shrink-0 bg-slate-50 dark:bg-[#0f1117] border-b border-slate-200/60 dark:border-[#2e303a]/60 px-3 sm:px-6 py-2.5 sm:py-3">
+        <div
+          className={`shrink-0 border-b transition-colors duration-200 px-3 sm:px-6 py-2.5 sm:py-3 ${
+            searchFocused
+              ? 'bg-slate-50/60 dark:bg-[#0f1117]/60 border-slate-200/30 dark:border-[#2e303a]/30'
+              : 'bg-slate-50 dark:bg-[#0f1117] border-slate-200/60 dark:border-[#2e303a]/60'
+          }`}
+        >
           <div className="flex items-center justify-between gap-1.5 sm:gap-2 flex-nowrap">
-            <div className="shrink-0 group cursor-pointer">
+            <div
+              className={`shrink-0 group cursor-pointer transition-opacity duration-200 ${
+                searchFocused ? 'opacity-40' : 'opacity-100'
+              }`}
+            >
               <div className="transition-transform duration-200 group-hover:scale-[1.02]">
                 <img
                   src="/logo-op.png"
@@ -402,7 +477,7 @@ export default function Layout() {
               </div>
             </div>
             <div className="flex items-center gap-0.5 min-w-0">
-              <TopSearchBar />
+              <TopSearchBar onFocusChange={setSearchFocused} />
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
@@ -419,6 +494,9 @@ export default function Layout() {
             </div>
           </div>
         </div>
+
+        {/* Active filter chips */}
+        <ActiveFilterChips />
 
         {/* Scrollable content */}
         <main className="flex-1 min-w-0 overflow-y-auto">

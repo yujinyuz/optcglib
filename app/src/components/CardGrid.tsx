@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from 'react'
+import { useRef, useCallback, useState, useEffect } from 'react'
 import { useAppStore, getLanguageSections } from '../store'
 import CardCard from './CardCard'
 import SkeletonCard from './SkeletonCard'
@@ -118,6 +118,23 @@ export default function CardGrid() {
   const loadMore = useAppStore((state) => state.loadMore)
   const sections = getLanguageSections()
   const isSearching = !!filters.search
+  const [resultKey, setResultKey] = useState('0')
+  const [countPulse, setCountPulse] = useState(false)
+  const reducedMotion = prefersReducedMotion()
+  const wasSearchingRef = useRef(false)
+
+  useEffect(() => {
+    if (!searching && wasSearchingRef.current) {
+      setTimeout(() => {
+        setResultKey((k) => String(Number(k) + 1))
+        if (!reducedMotion) {
+          setCountPulse(true)
+          setTimeout(() => setCountPulse(false), 300)
+        }
+      }, 0)
+    }
+    wasSearchingRef.current = searching
+  }, [searching, reducedMotion])
 
   const renderCardGrid = (sectionCards: typeof cards, sectionLang?: string) => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
@@ -143,7 +160,7 @@ export default function CardGrid() {
   )
 
   const renderCount = (displayCount: number, displayTotal: number) => (
-    <span className="text-sm text-slate-600 dark:text-[#94a3b8]">
+    <span className={`text-sm text-slate-600 dark:text-[#94a3b8] transition-all ${countPulse && !reducedMotion ? 'scale-110' : 'scale-100'}`} style={{ transition: 'transform 150ms var(--ease-out-quart)' }}>
       {searching && displayCount === 0 ? (
         'Searching...'
       ) : (
@@ -182,7 +199,7 @@ export default function CardGrid() {
 
       {isSearching && sections.length > 0 ? (
         sections.map((section) => (
-          <div key={section.lang} className="mb-8">
+          <div key={`${section.lang}-${resultKey}`} className="mb-8">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
               {section.title}
               <span className="ml-2 text-sm font-normal text-slate-500 dark:text-[#64748b]">
@@ -193,7 +210,9 @@ export default function CardGrid() {
           </div>
         ))
       ) : (
-        renderCardGrid(cards)
+        <div key={resultKey} className="animate-[fadeIn_150ms_var(--ease-out-quart)_both]">
+          {renderCardGrid(cards)}
+        </div>
       )}
 
       {cards.length === 0 && !searching && (
