@@ -94,7 +94,12 @@ body {
   background: #334155;
 }
 .kw-rush-char, .kw-rush, .kw-unblockable, .kw-banish, .kw-blocker {
+  display: inline-block;
   padding: 0 8px;
+  color: #ffffff;
+  font-size: 0.8em;
+  line-height: 1;
+  vertical-align: middle;
   clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 50%, calc(100% - 6px) 100%, 6px 100%, 0% 50%);
   background: #e67e22;
 }

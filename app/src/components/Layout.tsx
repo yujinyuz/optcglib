@@ -382,11 +382,13 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarClosing, setSidebarClosing] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
+  const [dragOffset, setDragOffset] = useState(0)
   const reducedMotion = prefersReducedMotion()
+  const dragStartRef = useRef<number | null>(null)
 
   useEffect(() => {
     const handleClose = () => { setSidebarClosing(true); setTimeout(() => { setSidebarOpen(false); setSidebarClosing(false) }, reducedMotion ? 100 : 200) }
-    const handleOpen = () => { setSidebarOpen(true); setSidebarClosing(false) }
+    const handleOpen = () => { setSidebarOpen(true); setSidebarClosing(false); setDragOffset(0) }
     window.addEventListener('optcg-close-sidebar', handleClose)
     window.addEventListener('optcg-open-sidebar', handleOpen)
     return () => {
@@ -396,6 +398,29 @@ export default function Layout() {
   }, [reducedMotion])
 
   const duration = reducedMotion ? 100 : 200
+  const dismissThreshold = 80
+
+  const handleDragStart = (clientY: number) => {
+    if (!sidebarOpen || sidebarClosing) return
+    dragStartRef.current = clientY
+  }
+
+  const handleDragMove = (clientY: number) => {
+    if (dragStartRef.current === null || !sidebarOpen || sidebarClosing) return
+    const delta = clientY - dragStartRef.current
+    if (delta > 0) setDragOffset(Math.min(delta, 150))
+  }
+
+  const handleDragEnd = () => {
+    if (dragStartRef.current === null) return
+    if (dragOffset >= dismissThreshold) {
+      setSidebarClosing(true)
+      setTimeout(() => { setSidebarOpen(false); setSidebarClosing(false); setDragOffset(0) }, duration)
+    } else {
+      setDragOffset(0)
+    }
+    dragStartRef.current = null
+  }
 
   return (
     <div className="flex-1 flex h-screen overflow-hidden">
@@ -418,14 +443,38 @@ export default function Layout() {
               : 'translate-y-full sm:translate-x-full sm:translate-y-0'
         }`}
         style={{
-          transition: sidebarOpen && !sidebarClosing ? `transform ${duration}ms var(--ease-spring-default)` : `transform ${duration}ms var(--ease-out-quart)`,
+          transition: sidebarOpen && !sidebarClosing && dragOffset === 0
+            ? `transform ${duration}ms var(--ease-spring-default)`
+            : `transform ${duration}ms var(--ease-out-quart)`,
+          transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
         }}
       >
         <div className="p-4">
           {/* Mobile drag handle */}
-          <div className="flex justify-center mb-4 sm:hidden">
-            <div className="w-10 h-1.5 rounded-full bg-slate-300 dark:bg-[#3a3d4a]" />
+          <div
+            className="flex justify-center mb-4 sm:hidden touch-none cursor-grab active:cursor-grabbing"
+            onPointerDown={(e) => { if (e.pointerType === 'touch' || e.pointerType === 'mouse') handleDragStart(e.clientY) }}
+            onPointerMove={(e) => handleDragMove(e.clientY)}
+            onPointerUp={handleDragEnd}
+            onPointerLeave={handleDragEnd}
+          >
+            <div
+              className="w-10 h-1.5 rounded-full transition-colors duration-150"
+              style={{
+                backgroundColor: dragOffset > 20
+                  ? `rgba(59, 130, 246, ${Math.min(dragOffset / dismissThreshold, 1)})`
+                  : undefined,
+              }}
+            />
           </div>
+          {dragOffset > 20 && (
+            <div
+              className="text-center text-xs text-slate-400 dark:text-[#64748b] -mt-2 mb-2 sm:hidden transition-opacity"
+              style={{ opacity: Math.min((dragOffset - 20) / 40, 1) }}
+            >
+              Swipe down to close
+            </div>
+          )}
 
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
