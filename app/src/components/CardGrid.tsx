@@ -37,7 +37,7 @@ function PullToRefresh({ onRefresh }: { onRefresh: () => void }) {
     <div
       ref={ref as React.RefObject<HTMLDivElement>}
       {...handlers}
-      className="sm:hidden fixed top-0 left-0 right-0 z-40 flex justify-center pointer-events-none"
+      className="sm:hidden fixed top-0 left-0 right-0 z-20 flex justify-center pointer-events-none"
       style={{ transform: `translateY(${Math.max(pullDistance - 60, 0)}px)` }}
     >
       <div

@@ -453,10 +453,15 @@ export default function Layout() {
           {/* Mobile drag handle */}
           <div
             className="flex justify-center mb-4 sm:hidden touch-none cursor-grab active:cursor-grabbing"
-            onPointerDown={(e) => { if (e.pointerType === 'touch' || e.pointerType === 'mouse') handleDragStart(e.clientY) }}
+            onPointerDown={(e) => {
+              if (e.pointerType === 'touch' || e.pointerType === 'mouse') {
+                ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+                handleDragStart(e.clientY)
+              }
+            }}
             onPointerMove={(e) => handleDragMove(e.clientY)}
             onPointerUp={handleDragEnd}
-            onPointerLeave={handleDragEnd}
+            onLostPointerCapture={handleDragEnd}
           >
             <div
               className="w-10 h-1.5 rounded-full transition-colors duration-150"
