@@ -232,7 +232,7 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
 
   // When searching, return both EN and JP image URLs separately so client can pick per section
   if (filters.search) {
-    const searchExtra = `, cbi.img_url_en as img_url_en, cbi.img_url_jp as img_url_jp, json_object('english', EXISTS(SELECT 1 FROM card_images ci WHERE ci.card_id = c.id AND ci.language IN ('english', 'english-asia') AND ci.img_full_url IS NOT NULL AND ci.img_full_url != ''), 'japanese', EXISTS(SELECT 1 FROM card_images ci WHERE ci.card_id = c.id AND ci.language = 'japanese' AND ci.img_full_url IS NOT NULL AND ci.img_full_url != '')) as has_images, t_jp.name as name_translated, t_jp.effect as effect_translated`;
+    const searchExtra = `, cbi.img_url_en as img_url_en, cbi.img_url_jp as img_url_jp, json_object('english', EXISTS(SELECT 1 FROM card_images ci WHERE ci.card_id = c.id AND ci.language = 'english' AND ci.img_full_url IS NOT NULL AND ci.img_full_url != ''), 'japanese', EXISTS(SELECT 1 FROM card_images ci WHERE ci.card_id = c.id AND ci.language = 'japanese' AND ci.img_full_url IS NOT NULL AND ci.img_full_url != '')) as has_images, t_jp.name as name_translated, t_jp.effect as effect_translated`;
     const dataQ = q.select(buildCardColumns(filters.preferredLanguage) + searchExtra, 'cards c', limit, offset);
     const dataRes = db.exec(dataQ.sql, dataQ.params);
 
