@@ -397,6 +397,14 @@ export default function Layout() {
     }
   }, [reducedMotion])
 
+  // Prevent browser pull-to-refresh when filter panel is open on mobile
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overscrollBehavior = 'none'
+      return () => { document.body.style.overscrollBehavior = '' }
+    }
+  }, [sidebarOpen])
+
   const duration = reducedMotion ? 100 : 200
   const dismissThreshold = 80
 
@@ -435,7 +443,7 @@ export default function Layout() {
 
       {/* Filter panel: bottom sheet on mobile, right drawer on desktop */}
       <aside
-        className={`fixed z-30 bg-white dark:bg-[#1a1d2e] border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-[#2e303a] overflow-y-auto shadow-xl inset-x-0 bottom-0 sm:inset-y-0 sm:inset-x-auto sm:top-0 sm:right-0 sm:bottom-0 sm:w-80 sm:h-screen rounded-t-2xl sm:rounded-none max-h-[70vh] sm:max-h-none ${
+        className={`fixed z-30 bg-white dark:bg-[#1a1d2e] border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-[#2e303a] overflow-y-auto overscroll-y-none shadow-xl inset-x-0 bottom-0 sm:inset-y-0 sm:inset-x-auto sm:top-0 sm:right-0 sm:bottom-0 sm:w-80 sm:h-screen rounded-t-2xl sm:rounded-none max-h-[70vh] sm:max-h-none ${
           sidebarClosing
             ? 'translate-y-full sm:translate-x-full sm:translate-y-0'
             : sidebarOpen
@@ -452,14 +460,26 @@ export default function Layout() {
         <div className="p-4">
           {/* Mobile drag handle */}
           <div
-            className="flex justify-center mb-4 sm:hidden touch-none cursor-grab active:cursor-grabbing"
+            className="flex justify-center mb-4 sm:hidden cursor-grab active:cursor-grabbing"
+            style={{ touchAction: 'none' }}
+            onTouchStart={(e) => {
+              e.preventDefault()
+              handleDragStart(e.touches[0].clientY)
+            }}
+            onTouchMove={(e) => {
+              e.preventDefault()
+              handleDragMove(e.touches[0].clientY)
+            }}
+            onTouchEnd={handleDragEnd}
             onPointerDown={(e) => {
-              if (e.pointerType === 'touch' || e.pointerType === 'mouse') {
+              if (e.pointerType === 'mouse') {
                 ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
                 handleDragStart(e.clientY)
               }
             }}
-            onPointerMove={(e) => handleDragMove(e.clientY)}
+            onPointerMove={(e) => {
+              if (e.pointerType === 'mouse') handleDragMove(e.clientY)
+            }}
             onPointerUp={handleDragEnd}
             onLostPointerCapture={handleDragEnd}
           >
