@@ -383,6 +383,7 @@ export default function Layout() {
   const [sidebarClosing, setSidebarClosing] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
   const [dragOffset, setDragOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
   const dragOffsetRef = useRef(0)
   const reducedMotion = prefersReducedMotion()
   const dragStartRef = useRef<number | null>(null)
@@ -411,6 +412,7 @@ export default function Layout() {
 
   const handleDragStart = (clientY: number) => {
     if (!sidebarOpen || sidebarClosing) return
+    setIsDragging(true)
     dragStartRef.current = clientY
   }
 
@@ -426,6 +428,7 @@ export default function Layout() {
 
   const handleDragEnd = () => {
     if (dragStartRef.current === null) return
+    setIsDragging(false)
     if (dragOffsetRef.current >= dismissThreshold) {
       setSidebarClosing(true)
       setTimeout(() => { setSidebarOpen(false); setSidebarClosing(false); setDragOffset(0); dragOffsetRef.current = 0 }, duration)
@@ -457,7 +460,7 @@ export default function Layout() {
               : 'translate-y-full sm:translate-x-full sm:translate-y-0'
         }`}
         style={{
-          transition: sidebarOpen && !sidebarClosing && dragOffset === 0
+          transition: isDragging ? 'none' : sidebarOpen && !sidebarClosing
             ? `transform ${duration}ms var(--ease-spring-default)`
             : `transform ${duration}ms var(--ease-out-quart)`,
           transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
