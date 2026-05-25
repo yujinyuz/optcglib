@@ -96,6 +96,7 @@ function buildQueryParams(
   preferredLanguage: PreferredLanguage,
   showAlternateArts: boolean,
   loadExternalImages: boolean,
+  isOnline: boolean,
 ): QueryCardsFilters {
   return {
     search: filters.search || undefined,
@@ -113,7 +114,7 @@ function buildQueryParams(
     sets: filters.sets.length ? filters.sets : undefined,
     blocks: filters.blocks.length ? filters.blocks : undefined,
     preferredLanguage,
-    hideVariants: !loadExternalImages || !showAlternateArts,
+    hideVariants: !loadExternalImages || !showAlternateArts || !isOnline,
     limit,
     offset,
   };
@@ -248,7 +249,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   loadMore: async () => {
-    const { offset, limit, totalCards, cards, filters, searching, preferredLanguage, showAlternateArts, loadExternalImages } = get();
+    const { offset, limit, totalCards, cards, filters, searching, preferredLanguage, showAlternateArts, loadExternalImages, isOnline } = get();
     if (searching || cards.length >= totalCards) return;
 
     const newOffset = offset + limit;
@@ -256,7 +257,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     try {
       const { cards: moreCards, total } = await queryCards(
-        buildQueryParams(filters, limit, newOffset, preferredLanguage, showAlternateArts, loadExternalImages)
+        buildQueryParams(filters, limit, newOffset, preferredLanguage, showAlternateArts, loadExternalImages, isOnline)
       );
       set({
         cards: [...cards, ...moreCards],
@@ -311,6 +312,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setOnlineStatus: (online) => {
     set({ isOnline: online });
+    get().search();
   },
 
   setOfflineReady: (ready) => {
@@ -326,11 +328,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   search: async (append = false) => {
-    const { filters, limit, offset, preferredLanguage, showAlternateArts, loadExternalImages } = get();
+    const { filters, limit, offset, preferredLanguage, showAlternateArts, loadExternalImages, isOnline } = get();
     set({ searchLoading: true });
     try {
       const { cards, total } = await queryCards(
-        buildQueryParams(filters, limit, offset, preferredLanguage, showAlternateArts, loadExternalImages)
+        buildQueryParams(filters, limit, offset, preferredLanguage, showAlternateArts, loadExternalImages, isOnline)
       );
       set({
         cards: append ? [...get().cards, ...cards] : cards,
