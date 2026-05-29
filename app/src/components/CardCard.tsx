@@ -39,6 +39,12 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
     : '')
     : ''
 
+  const transition = 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart)'
+  const isLeader = card.rarity === 'Leader'
+  const cardStyle = !showImages && !isLeader
+    ? { borderLeft: `3px solid ${primaryColor}`, transition }
+    : { transition }
+
   return (
     <div
       role="button"
@@ -47,11 +53,11 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
       onClick={() => { if (!disableClick) setSelectedCard(card) }}
       onKeyDown={(e) => { if (!disableClick && (e.key === 'Enter' || e.key === ' ')) setSelectedCard(card) }}
       className="group flex flex-col rounded-xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-md shadow-black/5 dark:shadow-white/5 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-white/10 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-150 cursor-pointer h-full"
-      style={{ transition: 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart)' }}
+      style={cardStyle}
     >
       {/* Top strip: Cost | Power | Attribute (only when no image) */}
       {(!showImages || !card.img_url) && (
-      <div className="flex items-center justify-between px-2 py-1.5 shrink-0 bg-slate-50 dark:bg-[#13151f] min-h-[34px]">
+      <div className={`flex items-center justify-between px-2 py-1.5 shrink-0 min-h-[34px] ${isLeader ? 'bg-amber-50 dark:bg-amber-950/40' : 'bg-slate-50 dark:bg-[#13151f]'}`}>
         {card.cost !== null ? (
           <span
             className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shadow-sm ${getTextColorForBg(primaryColor)}`}
