@@ -25,14 +25,9 @@ const loadingMessages = [
   'Ready to sail...',
 ]
 
-function OfflineIndicator() {
+function OfflineIndicator({ updateAvailable }: { updateAvailable: boolean }) {
   const showOfflineToast = useAppStore((state) => state.showOfflineToast)
   const dismissOfflineToast = useAppStore((state) => state.dismissOfflineToast)
-  const { needRefresh: updateAvailable } = useRegisterSW({
-    onRegisteredSW(_swUrl, registration) {
-      if (registration) useAppStore.getState().setOfflineReady(true)
-    },
-  })
 
   useEffect(() => {
     if (showOfflineToast) {
@@ -114,6 +109,12 @@ function App() {
   const setSlowConnection = useAppStore((state) => state.setSlowConnection)
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0)
 
+  const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW({
+    onRegisteredSW(_swUrl, registration) {
+      if (registration) useAppStore.getState().setOfflineReady(true)
+    },
+  })
+
   useEffect(() => {
     init()
   }, [init])
@@ -177,7 +178,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className="h-screen bg-slate-50 dark:bg-[#0f1117] text-slate-900 dark:text-[#e2e8f0] flex flex-col overflow-hidden">
-        <UpdateBanner />
+        <UpdateBanner needRefresh={needRefresh} onUpdate={updateServiceWorker} />
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<CardGrid />} />
@@ -189,7 +190,7 @@ function App() {
           <CardModal cardId={selectedCard.id} onClose={() => setSelectedCard(null)} />
         )}
         <SlowConnectionIndicator />
-        <OfflineIndicator />
+        <OfflineIndicator updateAvailable={needRefresh} />
       </div>
     </BrowserRouter>
   )

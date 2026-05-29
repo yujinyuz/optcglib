@@ -1,16 +1,12 @@
 import { useState } from 'react'
-import { useRegisterSW } from 'virtual:pwa-register/react'
 
-export default function UpdateBanner() {
+interface UpdateBannerProps {
+  needRefresh: boolean
+  onUpdate: () => void
+}
+
+export default function UpdateBanner({ needRefresh, onUpdate }: UpdateBannerProps) {
   const [dismissed, setDismissed] = useState(false)
-  const { needRefresh, updateServiceWorker } = useRegisterSW({
-    onRegisteredSW(_swUrl, registration) {
-      // check for SW updates periodically
-      if (registration) {
-        setInterval(() => { registration.update() }, 60 * 60 * 1000) // hourly
-      }
-    },
-  })
 
   // Hide in dev — Vite regenerates the SW on every restart, so needRefresh is always true
   if (import.meta.env.DEV || !needRefresh || dismissed) return null
@@ -22,7 +18,7 @@ export default function UpdateBanner() {
       </svg>
       <span>New version available</span>
       <button
-        onClick={() => updateServiceWorker()}
+        onClick={() => onUpdate()}
         className="px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors font-semibold"
       >
         Click to update
