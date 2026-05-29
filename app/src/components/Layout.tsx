@@ -415,7 +415,24 @@ function ActiveFilterChips() {
   )
 }
 
+function getActiveFilterCount(filters: ReturnType<typeof useAppStore.getState>['filters']): number {
+  let count = 0
+  if (filters.search) count++
+  if (filters.colors.length > 0) count++
+  if (filters.categories.length > 0) count++
+  if (filters.rarities.length > 0) count++
+  if (filters.attributes.length > 0) count++
+  if (filters.sets.length > 0) count++
+  if (filters.blocks.length > 0) count++
+  if (filters.costMin != null || filters.costMax != null) count++
+  if (filters.powerMin != null || filters.powerMax != null) count++
+  if (filters.counterMin != null || filters.counterMax != null) count++
+  return count
+}
+
 export default function Layout() {
+  const filters = useAppStore((state) => state.filters)
+  const resetFilters = useAppStore((state) => state.resetFilters)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarClosing, setSidebarClosing] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
@@ -446,6 +463,7 @@ export default function Layout() {
 
   const duration = reducedMotion ? 100 : 200
   const dismissThreshold = 80
+  const activeFilterCount = getActiveFilterCount(filters)
 
   const handleDragStart = (clientY: number) => {
     if (!sidebarOpen || sidebarClosing) return
@@ -503,7 +521,7 @@ export default function Layout() {
           transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
         }}
       >
-        <div className="p-4">
+        <div className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-4 pb-4 pt-4 backdrop-blur supports-[backdrop-filter]:bg-white/85 dark:border-[#2e303a] dark:bg-[#1a1d2e]/95 dark:supports-[backdrop-filter]:bg-[#1a1d2e]/85">
           {/* Mobile drag handle */}
           <div
             className="flex justify-center mb-4 sm:hidden cursor-grab active:cursor-grabbing"
@@ -534,19 +552,35 @@ export default function Layout() {
             </div>
           )}
 
-          {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white">Filters</span>
-            <button
-              onClick={() => { setSidebarClosing(true); setTimeout(() => { setSidebarOpen(false); setSidebarClosing(false) }, duration) }}
-              className="p-2 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#25283a] rounded-lg transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white">Filters</span>
+              <div className="mt-1 text-xs text-slate-500 dark:text-[#94a3b8]">
+                {activeFilterCount === 0 ? 'Browse all cards' : `${activeFilterCount} active ${activeFilterCount === 1 ? 'filter' : 'filters'}`}
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={resetFilters}
+                  className="rounded-lg px-2 py-2 text-xs font-semibold text-[#3b82f6] transition-colors hover:bg-slate-100 dark:text-[#60a5fa] dark:hover:bg-[#25283a]"
+                >
+                  Clear all
+                </button>
+              )}
+              <button
+                onClick={() => { setSidebarClosing(true); setTimeout(() => { setSidebarOpen(false); setSidebarClosing(false) }, duration) }}
+                className="p-2 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#25283a] rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
+        </div>
 
+        <div className="px-4">
           <FilterBar />
         </div>
       </aside>

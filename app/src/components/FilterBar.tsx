@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useAppStore } from '../store'
 import {
   ALL_COLORS,
@@ -11,16 +12,45 @@ import {
 
 function FilterSection({
   label,
+  count,
+  defaultExpanded = false,
   children,
 }: {
   label: string
+  count?: number
+  defaultExpanded?: boolean
   children: React.ReactNode
 }) {
+  const [expanded, setExpanded] = useState(defaultExpanded)
+
   return (
-    <div>
-      <h3 className="text-[10px] font-semibold text-slate-400 dark:text-[#64748b] uppercase tracking-wider mb-1.5">{label}</h3>
-      {children}
-    </div>
+    <section className="border-b border-slate-100 dark:border-[#25283a] last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setExpanded((value) => !value)}
+        aria-expanded={expanded}
+        className="flex w-full items-center justify-between gap-3 py-3 text-left"
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="text-[10px] font-semibold text-slate-400 dark:text-[#64748b] uppercase tracking-wider">{label}</span>
+          {count ? (
+            <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-[#25283a] dark:text-[#94a3b8]">
+              {count}
+            </span>
+          ) : null}
+        </span>
+        <svg
+          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform dark:text-[#64748b] ${expanded ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {expanded ? <div className="pb-3">{children}</div> : null}
+    </section>
   )
 }
 
@@ -77,6 +107,7 @@ function RangeInput({
     <div className="flex items-center gap-1.5">
       <input
         type="number"
+        inputMode="numeric"
         step={step}
         aria-label={`${label} min`}
         placeholder={minPlaceholder}
@@ -87,6 +118,7 @@ function RangeInput({
       <span className="text-slate-400 dark:text-[#64748b] text-[10px]">–</span>
       <input
         type="number"
+        inputMode="numeric"
         step={step}
         aria-label={`${label} max`}
         placeholder={maxPlaceholder}
@@ -101,10 +133,11 @@ function RangeInput({
 export default function FilterBar() {
   const filters = useAppStore((state) => state.filters)
   const setFilters = useAppStore((state) => state.setFilters)
-  const resetFilters = useAppStore((state) => state.resetFilters)
   const setSearchScope = useAppStore((state) => state.setSearchScope)
   const sets = useAppStore((state) => state.sets)
   const blocks = useAppStore((state) => state.blocks)
+  const totalCards = useAppStore((state) => state.totalCards)
+  const searchLoading = useAppStore((state) => state.searchLoading)
 
   const toggle = (key: 'colors' | 'categories' | 'rarities' | 'attributes' | 'blocks' | 'sets', value: string | number) => {
     const current = filters[key] as (string | number)[]
@@ -114,51 +147,19 @@ export default function FilterBar() {
     setFilters({ [key]: next } as Partial<typeof filters>)
   }
 
-  // Debounced search input
-  const hasActiveFilters =
-    filters.colors.length > 0 ||
-    filters.categories.length > 0 ||
-    filters.rarities.length > 0 ||
-    filters.attributes.length > 0 ||
-    filters.blocks.length > 0 ||
-    filters.sets.length > 0 ||
-    filters.costMin !== null ||
-    filters.costMax !== null ||
-    filters.powerMin !== null ||
-    filters.powerMax !== null ||
-    filters.search !== ''
+  const closeSidebar = () => {
+    window.dispatchEvent(new CustomEvent('optcg-close-sidebar'))
+  }
+
+  const resultLabel = searchLoading
+    ? 'Updating results…'
+    : totalCards === 1
+      ? 'Show 1 result'
+      : `Show ${new Intl.NumberFormat().format(totalCards)} results`
 
   return (
-    <div className="space-y-4">
-      {/* Clear all */}
-      {hasActiveFilters && (
-        <button
-          onClick={() => {
-            resetFilters()
-          }}
-          className="text-base sm:text-[11px] text-[#3b82f6] dark:text-[#60a5fa] hover:underline font-medium transition-colors p-1"
-        >
-          Clear all filters
-        </button>
-      )}
-
-      {/* Search scope */}
-      <FilterSection label="Search in">
-        <div className="flex flex-wrap gap-1">
-          {(['name', 'effect', 'trigger'] as const).map((scope) => (
-            <TogglePill
-              key={scope}
-              active={filters.searchScopes.includes(scope)}
-              onClick={() => setSearchScope(scope)}
-            >
-              {scope.charAt(0).toUpperCase() + scope.slice(1)}
-            </TogglePill>
-          ))}
-        </div>
-      </FilterSection>
-
-      {/* Colors */}
-      <FilterSection label="Colors">
+    <div className="space-y-0 pb-24">
+      <FilterSection label="Colors" count={filters.colors.length} defaultExpanded>
         <div className="flex flex-wrap gap-1">
           {ALL_COLORS.map((color) => (
             <TogglePill
@@ -183,42 +184,7 @@ export default function FilterBar() {
         </div>
       </FilterSection>
 
-      {/* Sets */}
-      {sets.length > 0 && (
-        <FilterSection label="Sets">
-          <div className="flex flex-wrap gap-1">
-            {sets.map((set) => (
-              <TogglePill
-                key={set}
-                active={filters.sets.includes(set)}
-                onClick={() => toggle('sets', set)}
-              >
-                {set}
-              </TogglePill>
-            ))}
-          </div>
-        </FilterSection>
-      )}
-
-      {/* Blocks */}
-      {blocks.length > 0 && (
-        <FilterSection label="Blocks">
-          <div className="flex flex-wrap gap-1">
-            {blocks.map((block) => (
-              <TogglePill
-                key={block}
-                active={filters.blocks.includes(block)}
-                onClick={() => toggle('blocks', block)}
-              >
-                {block}
-              </TogglePill>
-            ))}
-          </div>
-        </FilterSection>
-      )}
-
-      {/* Categories */}
-      <FilterSection label="Category">
+      <FilterSection label="Category" count={filters.categories.length} defaultExpanded>
         <div className="flex flex-wrap gap-1">
           {ALL_CATEGORIES.map((cat) => (
             <TogglePill
@@ -237,8 +203,53 @@ export default function FilterBar() {
         </div>
       </FilterSection>
 
-      {/* Rarities */}
-      <FilterSection label="Rarities">
+      <FilterSection label="Search in" count={filters.searchScopes.length} defaultExpanded={filters.search !== ''}>
+        <div className="flex flex-wrap gap-1">
+          {(['name', 'effect', 'trigger'] as const).map((scope) => (
+            <TogglePill
+              key={scope}
+              active={filters.searchScopes.includes(scope)}
+              onClick={() => setSearchScope(scope)}
+            >
+              {scope.charAt(0).toUpperCase() + scope.slice(1)}
+            </TogglePill>
+          ))}
+        </div>
+      </FilterSection>
+
+      {sets.length > 0 && (
+        <FilterSection label="Sets" count={filters.sets.length || sets.length} defaultExpanded={filters.sets.length > 0}>
+          <div className="flex flex-wrap gap-1">
+            {sets.map((set) => (
+              <TogglePill
+                key={set}
+                active={filters.sets.includes(set)}
+                onClick={() => toggle('sets', set)}
+              >
+                {set}
+              </TogglePill>
+            ))}
+          </div>
+        </FilterSection>
+      )}
+
+      {blocks.length > 0 && (
+        <FilterSection label="Blocks" count={filters.blocks.length || blocks.length} defaultExpanded={filters.blocks.length > 0}>
+          <div className="flex flex-wrap gap-1">
+            {blocks.map((block) => (
+              <TogglePill
+                key={block}
+                active={filters.blocks.includes(block)}
+                onClick={() => toggle('blocks', block)}
+              >
+                {block}
+              </TogglePill>
+            ))}
+          </div>
+        </FilterSection>
+      )}
+
+      <FilterSection label="Rarities" count={filters.rarities.length} defaultExpanded={filters.rarities.length > 0}>
         <div className="flex flex-wrap gap-1">
           {ALL_RARITIES.map((r) => (
             <TogglePill
@@ -252,8 +263,7 @@ export default function FilterBar() {
         </div>
       </FilterSection>
 
-      {/* Attributes */}
-      <FilterSection label="Attributes">
+      <FilterSection label="Attributes" count={filters.attributes.length} defaultExpanded={filters.attributes.length > 0}>
         <div className="flex flex-wrap gap-1">
           {ALL_ATTRIBUTES.map((attr) => (
             <TogglePill
@@ -267,8 +277,7 @@ export default function FilterBar() {
         </div>
       </FilterSection>
 
-      {/* Cost range */}
-      <FilterSection label="Cost">
+      <FilterSection label="Cost" count={filters.costMin !== null || filters.costMax !== null ? 1 : undefined} defaultExpanded={filters.costMin !== null || filters.costMax !== null}>
         <RangeInput
           label="Cost"
           min={filters.costMin}
@@ -284,8 +293,7 @@ export default function FilterBar() {
         />
       </FilterSection>
 
-      {/* Power range */}
-      <FilterSection label="Power">
+      <FilterSection label="Power" count={filters.powerMin !== null || filters.powerMax !== null ? 1 : undefined} defaultExpanded={filters.powerMin !== null || filters.powerMax !== null}>
         <RangeInput
           label="Power"
           min={filters.powerMin}
@@ -302,8 +310,7 @@ export default function FilterBar() {
         />
       </FilterSection>
 
-      {/* Counter range */}
-      <FilterSection label="Counter">
+      <FilterSection label="Counter" count={filters.counterMin !== null || filters.counterMax !== null ? 1 : undefined} defaultExpanded={filters.counterMin !== null || filters.counterMax !== null}>
         <RangeInput
           label="Counter"
           min={filters.counterMin}
@@ -319,6 +326,16 @@ export default function FilterBar() {
           step={1000}
         />
       </FilterSection>
+
+      <div className="sticky bottom-0 -mx-4 border-t border-slate-200 bg-white/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur supports-[backdrop-filter]:bg-white/85 dark:border-[#2e303a] dark:bg-[#1a1d2e]/95 dark:supports-[backdrop-filter]:bg-[#1a1d2e]/85">
+        <button
+          type="button"
+          onClick={closeSidebar}
+          className="flex w-full items-center justify-center rounded-xl bg-[#3b82f6] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[#3b82f6]/20 transition-colors hover:bg-[#2563eb] active:bg-[#1d4ed8]"
+        >
+          {resultLabel}
+        </button>
+      </div>
     </div>
   )
 }

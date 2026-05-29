@@ -15,6 +15,7 @@ function useActiveFilterCount(): number {
   if (filters.blocks.length > 0) count++
   if (filters.costMin != null || filters.costMax != null) count++
   if (filters.powerMin != null || filters.powerMax != null) count++
+  if (filters.counterMin != null || filters.counterMax != null) count++
 
   return count
 }
