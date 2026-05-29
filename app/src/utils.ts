@@ -149,6 +149,40 @@ export function cleanPackName(pack: string): string {
     .trim()
 }
 
+/**
+ * Get a linear gradient CSS string for multi-color leader elements.
+ * Returns undefined for single-color leaders (use solid color instead).
+ */
+export function getLeaderGradient(colors: string[]): string | undefined {
+  if (colors.length < 2) return undefined
+  const stops = colors.map((c, i) => `${COLOR_HEX[c]} ${Math.round((i / (colors.length - 1)) * 100)}%`)
+  return `linear-gradient(90deg, ${stops.join(', ')})`
+}
+
+/**
+ * Get a solid tinted background for leader cards (no gradient).
+ * Uses the primary color for the tint.
+ */
+export function getLeaderSolidBg(colors: string[]): React.CSSProperties {
+  const primaryColor = colors[0] ? COLOR_HEX[colors[0]] : '#64748b'
+  return { backgroundColor: getColorTint(primaryColor, 0.08) }
+}
+
+/**
+ * Lighten a hex color by mixing with white.
+ * @param hex - Base color hex (e.g. '#dc2626')
+ * @param amount - 0 = original, 1 = white
+ */
+function getColorTint(hex: string, amount: number): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  const nr = Math.round(r + (255 - r) * amount)
+  const ng = Math.round(g + (255 - g) * amount)
+  const nb = Math.round(b + (255 - b) * amount)
+  return `#${nr.toString(16).padStart(2, '0')}${ng.toString(16).padStart(2, '0')}${nb.toString(16).padStart(2, '0')}`
+}
+
 /** Group card variant images by language */
 export interface ArtImage {
   imgUrl: string

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import type { Card } from '../types'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
-import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
+import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl, getLeaderGradient } from '../utils'
 import { useAppStore } from '../store'
 import ImageLoader from './ImageLoader'
 
@@ -41,6 +41,8 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
 
   const transition = 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart)'
   const isLeader = card.rarity === 'Leader'
+  const leaderMode = !showImages && isLeader
+  const leaderGradient = getLeaderGradient(card.colors)
   const cardStyle = !showImages && !isLeader
     ? { borderLeft: `3px solid ${primaryColor}`, transition }
     : { transition }
@@ -57,17 +59,19 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
     >
       {/* Top strip: Cost | Power | Attribute (only when no image) */}
       {(!showImages || !card.img_url) && (
-      <div className={`flex items-center justify-between px-2 py-1.5 shrink-0 min-h-[34px] ${isLeader ? 'bg-amber-50 dark:bg-amber-950/40' : 'bg-slate-50 dark:bg-[#13151f]'}`}>
-        {card.cost !== null ? (
-          <span
-            className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shadow-sm ${getTextColorForBg(primaryColor)}`}
-            style={costBg}
-          >
-            {card.cost}
-          </span>
-        ) : (
-          <span className="w-6" />
-        )}
+      <div className="flex items-center justify-between px-2 py-1.5 shrink-0 min-h-[34px] bg-slate-50 dark:bg-[#13151f]">
+        <div className="flex items-center gap-1.5">
+          {card.cost !== null ? (
+            <span
+              className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shadow-sm"
+              style={costBg}
+            >
+              {card.cost}
+            </span>
+          ) : (
+            <span className="w-6" />
+          )}
+        </div>
 
         <div className="flex items-center gap-1.5">
           {card.power !== null && (
@@ -121,7 +125,12 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
         {/* Category */}
         <div
           className="text-[10px] font-medium tracking-[0.3em] uppercase text-center"
-          style={categoryColor ? { color: categoryColor } : undefined}
+          style={leaderMode
+            ? (leaderGradient
+              ? { background: leaderGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+              : { color: primaryColor })
+            : (categoryColor ? { color: categoryColor } : undefined)
+          }
         >
           {card.category === 'Don' ? 'DON!!' : card.category}
         </div>
@@ -179,9 +188,21 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
           {(!showImages && card.counter !== null) && (
             <span className="text-[9px] font-bold text-[#3498db]">⚡ +{card.counter}</span>
           )}
-          <span className="px-1 rounded bg-white/20 font-bold">
-            {RARITY_SHORT[card.rarity] || card.rarity}
-          </span>
+          {leaderMode ? (
+            <span
+              className="px-1 rounded font-bold"
+              style={leaderGradient
+                ? { background: leaderGradient }
+                : { backgroundColor: primaryColor }
+              }
+            >
+              L
+            </span>
+          ) : (
+            <span className="px-1 rounded bg-white/20 font-bold">
+              {RARITY_SHORT[card.rarity] || card.rarity}
+            </span>
+          )}
           {card.block_number !== null && (
             <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white/20 text-[10px] font-bold">
               {card.block_number}
