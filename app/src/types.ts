@@ -49,7 +49,8 @@ export interface CardFilters {
   counterMin: number | null;
   counterMax: number | null;
   sets: string[];
-  blocks: number[];
+  blockMin: number | null;
+  blockMax: number | null;
 }
 
 export const DEFAULT_FILTERS: CardFilters = {
@@ -66,7 +67,8 @@ export const DEFAULT_FILTERS: CardFilters = {
   counterMin: null,
   counterMax: null,
   sets: [],
-  blocks: [],
+  blockMin: null,
+  blockMax: null,
 };
 
 export const ALL_COLORS: CardColor[] = ['Red', 'Blue', 'Green', 'Purple', 'Black', 'Yellow'];

@@ -430,19 +430,19 @@ function ActiveFilterChips() {
     onRemove: () => setFilters({ sets: filters.sets.filter((v) => v !== s) }),
   }))
 
-  filters.blocks.forEach((b) => chips.push({
-    label: `Block ${b}`,
-    onRemove: () => setFilters({ blocks: filters.blocks.filter((v) => v !== b) }),
-  }))
+  if (filters.blockMin != null || filters.blockMax != null) {
+    const label = [filters.blockMin ?? '1', filters.blockMax ?? '5'].join('–')
+    chips.push({ label: `Block ${label}`, onRemove: () => setFilters({ blockMin: null, blockMax: null }) })
+  }
 
   if (filters.costMin != null || filters.costMax != null) {
-    const label = [filters.costMin ?? '0', filters.costMax ?? '15'].join('–')
+    const label = [filters.costMin ?? '0', filters.costMax ?? '10'].join('–')
     chips.push({ label: `Cost ${label}`, onRemove: () => setFilters({ costMin: null, costMax: null }) })
   }
 
   if (filters.powerMin != null || filters.powerMax != null) {
     const min = filters.powerMin != null ? (filters.powerMin >= 1000 ? `${filters.powerMin / 1000}k` : filters.powerMin) : '0'
-    const max = filters.powerMax != null ? (filters.powerMax >= 1000 ? `${filters.powerMax / 1000}k` : filters.powerMax) : '20k'
+    const max = filters.powerMax != null ? (filters.powerMax >= 1000 ? `${filters.powerMax / 1000}k` : filters.powerMax) : '13k'
     chips.push({ label: `Power ${min}–${max}`, onRemove: () => setFilters({ powerMin: null, powerMax: null }) })
   }
 
@@ -488,7 +488,7 @@ function getActiveFilterCount(filters: ReturnType<typeof useAppStore.getState>['
   if (filters.rarities.length > 0) count++
   if (filters.attributes.length > 0) count++
   if (filters.sets.length > 0) count++
-  if (filters.blocks.length > 0) count++
+  if (filters.blockMin != null || filters.blockMax != null) count++
   if (filters.costMin != null || filters.costMax != null) count++
   if (filters.powerMin != null || filters.powerMax != null) count++
   if (filters.counterMin != null || filters.counterMax != null) count++

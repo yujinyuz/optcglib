@@ -41,7 +41,8 @@ function filtersToParams(filters: CardFilters): URLSearchParams {
   if (filters.powerMax != null) p.set('powerMax', String(filters.powerMax));
   if (filters.counterMin != null) p.set('counterMin', String(filters.counterMin));
   if (filters.counterMax != null) p.set('counterMax', String(filters.counterMax));
-  if (filters.blocks.length) p.set('blocks', filters.blocks.join(','));
+  if (filters.blockMin != null) p.set('blockMin', String(filters.blockMin));
+  if (filters.blockMax != null) p.set('blockMax', String(filters.blockMax));
   return p;
 }
 
@@ -70,7 +71,8 @@ function paramsToFilters(params: URLSearchParams): Partial<CardFilters> {
   if (params.has('powerMax')) f.powerMax = safeNum(params.get('powerMax'));
   if (params.has('counterMin')) f.counterMin = safeNum(params.get('counterMin'));
   if (params.has('counterMax')) f.counterMax = safeNum(params.get('counterMax'));
-  if (params.has('blocks')) f.blocks = params.get('blocks')!.split(',').map(Number).filter((n) => !Number.isNaN(n));
+  if (params.has('blockMin')) f.blockMin = safeNum(params.get('blockMin'));
+  if (params.has('blockMax')) f.blockMax = safeNum(params.get('blockMax'));
   return f;
 }
 
@@ -112,7 +114,8 @@ function buildQueryParams(
     counterMin: filters.counterMin,
     counterMax: filters.counterMax,
     sets: filters.sets.length ? filters.sets : undefined,
-    blocks: filters.blocks.length ? filters.blocks : undefined,
+    blockMin: filters.blockMin,
+    blockMax: filters.blockMax,
     preferredLanguage,
     hideVariants: !loadExternalImages || !showAlternateArts || !isOnline,
     limit,

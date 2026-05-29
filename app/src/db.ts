@@ -21,7 +21,8 @@ export type QueryCardsFilters = {
   counterMin?: number | null;
   counterMax?: number | null;
   sets?: string[];
-  blocks?: number[];
+  blockMin?: number | null;
+  blockMax?: number | null;
   hideVariants?: boolean;
   preferredLanguage?: 'english' | 'japanese';
   limit?: number;

@@ -1,34 +1,36 @@
 {
   "agent": {
     "orchestrator": {
-      "model": "opencode/qwen3.6-plus-free",
+      "model": "opencode/mimo-v2.5-free",
       "options": {},
       "permission": {}
     },
     "oracle": {
-      "model": "opencode/qwen3.6-plus-free",
+      "model": "opencode/mimo-v2.5-free",
       "variant": "max",
       "options": {},
       "permission": {}
     },
     "council": {
-      "model": "opencode/qwen3.6-plus-free",
+      "model": "opencode/mimo-v2.5-free",
       "variant": "high",
       "options": {},
       "permission": {}
     },
     "librarian": {
-      "model": "opencode/minimax-m2.5-free",
+      "model": "opencode/mimo-v2.5-free",
       "options": {},
-      "permission": {}
+      "permission": {},
+      "variant": "low"
     },
     "explorer": {
-      "model": "opencode/minimax-m2.5-free",
+      "model": "opencode/mimo-v2.5-free",
       "options": {},
-      "permission": {}
+      "permission": {},
+      "variant": "low"
     },
     "designer": {
-      "model": "opencode/qwen3.6-plus-free",
+      "model": "opencode/mimo-v2.5-free",
       "variant": "medium",
       "options": {},
       "permission": {}
@@ -40,9 +42,10 @@
       "permission": {}
     },
     "observer": {
-      "model": "opencode/qwen3.6-plus-free",
+      "model": "opencode/mimo-v2.5-free",
       "options": {},
       "permission": {}
     }
-  }
+  },
+  "$schema": "https://opencode.ai/config.json"
 }

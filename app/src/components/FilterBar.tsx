@@ -84,48 +84,103 @@ function TogglePill({
   )
 }
 
-function RangeInput({
+function DualRangeSlider({
   label,
+  absoluteMin,
+  absoluteMax,
   min,
   max,
   onMinChange,
   onMaxChange,
-  minPlaceholder,
-  maxPlaceholder,
   step = 1,
 }: {
   label: string
+  absoluteMin: number
+  absoluteMax: number
   min: number | null
   max: number | null
   onMinChange: (val: number | null) => void
   onMaxChange: (val: number | null) => void
-  minPlaceholder: string
-  maxPlaceholder: string
   step?: number
 }) {
+  const low = min ?? absoluteMin
+  const high = max ?? absoluteMax
+  const range = absoluteMax - absoluteMin
+
+  const pctLow = ((low - absoluteMin) / range) * 100
+  const pctHigh = ((high - absoluteMin) / range) * 100
+
+  const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Number(e.target.value)
+    if (val <= (max ?? absoluteMax)) onMinChange(val)
+  }
+
+  const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Number(e.target.value)
+    if (val >= (min ?? absoluteMin)) onMaxChange(val)
+  }
+
+  const displayValue = (v: number | null, fallback: number) => {
+    const val = v ?? fallback
+    return step >= 1000 ? `${val / 1000}k` : String(val)
+  }
+
   return (
-    <div className="flex items-center gap-1.5">
-      <input
-        type="number"
-        inputMode="numeric"
-        step={step}
-        aria-label={`${label} min`}
-        placeholder={minPlaceholder}
-        value={min ?? ''}
-        onChange={(e) => onMinChange(e.target.value === '' ? null : Number(e.target.value))}
-        className="w-16 bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1.5 text-base sm:text-[11px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-[#3b82f6] focus:ring-2 focus:ring-[#3b82f6]/20 text-center"
-      />
-      <span className="text-slate-400 dark:text-[#64748b] text-[10px]">–</span>
-      <input
-        type="number"
-        inputMode="numeric"
-        step={step}
-        aria-label={`${label} max`}
-        placeholder={maxPlaceholder}
-        value={max ?? ''}
-        onChange={(e) => onMaxChange(e.target.value === '' ? null : Number(e.target.value))}
-        className="w-16 bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1.5 text-base sm:text-[11px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-[#3b82f6] focus:ring-2 focus:ring-[#3b82f6]/20 text-center"
-      />
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] font-medium text-slate-400 dark:text-[#64748b] w-6 text-right shrink-0">{displayValue(null, absoluteMin)}</span>
+        <div className="relative h-5 flex-1 flex items-center">
+          <div className="absolute inset-x-0 h-1 rounded-full bg-slate-200 dark:bg-[#2e303a]" />
+          <div
+            className="absolute h-1 rounded-full bg-[#3b82f6] dark:bg-[#60a5fa]"
+            style={{ left: `${Math.min(pctLow, pctHigh)}%`, right: `${100 - Math.max(pctLow, pctHigh)}%` }}
+          />
+          <input
+            type="range"
+            min={absoluteMin}
+            max={absoluteMax}
+            step={step}
+            value={low}
+            onChange={handleMinChange}
+            aria-label={`${label} min`}
+            className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#3b82f6] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:active:cursor-grabbing [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#3b82f6] [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:cursor-grab"
+          />
+          <input
+            type="range"
+            min={absoluteMin}
+            max={absoluteMax}
+            step={step}
+            value={high}
+            onChange={handleMaxChange}
+            aria-label={`${label} max`}
+            className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#3b82f6] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:active:cursor-grabbing [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#3b82f6] [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:cursor-grab"
+          />
+        </div>
+        <span className="text-[10px] font-medium text-slate-400 dark:text-[#64748b] w-6 shrink-0">{displayValue(null, absoluteMax)}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <input
+          type="number"
+          inputMode="numeric"
+          step={step}
+          aria-label={`${label} min`}
+          placeholder={String(absoluteMin)}
+          value={min ?? ''}
+          onChange={(e) => onMinChange(e.target.value === '' ? null : Number(e.target.value))}
+          className="w-16 bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1.5 text-base sm:text-[11px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-[#3b82f6] focus:ring-2 focus:ring-[#3b82f6]/20 text-center"
+        />
+        <span className="text-slate-400 dark:text-[#64748b] text-[10px]">–</span>
+        <input
+          type="number"
+          inputMode="numeric"
+          step={step}
+          aria-label={`${label} max`}
+          placeholder={String(step >= 1000 ? `${absoluteMax / 1000}k` : absoluteMax)}
+          value={max ?? ''}
+          onChange={(e) => onMaxChange(e.target.value === '' ? null : Number(e.target.value))}
+          className="w-16 bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1.5 text-base sm:text-[11px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-[#3b82f6] focus:ring-2 focus:ring-[#3b82f6]/20 text-center"
+        />
+      </div>
     </div>
   )
 }
@@ -139,7 +194,7 @@ export default function FilterBar() {
   const totalCards = useAppStore((state) => state.totalCards)
   const searchLoading = useAppStore((state) => state.searchLoading)
 
-  const toggle = (key: 'colors' | 'categories' | 'rarities' | 'attributes' | 'blocks' | 'sets', value: string | number) => {
+  const toggle = (key: 'colors' | 'categories' | 'rarities' | 'attributes' | 'sets', value: string | number) => {
     const current = filters[key] as (string | number)[]
     const next = current.includes(value as never)
       ? current.filter((v) => v !== value)
@@ -234,18 +289,17 @@ export default function FilterBar() {
       )}
 
       {blocks.length > 0 && (
-        <FilterSection label="Blocks" count={filters.blocks.length || blocks.length} defaultExpanded={filters.blocks.length > 0}>
-          <div className="flex flex-wrap gap-1">
-            {blocks.map((block) => (
-              <TogglePill
-                key={block}
-                active={filters.blocks.includes(block)}
-                onClick={() => toggle('blocks', block)}
-              >
-                {block}
-              </TogglePill>
-            ))}
-          </div>
+        <FilterSection label="Blocks" count={filters.blockMin !== null || filters.blockMax !== null ? 1 : undefined} defaultExpanded={filters.blockMin !== null || filters.blockMax !== null}>
+          <DualRangeSlider
+            label="Block"
+            absoluteMin={blocks[0]}
+            absoluteMax={blocks[blocks.length - 1]}
+            min={filters.blockMin}
+            max={filters.blockMax}
+            onMinChange={(v) => setFilters({ blockMin: v })}
+            onMaxChange={(v) => setFilters({ blockMax: v })}
+            step={1}
+          />
         </FilterSection>
       )}
 
@@ -278,51 +332,40 @@ export default function FilterBar() {
       </FilterSection>
 
       <FilterSection label="Cost" count={filters.costMin !== null || filters.costMax !== null ? 1 : undefined} defaultExpanded={filters.costMin !== null || filters.costMax !== null}>
-        <RangeInput
+        <DualRangeSlider
           label="Cost"
+          absoluteMin={0}
+          absoluteMax={10}
           min={filters.costMin}
           max={filters.costMax}
-          onMinChange={(v) => {
-            setFilters({ costMin: v })
-          }}
-          onMaxChange={(v) => {
-            setFilters({ costMax: v })
-          }}
-          minPlaceholder="0"
-          maxPlaceholder="15"
+          onMinChange={(v) => setFilters({ costMin: v })}
+          onMaxChange={(v) => setFilters({ costMax: v })}
+          step={1}
         />
       </FilterSection>
 
       <FilterSection label="Power" count={filters.powerMin !== null || filters.powerMax !== null ? 1 : undefined} defaultExpanded={filters.powerMin !== null || filters.powerMax !== null}>
-        <RangeInput
+        <DualRangeSlider
           label="Power"
+          absoluteMin={0}
+          absoluteMax={13000}
           min={filters.powerMin}
           max={filters.powerMax}
-          onMinChange={(v) => {
-            setFilters({ powerMin: v })
-          }}
-          onMaxChange={(v) => {
-            setFilters({ powerMax: v })
-          }}
-          minPlaceholder="0"
-          maxPlaceholder="20k"
+          onMinChange={(v) => setFilters({ powerMin: v })}
+          onMaxChange={(v) => setFilters({ powerMax: v })}
           step={1000}
         />
       </FilterSection>
 
       <FilterSection label="Counter" count={filters.counterMin !== null || filters.counterMax !== null ? 1 : undefined} defaultExpanded={filters.counterMin !== null || filters.counterMax !== null}>
-        <RangeInput
+        <DualRangeSlider
           label="Counter"
+          absoluteMin={0}
+          absoluteMax={2000}
           min={filters.counterMin}
           max={filters.counterMax}
-          onMinChange={(v) => {
-            setFilters({ counterMin: v })
-          }}
-          onMaxChange={(v) => {
-            setFilters({ counterMax: v })
-          }}
-          minPlaceholder="0"
-          maxPlaceholder="2000"
+          onMinChange={(v) => setFilters({ counterMin: v })}
+          onMaxChange={(v) => setFilters({ counterMax: v })}
           step={1000}
         />
       </FilterSection>
