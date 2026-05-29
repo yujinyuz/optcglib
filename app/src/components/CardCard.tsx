@@ -51,7 +51,7 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
     >
       {/* Top strip: Cost | Power | Attribute (only when no image) */}
       {(!showImages || !card.img_url) && (
-      <div className="flex items-center justify-between px-2 py-1.5 shrink-0 bg-slate-50 dark:bg-[#13151f]">
+      <div className="flex items-center justify-between px-2 py-1.5 shrink-0 bg-slate-50 dark:bg-[#13151f] min-h-[34px]">
         {card.cost !== null ? (
           <span
             className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shadow-sm ${getTextColorForBg(primaryColor)}`}
@@ -126,11 +126,9 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
         </h3>
 
         {/* Types */}
-        {card.types.length > 0 && (
-          <div className="mt-0.5 text-[10px] text-center text-slate-500 dark:text-[#64748b] truncate">
-            {card.types.join(' / ')}
-          </div>
-        )}
+        <div className="mt-0.5 text-[10px] text-center text-slate-500 dark:text-[#64748b] truncate min-h-[14px]">
+          {card.types.length > 0 ? card.types.join(' / ') : '\u00A0'}
+        </div>
 
         {/* Attributes — text labels below types (no-image mode) */}
         {!showImages && card.attributes.length > 0 && (

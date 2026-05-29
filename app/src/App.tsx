@@ -6,6 +6,7 @@ import Layout from './components/Layout'
 import CardGrid from './components/CardGrid'
 import CardDetail from './components/CardDetail'
 import CardModal from './components/CardModal'
+import UpdateBanner from './components/UpdateBanner'
 
 // Console easter egg for curious developers
 console.log(
@@ -25,7 +26,6 @@ const loadingMessages = [
 ]
 
 function OfflineIndicator() {
-  const offlineReady = useAppStore((state) => state.offlineReady)
   const showOfflineToast = useAppStore((state) => state.showOfflineToast)
   const dismissOfflineToast = useAppStore((state) => state.dismissOfflineToast)
   const { needRefresh: updateAvailable } = useRegisterSW({
@@ -41,7 +41,7 @@ function OfflineIndicator() {
     }
   }, [showOfflineToast, dismissOfflineToast])
 
-  if (!showOfflineToast) return null
+  if (!showOfflineToast || updateAvailable) return null
 
   return (
     <div className="fixed bottom-4 left-4 z-50 flex items-center gap-2 bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-lg px-3 py-2 shadow-lg text-sm animate-[fadeInUp_0.3s_ease-out]">
@@ -49,16 +49,8 @@ function OfflineIndicator() {
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
       </svg>
       <span className="text-slate-600 dark:text-[#94a3b8]">
-        {offlineReady ? 'Ready for offline use' : 'Checking offline status...'}
+        Ready for offline use
       </span>
-      {updateAvailable && (
-        <button
-          onClick={() => window.location.reload()}
-          className="ml-1 text-[#3b82f6] hover:underline font-medium"
-        >
-          Update
-        </button>
-      )}
       <button
         onClick={dismissOfflineToast}
         className="ml-1 text-slate-400 hover:text-slate-600 dark:hover:text-white"
@@ -185,6 +177,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className="h-screen bg-slate-50 dark:bg-[#0f1117] text-slate-900 dark:text-[#e2e8f0] flex flex-col overflow-hidden">
+        <UpdateBanner />
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<CardGrid />} />
