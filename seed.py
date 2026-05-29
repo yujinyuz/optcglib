@@ -310,6 +310,39 @@ def update_search_text(conn: sqlite3.Connection):
     pass
 
 
+def fill_missing_japanese_images(conn: sqlite3.Connection):
+    """Derive Japanese image URLs from English ones where Japanese images are missing.
+
+    Some cards (e.g. OP16 _p variants) only exist in English punk-records data,
+    never in Japanese. The actual Japanese images exist on the JP server with the
+    same URL path but on a different domain. We derive the URL by swapping the
+    domain from en.onepiece-cardgame.com to www.onepiece-cardgame.com.
+    """
+    rows = conn.execute(
+        """SELECT card_id, img_url, img_full_url FROM card_images
+           WHERE language = 'english'
+             AND img_full_url IS NOT NULL AND img_full_url != ''
+             AND NOT EXISTS (
+                 SELECT 1 FROM card_images j
+                 WHERE j.card_id = card_images.card_id AND j.language = 'japanese'
+             )"""
+    ).fetchall()
+
+    inserted = 0
+    for card_id, img_url, img_full_url in rows:
+        jp_url = (img_url or "").replace("en.onepiece-cardgame.com", "www.onepiece-cardgame.com")
+        jp_full = (img_full_url or "").replace("en.onepiece-cardgame.com", "www.onepiece-cardgame.com")
+        if jp_full:
+            conn.execute(
+                "INSERT OR REPLACE INTO card_images (card_id, language, img_url, img_full_url) VALUES (?, 'japanese', ?, ?)",
+                (card_id, jp_url, jp_full),
+            )
+            inserted += 1
+
+    conn.commit()
+    print(f"  Derived {inserted} Japanese image URLs from English entries")
+
+
 def build_card_best_images(conn: sqlite3.Connection):
     """Pre-compute best image URLs per card to eliminate correlated subquery at query time."""
     conn.execute("DELETE FROM card_best_images")
@@ -318,7 +351,10 @@ def build_card_best_images(conn: sqlite3.Connection):
         SELECT
             card_id,
             MAX(CASE WHEN language = 'english' THEN img_full_url END),
-            MAX(CASE WHEN language = 'japanese' THEN img_full_url END)
+            COALESCE(
+                MAX(CASE WHEN language = 'japanese' THEN img_full_url END),
+                MAX(CASE WHEN language = 'english' THEN img_full_url END)
+            )
         FROM card_images
         WHERE img_full_url IS NOT NULL AND img_full_url != ''
         GROUP BY card_id
@@ -370,6 +406,7 @@ def main():
 
     rebuild_fts_index(conn)
     update_search_text(conn)
+    fill_missing_japanese_images(conn)
     build_card_best_images(conn)
 
     # Print summary
