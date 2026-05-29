@@ -14,12 +14,17 @@ export default defineConfig({
         name: 'OPTCG Lib',
         short_name: 'OPTCG Lib',
         description: 'offline first one piece card game library',
+        id: '/',
         display: 'standalone',
         scope: '/',
         start_url: '/',
         icons: [
           { src: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+        screenshots: [
+          { src: '/og-image.png', sizes: '1200x630', type: 'image/png', form_factor: 'wide', label: 'OPTCG Lib card browser' },
         ],
       },
       workbox: {

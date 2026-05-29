@@ -16,7 +16,9 @@ function SettingsMenu() {
   const [closing, setClosing] = useState(false)
   const [installTooltip, setInstallTooltip] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
-  const [deferredPrompt, setDeferredPrompt] = useState<Event & { prompt: () => Promise<void> } | null>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<Event & { prompt: () => Promise<void>; userChoice?: Promise<{ outcome: string }> } | null>(null)
+  const [installDismissed, setInstallDismissed] = useState(false)
+  const [installSuccess, setInstallSuccess] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const loadExternalImages = useAppStore((state) => state.loadExternalImages)
   const setLoadExternalImages = useAppStore((state) => state.setLoadExternalImages)
@@ -38,18 +40,42 @@ function SettingsMenu() {
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault()
-      setDeferredPrompt(e as Event & { prompt: () => Promise<void> })
+      setDeferredPrompt(e as Event & { prompt: () => Promise<void>; userChoice?: Promise<{ outcome: string }> })
+      setInstallDismissed(false)
     }
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
-  const handleInstall = useCallback(() => {
+  useEffect(() => {
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null)
+      setInstallSuccess(true)
+      setInstallTooltip(false)
+      setTimeout(() => setInstallSuccess(false), 3000)
+    }
+    window.addEventListener('appinstalled', handleAppInstalled)
+    return () => window.removeEventListener('appinstalled', handleAppInstalled)
+  }, [])
+
+  const handleInstall = useCallback(async () => {
     if (isIOS || !deferredPrompt) {
       setInstallTooltip(true)
       return
     }
-    deferredPrompt.prompt()
+    try {
+      deferredPrompt.prompt()
+      const { outcome } = await deferredPrompt.userChoice ?? { outcome: 'dismissed' }
+      if (outcome === 'accepted') {
+        setInstallSuccess(true)
+        setInstallTooltip(false)
+        setTimeout(() => setInstallSuccess(false), 3000)
+      } else {
+        setInstallDismissed(true)
+      }
+    } catch {
+      setInstallTooltip(true)
+    }
     setDeferredPrompt(null)
   }, [isIOS, deferredPrompt])
 
@@ -174,19 +200,29 @@ function SettingsMenu() {
             </div>
           )}
           <div className="border-t border-slate-100 dark:border-[#2e303a] my-1" />
-          {!isStandalone && (
-            <>
-              <div className="border-t border-slate-100 dark:border-[#2e303a] my-1" />
-              <button
-                onClick={handleInstall}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-[#cbd5e1] hover:bg-slate-100 dark:hover:bg-[#25283a] transition-colors"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-                Install app
-              </button>
-            </>
+          {!isStandalone && installSuccess && (
+            <div className="flex items-center gap-2 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              Installed!
+            </div>
+          )}
+          {!isStandalone && !installSuccess && (
+            <button
+              onClick={handleInstall}
+              disabled={installDismissed}
+              className={`flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors ${
+                installDismissed
+                  ? 'text-slate-400 dark:text-[#64748b] cursor-default'
+                  : 'text-slate-700 dark:text-[#cbd5e1] hover:bg-slate-100 dark:hover:bg-[#25283a]'
+              }`}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              {installDismissed ? 'Install canceled' : 'Install app'}
+            </button>
           )}
           <div className="border-t border-slate-100 dark:border-[#2e303a] my-1" />
           <a
@@ -254,7 +290,8 @@ function SettingsMenu() {
                     <span>Tap <strong>"Add"</strong> to confirm</span>
                   </li>
                 </>
-              ) : (
+              ) : navigator.maxTouchPoints > 0 ? (
+                /* Mobile Android / tablet */
                 <>
                   <li className="flex items-start gap-2">
                     <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">1</span>
@@ -267,6 +304,22 @@ function SettingsMenu() {
                   <li className="flex items-start gap-2">
                     <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">3</span>
                     <span>Tap <strong>"Install"</strong> to confirm</span>
+                  </li>
+                </>
+              ) : (
+                /* Desktop browsers */
+                <>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">1</span>
+                    <span>Click the <strong>install icon</strong> in the address bar (or press <strong>⋮</strong> menu)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">2</span>
+                    <span>Select <strong>"Install app"</strong> or <strong>"Add to Home Screen"</strong></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">3</span>
+                    <span>Click <strong>"Install"</strong> to confirm</span>
                   </li>
                 </>
               )}
