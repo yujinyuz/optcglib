@@ -107,17 +107,22 @@ function App() {
   const setSelectedCard = useAppStore((state) => state.setSelectedCard)
   const setOnlineStatus = useAppStore((state) => state.setOnlineStatus)
   const setSlowConnection = useAppStore((state) => state.setSlowConnection)
+  const setOfflineReady = useAppStore((state) => state.setOfflineReady)
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0)
 
-  const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW({
-    onRegisteredSW(_swUrl, registration) {
-      if (registration) useAppStore.getState().setOfflineReady(true)
-    },
-  })
+  const {
+    offlineReady: [offlineReady],
+    needRefresh: [needRefresh],
+    updateServiceWorker,
+  } = useRegisterSW()
 
   useEffect(() => {
     init()
   }, [init])
+
+  useEffect(() => {
+    if (offlineReady) setOfflineReady(true)
+  }, [offlineReady, setOfflineReady])
 
   useEffect(() => {
     const handleOnline = () => setOnlineStatus(true)
