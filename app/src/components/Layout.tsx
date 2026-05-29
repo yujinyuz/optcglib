@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useAppStore } from '../store'
 import FilterBar from './FilterBar'
+import AboutModal from './AboutModal'
 import { prefersReducedMotion } from '../lib/spring'
 import {
   RARITY_SHORT,
@@ -13,6 +14,7 @@ function SettingsMenu() {
   const [open, setOpen] = useState(false)
   const [closing, setClosing] = useState(false)
   const [installTooltip, setInstallTooltip] = useState(false)
+  const [aboutOpen, setAboutOpen] = useState(false)
   const [deferredPrompt, setDeferredPrompt] = useState<Event & { prompt: () => Promise<void> } | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const loadExternalImages = useAppStore((state) => state.loadExternalImages)
@@ -197,8 +199,18 @@ function SettingsMenu() {
             </svg>
             Support on Ko-fi
           </a>
+          <button
+            onClick={() => { setOpen(false); setAboutOpen(true) }}
+            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-[#cbd5e1] hover:bg-slate-100 dark:hover:bg-[#25283a] transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            About this app
+          </button>
         </div>
       )}
+      <AboutModal key={aboutOpen ? 'open' : 'closed'} isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
       {/* Install tooltip */}
       {installTooltip && (
         <div
