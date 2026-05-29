@@ -99,6 +99,27 @@ export function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
+/**
+ * Highlight search terms in plain text. Returns HTML with <mark> tags.
+ * Case-insensitive matching. Preserves existing HTML tags.
+ */
+export function highlightSearchText(text: string, query: string): string {
+  if (!query || !text) return text
+  const words = query.trim().split(/\s+/).filter(Boolean)
+  if (words.length === 0) return text
+  // Build a single regex that matches any of the words, case-insensitive
+  const pattern = words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+  const regex = new RegExp(`(${pattern})`, 'gi')
+  // Split by HTML tags first, only highlight in text segments
+  return text
+    .split(/(<[^>]+>)/g)
+    .map((segment) => {
+      if (segment.startsWith('<')) return segment
+      return segment.replace(regex, '<mark class="search-highlight">$1</mark>')
+    })
+    .join('')
+}
+
 /** Get kanji icon for a card attribute */
 export function getAttributeIcon(attr: string): string {
   switch (attr) {

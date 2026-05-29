@@ -249,6 +249,7 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
                 card.get("name", ""),
                 card.get("effect", "") or "",
                 card.get("trigger", "") or "",
+                " ".join(card.get("types", [])),
             ]))
             conn.execute(
                 "INSERT OR IGNORE INTO cards_fts (card_id, search_text) VALUES (?, ?)",
@@ -274,6 +275,7 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
                 decode_html(card.get("name", "")),
                 decode_html(card.get("effect") or ""),
                 decode_html(card.get("trigger") or ""),
+                " ".join([decode_html(t) for t in card.get("types", [])]),
             ]))
             if search_text.strip():
                 conn.execute(
@@ -299,7 +301,10 @@ def rebuild_fts_index(conn: sqlite3.Connection):
                COALESCE(c.trigger_text, '') || ' ' ||
                COALESCE((SELECT GROUP_CONCAT(t.name || ' ' || t.effect || ' ' || t.trigger_text, ' ')
                          FROM card_translations t
-                         WHERE t.card_id = c.id), '')
+                         WHERE t.card_id = c.id), '') || ' ' ||
+               COALESCE((SELECT GROUP_CONCAT(ct.type, ' ')
+                         FROM card_types ct
+                         WHERE ct.card_id = c.id), '')
         FROM cards c
     """)
     conn.commit()

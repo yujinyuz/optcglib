@@ -1,0 +1,164 @@
+<h2>Option D: Multi-Color Handling</h2>
+<p class="subtitle">How to handle leaders with 2+ colors</p>
+
+<div class="mockup">
+  <div class="mockup-header">The Problem</div>
+  <div class="mockup-body" style="padding: 16px;">
+    <p style="font-size: 13px; color: #e2e8f0; margin-bottom: 12px;">Some leaders have 2 colors (e.g., "Red/Blue" starter deck leaders). We need a consistent treatment.</p>
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      <!-- Single color leader -->
+      <div style="width: 160px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif; border-top: 4px solid #dc2626;">
+        <div style="padding: 6px 8px; background: #fef2f2;">
+          <div style="font-size: 10px; color: #dc2626; text-align: center; font-weight: 600;">LEADER</div>
+          <div style="font-size: 12px; color: #1e293b; text-align: center; font-weight: 500;">Monkey.D. Luffy</div>
+          <div style="font-size: 9px; color: #64748b; text-align: center;">🔴 Red</div>
+        </div>
+      </div>
+      <!-- Multi-color leader - current dilemma -->
+      <div style="width: 160px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif; border-top: 4px solid ???;">
+        <div style="padding: 6px 8px; background: #f8fafc;">
+          <div style="font-size: 10px; color: #???; text-align: center; font-weight: 600;">LEADER</div>
+          <div style="font-size: 12px; color: #1e293b; text-align: center; font-weight: 500;">Belobot</div>
+          <div style="font-size: 9px; color: #64748b; text-align: center;">🔴 Red + 🔵 Blue</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top: 24px;">Solutions for Multi-Color</h3>
+
+<div class="options">
+  <div class="option" data-choice="d1" onclick="toggleSelect(this)">
+    <div class="letter">D1</div>
+    <div class="content">
+      <h3>Gradient Border</h3>
+      <p>For 2-color leaders, use a gradient of both colors. Single-color leaders use solid color.</p>
+      <div style="margin-top: 12px; padding: 12px; background: #1e293b; border-radius: 8px;">
+        <div style="display: flex; gap: 12px; justify-content: center;">
+          <!-- Single color -->
+          <div style="width: 150px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif; border-top: 4px solid #dc2626;">
+            <div style="padding: 6px 8px; background: #fef2f2;">
+              <div style="font-size: 10px; color: #dc2626; text-align: center; font-weight: 600;">LEADER</div>
+              <div style="font-size: 11px; color: #1e293b; text-align: center; font-weight: 500;">Luffy</div>
+            </div>
+          </div>
+          <!-- Gradient -->
+          <div style="width: 150px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif; border-top: 4px solid; border-image: linear-gradient(90deg, #dc2626, #2563eb) 1;">
+            <div style="padding: 6px 8px; background: linear-gradient(135deg, #fef2f2, #eff6ff);">
+              <div style="font-size: 10px; color: #7c3aed; text-align: center; font-weight: 600;">LEADER</div>
+              <div style="font-size: 11px; color: #1e293b; text-align: center; font-weight: 500;">Belobot</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="d2" onclick="toggleSelect(this)">
+    <div class="letter">D2</div>
+    <div class="content">
+      <h3>Color Dots</h3>
+      <p>Show small color indicator dots in the header instead of changing the whole card. Scales to any number of colors.</p>
+      <div style="margin-top: 12px; padding: 12px; background: #1e293b; border-radius: 8px;">
+        <div style="display: flex; gap: 12px; justify-content: center;">
+          <!-- Single color with dot -->
+          <div style="width: 150px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif; border-top: 3px solid #dc2626;">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: #fef2f2;">
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: #dc2626;"></span>
+                <span style="font-size: 13px; font-weight: bold; color: #1e293b;">1</span>
+              </div>
+              <span style="font-size: 14px; font-weight: bold; color: #1e293b;">5000</span>
+            </div>
+            <div style="padding: 4px 8px;">
+              <div style="font-size: 10px; color: #dc2626; text-align: center; font-weight: 600;">LEADER</div>
+              <div style="font-size: 11px; color: #1e293b; text-align: center; font-weight: 500;">Luffy</div>
+            </div>
+          </div>
+          <!-- Multi color with dots -->
+          <div style="width: 150px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif; border-top: 3px solid #7c3aed;">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: #f5f3ff;">
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <div style="display: flex; gap: 2px;">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: #dc2626;"></span>
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: #2563eb;"></span>
+                </div>
+                <span style="font-size: 13px; font-weight: bold; color: #1e293b;">3</span>
+              </div>
+              <span style="font-size: 14px; font-weight: bold; color: #1e293b;">5000</span>
+            </div>
+            <div style="padding: 4px 8px;">
+              <div style="font-size: 10px; color: #7c3aed; text-align: center; font-weight: 600;">LEADER</div>
+              <div style="font-size: 11px; color: #1e293b; text-align: center; font-weight: 500;">Belobot</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="d3" onclick="toggleSelect(this)">
+    <div class="letter">D3</div>
+    <div class="content">
+      <h3>First Color Wins</h3>
+      <p>Use the first color in the array (primary color) for the whole card. Simple, consistent, no special cases.</p>
+      <div style="margin-top: 12px; padding: 12px; background: #1e293b; border-radius: 8px;">
+        <div style="display: flex; gap: 12px; justify-content: center;">
+          <!-- Red leader -->
+          <div style="width: 150px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif; border-top: 4px solid #dc2626;">
+            <div style="padding: 6px 8px; background: #fef2f2;">
+              <div style="font-size: 10px; color: #dc2626; text-align: center; font-weight: 600;">LEADER</div>
+              <div style="font-size: 11px; color: #1e293b; text-align: center; font-weight: 500;">Luffy</div>
+            </div>
+          </div>
+          <!-- Red/Blue leader - uses red (first color) -->
+          <div style="width: 150px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif; border-top: 4px solid #dc2626;">
+            <div style="padding: 6px 8px; background: #fef2f2;">
+              <div style="font-size: 10px; color: #dc2626; text-align: center; font-weight: 600;">LEADER</div>
+              <div style="font-size: 11px; color: #1e293b; text-align: center; font-weight: 500;">Belobot</div>
+              <div style="font-size: 9px; color: #64748b; text-align: center;">Red/Blue</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top: 24px;">
+  <div class="mockup-header">Comparison</div>
+  <div class="mockup-body" style="padding: 16px;">
+    <table style="width: 100%; font-size: 13px; color: #e2e8f0; border-collapse: collapse;">
+      <thead>
+        <tr style="border-bottom: 1px solid #334155;">
+          <th style="text-align: left; padding: 8px;">Option</th>
+          <th style="text-align: left; padding: 8px;">Visual Appeal</th>
+          <th style="text-align: left; padding: 8px;">Scalability</th>
+          <th style="text-align: left; padding: 8px;">Effort</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid #1e293b;">
+          <td style="padding: 8px;">D1 — Gradient</td>
+          <td style="padding: 8px;">★★★</td>
+          <td style="padding: 8px;">★★☆ (2 colors max)</td>
+          <td style="padding: 8px;">Low</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #1e293b;">
+          <td style="padding: 8px;">D2 — Color Dots</td>
+          <td style="padding: 8px;">★★☆</td>
+          <td style="padding: 8px;">★★★ (any count)</td>
+          <td style="padding: 8px;">Low</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px;">D3 — First Color</td>
+          <td style="padding: 8px;">★★☆</td>
+          <td style="padding: 8px;">★★★ (any count)</td>
+          <td style="padding: 8px;">Minimal</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size: 11px; color: #94a3b8; margin-top: 12px;">My take: <strong>D3 (First Color)</strong> is the pragmatic choice — leaders are 90%+ single-color anyway, and the primary color is what matters for deck building. But <strong>D2 (Dots)</strong> is the cleanest if you want to show both colors explicitly.</p>
+  </div>
+</div>

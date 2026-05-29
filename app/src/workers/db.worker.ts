@@ -17,7 +17,7 @@ export type WorkerMessage =
 
 export type QueryCardsFilters = {
   search?: string;
-  searchScope?: ('name' | 'effect' | 'trigger')[];
+  searchScope?: ('name' | 'effect' | 'trigger' | 'type')[];
   colors?: string[];
   categories?: string[];
   rarities?: string[];
@@ -163,9 +163,19 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
       );
       q.join('_search_ids _s ON c.id = _s.id');
     } else {
-      const cols = scopes.map((s) => s === 'name' ? 'c.name' : s === 'effect' ? 'c.effect' : 'c.trigger_text');
-      const clauses = cols.map((col) => `${col} LIKE ?`).join(' OR ');
-      q.where(`(${clauses})`, ...scopes.map(() => `%${raw}%`));
+      const colClauses: string[] = [];
+      const colParams: string[] = [];
+      for (const s of scopes) {
+        if (s === 'type') {
+          colClauses.push(`c.base_id IN (SELECT card_id FROM card_types WHERE type LIKE ?)`);
+          colParams.push(`%${raw}%`);
+        } else {
+          const col = s === 'name' ? 'c.name' : s === 'effect' ? 'c.effect' : 'c.trigger_text';
+          colClauses.push(`${col} LIKE ?`);
+          colParams.push(`%${raw}%`);
+        }
+      }
+      q.where(`(${colClauses.join(' OR ')})`, ...colParams);
     }
   }
 

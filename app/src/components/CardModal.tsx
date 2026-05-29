@@ -4,7 +4,7 @@ import { useAppStore } from '../store'
 import type { Card } from '../types'
 import ImageLoader from './ImageLoader'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
-import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl, groupImagesByLanguage } from '../utils'
+import { decodeHtmlEntities, renderCardText, highlightSearchText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl, groupImagesByLanguage } from '../utils'
 import { useSwipe, snapBack } from '../lib/gesture'
 import { prefersReducedMotion } from '../lib/spring'
 
@@ -25,6 +25,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
 
   const cards = useAppStore((state) => state.cards)
   const setSelectedCard = useAppStore((state) => state.setSelectedCard)
+  const search = useAppStore((state) => state.filters.search)
   const preferredLanguage = useAppStore((state) => state.preferredLanguage)
   const loadExternalImages = useAppStore((state) => state.loadExternalImages)
   const isOnline = useAppStore((state) => state.isOnline)
@@ -316,13 +317,13 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
                 <div className="mt-3 rounded-xl bg-white dark:bg-[#0f1117] p-3 sm:p-4">
                   <div
                     className="text-sm text-slate-900 dark:text-white leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: renderCardText(card.effect) }}
+                    dangerouslySetInnerHTML={{ __html: highlightSearchText(renderCardText(card.effect), search) }}
                   />
                   {/* Trigger — inline with effect */}
                   {card.trigger_text && (
                     <div
                       className="mt-2 text-sm text-slate-700 dark:text-[#94a3b8] leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: renderCardText(card.trigger_text) }}
+                      dangerouslySetInnerHTML={{ __html: highlightSearchText(renderCardText(card.trigger_text), search) }}
                     />
                   )}
                 </div>
@@ -339,12 +340,12 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
               </div>
 
               <h1 className="mt-0.5 text-2xl text-slate-900 dark:text-white text-center leading-snug card-name">
-                {decodeHtmlEntities(card.name)}{card.id !== card.base_id && <span className="text-sm font-normal text-slate-400 dark:text-[#64748b]">{card.id.match(/_p\d+$/) ? ' (Parallel)' : card.id.match(/_r\d+$/) ? ' (Reprint)' : ''}</span>}
+                <span dangerouslySetInnerHTML={{ __html: highlightSearchText(decodeHtmlEntities(card.name), search) }} />{card.id !== card.base_id && <span className="text-sm font-normal text-slate-400 dark:text-[#64748b]">{card.id.match(/_p\d+$/) ? ' (Parallel)' : card.id.match(/_r\d+$/) ? ' (Reprint)' : ''}</span>}
               </h1>
 
               {card.types.length > 0 && (
                 <div className="mt-0.5 text-sm text-center text-slate-500 dark:text-[#94a3b8] truncate">
-                  {card.types.join(' / ')}
+                  <span dangerouslySetInnerHTML={{ __html: highlightSearchText(card.types.join(' / '), search) }} />
                 </div>
               )}
 

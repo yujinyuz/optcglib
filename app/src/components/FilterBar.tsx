@@ -260,7 +260,7 @@ export default function FilterBar() {
 
       <FilterSection label="Search in" count={filters.searchScopes.length} defaultExpanded={filters.search !== ''}>
         <div className="flex flex-wrap gap-1">
-          {(['name', 'effect', 'trigger'] as const).map((scope) => (
+          {(['name', 'effect', 'trigger', 'type'] as const).map((scope) => (
             <TogglePill
               key={scope}
               active={filters.searchScopes.includes(scope)}

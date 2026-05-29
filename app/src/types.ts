@@ -33,7 +33,7 @@ export interface Card {
 export type CardCategory = 'Leader' | 'Character' | 'Event' | 'Stage' | 'Don';
 export type CardColor = 'Red' | 'Blue' | 'Green' | 'Purple' | 'Black' | 'Yellow';
 export type CardRarity = 'Common' | 'Uncommon' | 'Rare' | 'SuperRare' | 'SecretRare' | 'Leader' | 'Special' | 'TreasureRare' | 'Promo';
-export type SearchScope = 'name' | 'effect' | 'trigger';
+export type SearchScope = 'name' | 'effect' | 'trigger' | 'type';
 
 export interface CardFilters {
   search: string;

@@ -38,6 +38,17 @@ body {
 .dark .kw {
   color: #60a5fa;
 }
+/* Search text highlighting */
+.search-highlight {
+  background-color: #fde68a;
+  color: #92400e;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.dark .search-highlight {
+  background-color: #92400e;
+  color: #fde68a;
+}
 /* Shared pill styles */
 .kw-counter,
 .kw-once-per-turn {

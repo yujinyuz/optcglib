@@ -1,0 +1,134 @@
+<h2>Final Design: Leader Cards (Text-Only Mode)</h2>
+<p class="subtitle">Gradients for multi-color, solid tint for single-color</p>
+
+<div class="mockup">
+  <div class="mockup-header">Design Spec</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="display: flex; gap: 24px; align-items: flex-start;">
+      <!-- Single color mockup -->
+      <div style="flex-shrink: 0;">
+        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin-bottom: 8px;">Single Color (Red)</p>
+        <div style="width: 200px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif;">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: #fef2f2;">
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <span style="width: 10px; height: 10px; border-radius: 50%; background: #dc2626;"></span>
+              <span style="font-size: 13px; font-weight: bold; color: #1e293b;">1</span>
+            </div>
+            <span style="font-size: 14px; font-weight: bold; color: #1e293b;">5000</span>
+          </div>
+          <div style="padding: 6px 8px;">
+            <div style="font-size: 10px; letter-spacing: 0.3em; color: #dc2626; text-align: center; font-weight: 600;">LEADER</div>
+            <div style="font-size: 12px; color: #1e293b; text-align: center; margin-top: 2px; font-weight: 500;">Monkey.D. Luffy</div>
+          </div>
+          <div style="margin: 0 6px 6px; padding: 6px 8px; background: #fef2f2; border-radius: 6px;">
+            <div style="font-size: 10px; color: #991b1b; line-height: 1.4;">[Trigger] Activate this card's [Main] ability.</div>
+          </div>
+          <div style="padding: 4px 8px; background: #0f172a; color: white; display: flex; justify-content: space-between; font-size: 9px;">
+            <span style="font-family: monospace;">OP01-001</span>
+            <span style="background: #dc2626; padding: 1px 4px; border-radius: 3px; font-weight: bold;">L</span>
+          </div>
+        </div>
+      </div>
+      <!-- Multi color mockup -->
+      <div style="flex-shrink: 0;">
+        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin-bottom: 8px;">Multi Color (Red/Blue)</p>
+        <div style="width: 200px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif;">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: linear-gradient(135deg, #fef2f2, #eff6ff);">
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <div style="display: flex; gap: 2px;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: #dc2626;"></span>
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: #2563eb;"></span>
+              </div>
+              <span style="font-size: 13px; font-weight: bold; color: #1e293b;">3</span>
+            </div>
+            <span style="font-size: 14px; font-weight: bold; color: #1e293b;">5000</span>
+          </div>
+          <div style="padding: 6px 8px;">
+            <div style="font-size: 10px; letter-spacing: 0.3em; background: linear-gradient(90deg, #dc2626, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; font-weight: 600;">LEADER</div>
+            <div style="font-size: 12px; color: #1e293b; text-align: center; margin-top: 2px; font-weight: 500;">Belobot</div>
+          </div>
+          <div style="margin: 0 6px 6px; padding: 6px 8px; background: linear-gradient(135deg, #fef2f2, #eff6ff); border-radius: 6px;">
+            <div style="font-size: 10px; color: #7c3aed; line-height: 1.4;">[Main] Don −1: Return up to 1 cost 3 or less character...</div>
+          </div>
+          <div style="padding: 4px 8px; background: #0f172a; color: white; display: flex; justify-content: space-between; font-size: 9px;">
+            <span style="font-family: monospace;">ST01-001</span>
+            <div style="display: flex; gap: 2px;">
+              <span style="background: #dc2626; padding: 1px 4px; border-radius: 3px; font-weight: bold;">R</span>
+              <span style="background: #2563eb; padding: 1px 4px; border-radius: 3px; font-weight: bold;">B</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Spec details -->
+      <div style="flex: 1; font-size: 13px; color: #e2e8f0;">
+        <h4 style="color: #f59e0b; margin-top: 0;">Color Treatment</h4>
+        <ul style="line-height: 1.8; padding-left: 16px;">
+          <li><strong>Single color:</strong> Solid tint (e.g., <code style="background:#334155;padding:1px 4px;border-radius:3px;">#fef2f2</code> for red)</li>
+          <li><strong>Multi-color:</strong> Gradient blending both colors (e.g., red → blue)</li>
+          <li><strong>"LEADER" text:</strong> Gradient text for multi-color, solid for single</li>
+          <li><strong>Effect bg:</strong> Gradient matching header</li>
+          <li><strong>Footer badge:</strong> Multi-color gets split badges (R + B)</li>
+        </ul>
+
+        <h4 style="color: #f59e0b; margin-top: 16px;">Remaining Elements</h4>
+        <ul style="line-height: 1.8; padding-left: 16px;">
+          <li>Color dots still shown in header (reference)</li>
+          <li>Effect expanded by default when images off</li>
+          <li>Only applies to leaders in text-only mode</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top: 24px;">
+  <div class="mockup-header">All Color Combinations</div>
+  <div class="mockup-body" style="padding: 16px;">
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+      <!-- Red -->
+      <div style="width: 140px; border-radius: 10px; overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-family: system-ui, sans-serif;">
+        <div style="padding: 6px 8px; background: #fef2f2;">
+          <div style="font-size: 9px; letter-spacing: 0.2em; color: #dc2626; text-align: center; font-weight: 600;">LEADER</div>
+          <div style="font-size: 11px; color: #1e293b; text-align: center; font-weight: 500;">Luffy</div>
+        </div>
+        <div style="padding: 3px 6px; background: #0f172a; color: white; font-size: 8px; text-align: center;">🔴 Red</div>
+      </div>
+      <!-- Blue -->
+      <div style="width: 140px; border-radius: 10px; overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-family: system-ui, sans-serif;">
+        <div style="padding: 6px 8px; background: #eff6ff;">
+          <div style="font-size: 9px; letter-spacing: 0.2em; color: #2563eb; text-align: center; font-weight: 600;">LEADER</div>
+          <div style="font-size: 11px; color: #1e293b; text-align: center; font-weight: 500;">Smoker</div>
+        </div>
+        <div style="padding: 3px 6px; background: #0f172a; color: white; font-size: 8px; text-align: center;">🔵 Blue</div>
+      </div>
+      <!-- Green -->
+      <div style="width: 140px; border-radius: 10px; overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-family: system-ui, sans-serif;">
+        <div style="padding: 6px 8px; background: #f0fdf4;">
+          <div style="font-size: 9px; letter-spacing: 0.2em; color: #16a34a; text-align: center; font-weight: 600;">LEADER</div>
+          <div style="font-size: 11px; color: #1e293b; text-align: center; font-weight: 500;">Nami</div>
+        </div>
+        <div style="padding: 3px 6px; background: #0f172a; color: white; font-size: 8px; text-align: center;">🟢 Green</div>
+      </div>
+      <!-- Red/Blue gradient -->
+      <div style="width: 140px; border-radius: 10px; overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-family: system-ui, sans-serif;">
+        <div style="padding: 6px 8px; background: linear-gradient(135deg, #fef2f2, #eff6ff);">
+          <div style="font-size: 9px; letter-spacing: 0.2em; background: linear-gradient(90deg, #dc2626, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; font-weight: 600;">LEADER</div>
+          <div style="font-size: 11px; color: #1e293b; text-align: center; font-weight: 500;">Belobot</div>
+        </div>
+        <div style="padding: 3px 6px; background: #0f172a; color: white; font-size: 8px; text-align: center;">🔴🔵 Red/Blue</div>
+      </div>
+      <!-- Purple -->
+      <div style="width: 140px; border-radius: 10px; overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-family: system-ui, sans-serif;">
+        <div style="padding: 6px 8px; background: #faf5ff;">
+          <div style="font-size: 9px; letter-spacing: 0.2em; color: #9333ea; text-align: center; font-weight: 600;">LEADER</div>
+          <div style="font-size: 11px; color: #1e293b; text-align: center; font-weight: 500;">Crocodile</div>
+        </div>
+        <div style="padding: 3px 6px; background: #0f172a; color: white; font-size: 8px; text-align: center;">🟣 Purple</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 24px; padding: 16px; background: #1e293b; border-radius: 8px; border-left: 4px solid #22c55e;">
+  <p style="font-size: 13px; color: #e2e8f0; margin: 0;"><strong style="color: #22c55e;">Gradients add ~10 more lines.</strong> Still simple — single color uses existing tint logic, multi-color blends with CSS gradient. Ready to implement?</p>
+</div>

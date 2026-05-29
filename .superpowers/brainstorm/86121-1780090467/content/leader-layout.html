@@ -1,0 +1,161 @@
+<h2>Leader Card Layout — Text-Only Mode</h2>
+<p class="subtitle">How should leaders stand out when images are off?</p>
+
+<div class="mockup">
+  <div class="mockup-header">Current: All cards look the same</div>
+  <div class="mockup-body" style="padding: 16px;">
+    <div style="display: flex; gap: 12px; align-items: flex-start;">
+      <!-- Current leader -->
+      <div style="width: 200px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: #fffbeb;">
+          <span style="width: 24px; height: 24px; border-radius: 50%; background: #dc2626; color: white; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center;">1</span>
+          <span style="font-size: 14px; font-weight: bold; color: #1e293b;">5000</span>
+        </div>
+        <div style="padding: 8px 10px;">
+          <div style="font-size: 10px; letter-spacing: 0.3em; color: #f59e0b; text-align: center; font-weight: 500;">LEADER</div>
+          <div style="font-size: 13px; color: #1e293b; text-align: center; margin-top: 2px; font-weight: 500;">Monkey.D. Luffy</div>
+          <div style="font-size: 10px; color: #64748b; text-align: center; margin-top: 2px;">Straw Hat Crew</div>
+          <div style="font-size: 11px; color: #64748b; margin-top: 4px; padding: 4px 6px; background: #f8fafc; border-radius: 4px; line-height: 1.3; max-height: 40px; overflow: hidden;">[Trigger] Activate this card's [Main] ability.</div>
+        </div>
+        <div style="padding: 6px 10px; background: #0f172a; color: white; display: flex; justify-content: space-between; font-size: 10px;">
+          <span style="font-family: monospace;">OP01-001</span>
+          <span style="background: rgba(255,255,255,0.2); padding: 1px 4px; border-radius: 3px; font-weight: bold;">L</span>
+        </div>
+      </div>
+      <!-- Current character for comparison -->
+      <div style="width: 200px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif; border-left: 3px solid #dc2626;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: #f8fafc;">
+          <span style="width: 24px; height: 24px; border-radius: 50%; background: #dc2626; color: white; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center;">3</span>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <span style="font-size: 14px; font-weight: bold; color: #1e293b;">6000</span>
+            <span style="width: 20px; height: 20px; border-radius: 50%; background: #06b6d4; color: white; font-size: 8px; font-weight: bold; display: flex; align-items: center; justify-content: center;">⚡+1</span>
+          </div>
+        </div>
+        <div style="padding: 8px 10px;">
+          <div style="font-size: 10px; letter-spacing: 0.3em; color: #06b6d4; text-align: center; font-weight: 500;">CHARACTER</div>
+          <div style="font-size: 13px; color: #1e293b; text-align: center; margin-top: 2px; font-weight: 500;">Roronoa Zoro</div>
+          <div style="font-size: 10px; color: #64748b; text-align: center; margin-top: 2px;">Supernovas</div>
+          <div style="font-size: 11px; color: #64748b; margin-top: 4px; padding: 4px 6px; background: #f8fafc; border-radius: 4px; line-height: 1.3; max-height: 40px; overflow: hidden;">[DON!! x1] This card gains +1000 power.</div>
+        </div>
+        <div style="padding: 6px 10px; background: #0f172a; color: white; display: flex; justify-content: space-between; font-size: 10px;">
+          <span style="font-family: monospace;">OP01-002</span>
+          <div style="display: flex; gap: 4px;">
+            <span style="background: rgba(255,255,255,0.2); padding: 1px 4px; border-radius: 3px; font-weight: bold;">C</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 1px 4px; border-radius: 3px; font-weight: bold;">1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="font-size: 12px; color: #94a3b8; margin-top: 12px; text-align: center;">⚠️ Problem: Leader and Character look nearly identical. The amber bg on the top strip is barely noticeable.</p>
+  </div>
+</div>
+
+<h3 style="margin-top: 24px;">Proposed Redesigns</h3>
+<p class="subtitle">Click an option to select your preferred approach</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Prominent Leader Header</h3>
+      <p>Full-width amber banner at top with crown icon. Larger cost circle. Power and attributes on their own line. Effect expanded by default.</p>
+      <div style="margin-top: 12px; padding: 12px; background: #1e293b; border-radius: 8px;">
+        <div style="width: 200px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif; margin: 0 auto;">
+          <!-- Amber leader banner -->
+          <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 8px 12px; display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 18px;">👑</span>
+            <span style="color: white; font-weight: bold; font-size: 13px; letter-spacing: 0.1em;">LEADER</span>
+          </div>
+          <!-- Stats row -->
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #fffbeb; border-bottom: 1px solid #fde68a;">
+            <span style="width: 32px; height: 32px; border-radius: 50%; background: #dc2626; color: white; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">1</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 18px; font-weight: bold; color: #1e293b;">5000</span>
+              <span style="font-size: 12px; color: #92400e; font-weight: 500;">⚔️ Strike</span>
+            </div>
+          </div>
+          <!-- Card info -->
+          <div style="padding: 8px 12px;">
+            <div style="font-size: 13px; color: #1e293b; text-align: center; font-weight: 600;">Monkey.D. Luffy</div>
+            <div style="font-size: 10px; color: #64748b; text-align: center; margin-top: 2px;">Straw Hat Crew</div>
+          </div>
+          <!-- Effect expanded -->
+          <div style="margin: 0 8px 8px; padding: 6px 8px; background: #fffbeb; border-radius: 6px; border: 1px solid #fde68a;">
+            <div style="font-size: 11px; color: #92400e; line-height: 1.4;">[Trigger] Activate this card's [Main] ability. [Main] Don −1: Give up to 1 of your Don!! cards to your opponent's Don!! deck.</div>
+          </div>
+          <!-- Footer -->
+          <div style="padding: 6px 12px; background: #0f172a; color: white; display: flex; justify-content: space-between; font-size: 10px;">
+            <span style="font-family: monospace;">OP01-001</span>
+            <span style="background: #f59e0b; color: #0f172a; padding: 1px 6px; border-radius: 3px; font-weight: bold;">LEADER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Colored Border + Badge</h3>
+      <p>Strong left border in leader color (amber). "LEADER" badge in top-right. Larger stats. Effect expanded by default.</p>
+      <div style="margin-top: 12px; padding: 12px; background: #1e293b; border-radius: 8px;">
+        <div style="width: 200px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif; margin: 0 auto; border-left: 4px solid #f59e0b;">
+          <!-- Header with badge -->
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: #fffbeb;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="width: 28px; height: 28px; border-radius: 50%; background: #dc2626; color: white; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center;">1</span>
+              <span style="font-size: 16px; font-weight: bold; color: #1e293b;">5000</span>
+            </div>
+            <span style="background: #f59e0b; color: white; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.05em;">👑 LEADER</span>
+          </div>
+          <!-- Card info -->
+          <div style="padding: 8px 10px;">
+            <div style="font-size: 13px; color: #1e293b; text-align: center; font-weight: 600;">Monkey.D. Luffy</div>
+            <div style="font-size: 10px; color: #64748b; text-align: center; margin-top: 2px;">Straw Hat Crew • ⚔️ Strike</div>
+          </div>
+          <!-- Effect expanded -->
+          <div style="margin: 0 8px 8px; padding: 6px 8px; background: #f8fafc; border-radius: 6px;">
+            <div style="font-size: 11px; color: #64748b; line-height: 1.4;">[Trigger] Activate this card's [Main] ability. [Main] Don −1: Give up to 1 of your Don!! cards to your opponent's Don!! deck.</div>
+          </div>
+          <!-- Footer -->
+          <div style="padding: 6px 10px; background: #0f172a; color: white; display: flex; justify-content: space-between; font-size: 10px;">
+            <span style="font-family: monospace;">OP01-001</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 1px 4px; border-radius: 3px; font-weight: bold;">L</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Minimal Tint</h3>
+      <p>Subtle amber tint on entire card background. Slightly larger cost. Effect expanded by default. Keeps current structure.</p>
+      <div style="margin-top: 12px; padding: 12px; background: #1e293b; border-radius: 8px;">
+        <div style="width: 200px; border-radius: 12px; overflow: hidden; background: #fffdf5; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: system-ui, sans-serif; margin: 0 auto; border: 1px solid #fde68a;">
+          <!-- Header -->
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: #fef3c7;">
+            <span style="width: 28px; height: 28px; border-radius: 50%; background: #dc2626; color: white; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center;">1</span>
+            <span style="font-size: 16px; font-weight: bold; color: #1e293b;">5000</span>
+          </div>
+          <!-- Card info -->
+          <div style="padding: 8px 10px;">
+            <div style="font-size: 10px; letter-spacing: 0.3em; color: #f59e0b; text-align: center; font-weight: 500;">LEADER</div>
+            <div style="font-size: 13px; color: #1e293b; text-align: center; margin-top: 2px; font-weight: 500;">Monkey.D. Luffy</div>
+            <div style="font-size: 10px; color: #64748b; text-align: center; margin-top: 2px;">Straw Hat Crew</div>
+          </div>
+          <!-- Effect expanded -->
+          <div style="margin: 0 8px 8px; padding: 6px 8px; background: #fef3c7; border-radius: 6px;">
+            <div style="font-size: 11px; color: #92400e; line-height: 1.4;">[Trigger] Activate this card's [Main] ability. [Main] Don −1: Give up to 1 of your Don!! cards to your opponent's Don!! deck.</div>
+          </div>
+          <!-- Footer -->
+          <div style="padding: 6px 10px; background: #0f172a; color: white; display: flex; justify-content: space-between; font-size: 10px;">
+            <span style="font-family: monospace;">OP01-001</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 1px 4px; border-radius: 3px; font-weight: bold;">L</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

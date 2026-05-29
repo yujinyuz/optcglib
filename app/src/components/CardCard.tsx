@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import type { Card } from '../types'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
-import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl, getLeaderGradient } from '../utils'
+import { decodeHtmlEntities, renderCardText, highlightSearchText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl, getLeaderGradient } from '../utils'
 import { useAppStore } from '../store'
 import ImageLoader from './ImageLoader'
 
@@ -13,6 +13,7 @@ interface CardCardProps {
 
 export default function CardCard({ card, displayName, disableClick }: CardCardProps) {
   const setSelectedCard = useAppStore((state) => state.setSelectedCard)
+  const search = useAppStore((state) => state.filters.search)
   const loadExternalImages = useAppStore((state) => state.loadExternalImages)
   const isOnline = useAppStore((state) => state.isOnline)
   const isSlowConnection = useAppStore((state) => state.isSlowConnection)
@@ -137,12 +138,12 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
 
         {/* Name */}
         <h3 className="mt-0.5 text-sm text-slate-900 dark:text-white text-center leading-snug line-clamp-2 card-name">
-          {decodeHtmlEntities(displayCardName)}{variantSuffix && <span className="text-[10px] font-normal text-slate-400 dark:text-[#64748b]">{variantSuffix}</span>}
+          <span dangerouslySetInnerHTML={{ __html: highlightSearchText(decodeHtmlEntities(displayCardName), search) }} />{variantSuffix && <span className="text-[10px] font-normal text-slate-400 dark:text-[#64748b]">{variantSuffix}</span>}
         </h3>
 
         {/* Types */}
         <div className="mt-0.5 text-[10px] text-center text-slate-500 dark:text-[#64748b] truncate min-h-[14px]">
-          {card.types.length > 0 ? card.types.join(' / ') : '\u00A0'}
+          {card.types.length > 0 ? <span dangerouslySetInnerHTML={{ __html: highlightSearchText(card.types.join(' / '), search) }} /> : '\u00A0'}
         </div>
 
         {/* Attributes — text labels below types (no-image mode) */}
@@ -167,10 +168,10 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
           >
             <div className={`text-[11px] leading-[1.3] text-slate-600 dark:text-[#94a3b8] ${effectExpanded ? '' : 'line-clamp-2'}`}>
               {card.effect && (
-                <span dangerouslySetInnerHTML={{ __html: renderCardText(card.effect) }} />
+                <span dangerouslySetInnerHTML={{ __html: highlightSearchText(renderCardText(card.effect), search) }} />
               )}
               {card.trigger_text && (
-                <span className="block mt-1 text-[10px] italic text-slate-700 dark:text-[#e2e8f0] bg-slate-200 dark:bg-[#020617] rounded px-1.5 py-0.5" dangerouslySetInnerHTML={{ __html: renderCardText(card.trigger_text) }} />
+                <span className="block mt-1 text-[10px] italic text-slate-700 dark:text-[#e2e8f0] bg-slate-200 dark:bg-[#020617] rounded px-1.5 py-0.5" dangerouslySetInnerHTML={{ __html: highlightSearchText(renderCardText(card.trigger_text), search) }} />
               )}
             </div>
             <span className="text-[9px] text-slate-400 dark:text-[#475569] mt-0.5 inline-block">

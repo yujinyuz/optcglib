@@ -57,7 +57,7 @@ function paramsToFilters(params: URLSearchParams): Partial<CardFilters> {
   if (params.has('q')) f.search = params.get('q')!;
   const scopes = params.get('scope');
   if (scopes) {
-    const valid = scopes.split(',').filter((s) => s === 'name' || s === 'effect' || s === 'trigger') as SearchScope[];
+    const valid = scopes.split(',').filter((s) => s === 'name' || s === 'effect' || s === 'trigger' || s === 'type') as SearchScope[];
     if (valid.length) f.searchScopes = valid;
   }
   if (params.has('colors')) f.colors = params.get('colors')!.split(',');
