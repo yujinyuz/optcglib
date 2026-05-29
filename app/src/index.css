@@ -93,7 +93,7 @@ body {
 .dark .kw-don {
   background: #334155;
 }
-.kw-rush-char, .kw-rush, .kw-unblockable, .kw-banish, .kw-blocker {
+.kw-rush-char, .kw-rush, .kw-unblockable, .kw-banish, .kw-blocker, .kw-double-attack {
   display: inline-block;
   padding: 0 8px;
   color: #ffffff;
@@ -103,7 +103,7 @@ body {
   clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 50%, calc(100% - 6px) 100%, 6px 100%, 0% 50%);
   background: #e67e22;
 }
-.dark .kw-rush-char, .dark .kw-rush, .dark .kw-unblockable, .dark .kw-banish, .dark .kw-blocker {
+.dark .kw-rush-char, .dark .kw-rush, .dark .kw-unblockable, .dark .kw-banish, .dark .kw-blocker, .dark .kw-double-attack {
   background: #f39c12;
 }
 .kw-trigger {
@@ -120,6 +120,11 @@ body {
 
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-100%); }
   to { opacity: 1; transform: translateY(0); }
 }
 

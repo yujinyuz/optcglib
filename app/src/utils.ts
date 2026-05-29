@@ -78,6 +78,7 @@ function highlightKeywords(html: string): string {
     [/\[Your Turn\]/g, 'kw-your-turn', 'Your Turn'],
     [/\[Main\]/g, 'kw-main', 'Main'],
     [/\[Rush\]/g, 'kw-rush', 'Rush'],
+    [/\[Double Attack\]/g, 'kw-double-attack', 'Double Attack'],
   ]
 
   // Split into HTML tags and text segments, only replace in text
