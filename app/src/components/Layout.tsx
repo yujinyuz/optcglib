@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useAppStore } from '../store'
 import FilterBar from './FilterBar'
+import FilterFAB from './FilterFAB'
 import AboutModal from './AboutModal'
 import { prefersReducedMotion } from '../lib/spring'
 import {
@@ -587,7 +588,7 @@ export default function Layout() {
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] rounded-lg active:scale-95 transition-all"
+                className="hidden sm:flex p-2 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] rounded-lg active:scale-95 transition-all"
                 style={{ transition: 'transform 150ms var(--ease-spring-tight), background-color 150ms, color 150ms' }}
                 aria-label="Open filters"
               >
@@ -608,6 +609,9 @@ export default function Layout() {
         <main className="flex-1 min-w-0 overflow-y-auto">
           <Outlet />
         </main>
+
+        {/* Mobile filter FAB — replaces navbar filter button on small screens */}
+        <FilterFAB sidebarOpen={sidebarOpen} />
       </div>
     </div>
   )
