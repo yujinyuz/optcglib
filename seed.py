@@ -183,7 +183,9 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
                 card.get("rarity", ""),
                 canonical.get("category", ""),
                 canonical.get("cost"),
-                canonical.get("power"),
+                # Character cards should always have a power value; upstream
+                # data sometimes has null — default to 0.
+                canonical.get("power") if canonical.get("power") is not None or canonical.get("category") != "Character" else 0,
                 canonical.get("counter"),
                 decode_html(canonical.get("effect") or ""),
                 decode_html(canonical.get("trigger") or ""),
