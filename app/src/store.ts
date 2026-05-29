@@ -379,13 +379,17 @@ export interface LanguageSection {
 }
 
 export function getLanguageSections(): LanguageSection[] {
-  const { cards, filters } = useAppStore.getState();
+  const { cards, filters, loadExternalImages, isOnline } = useAppStore.getState();
   if (!filters.search) return [];
 
-  return SEARCH_LANGUAGES
+  const showImages = loadExternalImages && isOnline;
+  // When images are off, only show a single English section (no language headers)
+  const langs = showImages ? SEARCH_LANGUAGES : (['english'] as const);
+
+  return langs
     .map((lang) => ({
       lang,
-      title: SEARCH_LANGUAGES.includes(lang as typeof SEARCH_LANGUAGES[number])
+      title: showImages
         ? (SEARCH_LANGUAGE_DISPLAY as Record<string, string>)[lang] || lang
         : lang,
       cards: cards.filter((c) => {

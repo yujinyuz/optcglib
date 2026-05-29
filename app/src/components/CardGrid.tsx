@@ -179,7 +179,7 @@ export default function CardGrid() {
       <PullToRefresh onRefresh={() => useAppStore.getState().init()} />
 
       <div className="flex items-center justify-between mb-3">
-        {isSearching && sections.length > 0 ? (
+        {isSearching && sections.length > 1 ? (
           <span className="text-sm text-slate-600 dark:text-[#94a3b8]">
             {searchLoading && cards.length === 0 ? (
               'Searching...'
@@ -198,7 +198,7 @@ export default function CardGrid() {
         )}
       </div>
 
-      {isSearching && sections.length > 0 ? (
+      {isSearching && sections.length > 1 ? (
         sections.map((section) => (
           <div key={`${section.lang}-${resultKey}`} className="mb-8">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
@@ -212,7 +212,7 @@ export default function CardGrid() {
         ))
       ) : (
         <div key={resultKey} className="animate-[fadeIn_150ms_var(--ease-out-quart)_both]">
-          {renderCardGrid(cards)}
+          {renderCardGrid(isSearching && sections.length === 1 ? sections[0].cards : cards)}
         </div>
       )}
 
