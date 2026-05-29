@@ -25,6 +25,32 @@ function isStandaloneMode() {
   return window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
 }
 
+function getAndroidInstallGuide() {
+  const ua = navigator.userAgent
+
+  if (/Firefox\//i.test(ua)) {
+    return [
+      'Tap the ⋮ menu in the top-right corner',
+      'Tap "Install"',
+      'Tap "Add" to confirm',
+    ]
+  }
+
+  if (/SamsungBrowser\//i.test(ua)) {
+    return [
+      'Tap the ≡ menu in the bottom-right corner',
+      'Tap "Add page to"',
+      'Choose "Home screen"',
+    ]
+  }
+
+  return [
+    'Tap the ⋮ menu in your browser',
+    'Tap "Install app"',
+    'Tap "Install" to confirm',
+  ]
+}
+
 const DISMISS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
 function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
@@ -54,6 +80,7 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
 
   const isIOS = isIOSDevice()
   const isStandalone = isStandaloneMode()
+  const androidInstallGuide = getAndroidInstallGuide()
 
   const handleInstall = useCallback(() => {
     if (isIOS || !deferredPrompt) {
@@ -280,15 +307,15 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
                 <>
                   <li className="flex items-start gap-2">
                     <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">1</span>
-                    <span>Tap the <strong>⋮</strong> menu in your browser</span>
+                    <span dangerouslySetInnerHTML={{ __html: androidInstallGuide[0].replace('⋮', '<strong>⋮</strong>').replace('≡', '<strong>≡</strong>') }} />
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">2</span>
-                    <span>Tap <strong>"Add to Home Screen"</strong> or <strong>"Install app"</strong></span>
+                    <span dangerouslySetInnerHTML={{ __html: androidInstallGuide[1].replace(/"([^"]+)"/g, '<strong>"$1"</strong>') }} />
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">3</span>
-                    <span>Tap <strong>"Install"</strong> to confirm</span>
+                    <span dangerouslySetInnerHTML={{ __html: androidInstallGuide[2].replace(/"([^"]+)"/g, '<strong>"$1"</strong>') }} />
                   </li>
                 </>
               ) : (
