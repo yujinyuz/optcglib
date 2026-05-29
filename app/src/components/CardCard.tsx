@@ -1,6 +1,7 @@
+import { useState, useCallback } from 'react'
 import type { Card } from '../types'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
-import { decodeHtmlEntities, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
+import { decodeHtmlEntities, renderCardText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
 import { useAppStore } from '../store'
 import ImageLoader from './ImageLoader'
 
@@ -20,6 +21,14 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
   const primaryColor = card.colors[0] ? COLOR_HEX[card.colors[0]] : '#64748b'
   const categoryColor = CATEGORY_COLORS[card.category]
 
+  const [effectExpanded, setEffectExpanded] = useState(!showImages)
+  const hasEffect = !!(card.effect || card.trigger_text)
+
+  const handleToggleEffect = useCallback((e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation()
+    setEffectExpanded((prev) => !prev)
+  }, [])
+
   const costBg = costCircleBg(card)
 
   const displayCardName = displayName || card.name
@@ -37,7 +46,7 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
       tabIndex={0}
       onClick={() => { if (!disableClick) setSelectedCard(card) }}
       onKeyDown={(e) => { if (!disableClick && (e.key === 'Enter' || e.key === ' ')) setSelectedCard(card) }}
-      className="group flex flex-col rounded-xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-md shadow-black/5 dark:shadow-white/5 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-white/10 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-150 cursor-pointer"
+      className="group flex flex-col rounded-xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-md shadow-black/5 dark:shadow-white/5 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-white/10 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-150 cursor-pointer h-full"
       style={{ transition: 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart)' }}
     >
       {/* Top strip: Cost | Power | Attribute (only when no image) */}
@@ -131,6 +140,29 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
                 {attr}{i < card.attributes.length - 1 && <span className="text-slate-500 dark:text-[#64748b]"> / </span>}
               </span>
             ))}
+          </div>
+        )}
+
+        {/* Effect — collapsible */}
+        {hasEffect && (
+          <div
+            className="mt-1 text-left rounded bg-slate-50 dark:bg-[#13151f] px-1.5 py-1 cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-[#1a1d2e] transition-colors"
+            onClick={handleToggleEffect}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleToggleEffect(e) }}
+            role="button"
+            tabIndex={0}
+          >
+            <div className={`text-[11px] leading-[1.3] text-slate-600 dark:text-[#94a3b8] ${effectExpanded ? '' : 'line-clamp-2'}`}>
+              {card.effect && (
+                <span dangerouslySetInnerHTML={{ __html: renderCardText(card.effect) }} />
+              )}
+              {card.trigger_text && (
+                <span className="block mt-0.5 text-[10px] italic text-slate-500 dark:text-[#64748b]" dangerouslySetInnerHTML={{ __html: renderCardText(card.trigger_text) }} />
+              )}
+            </div>
+            <span className="text-[9px] text-slate-400 dark:text-[#475569] mt-0.5 inline-block">
+              {effectExpanded ? '▲ less' : '▼ more'}
+            </span>
           </div>
         )}
 
