@@ -49,9 +49,9 @@ export default function CardDetailContent({
       <div className="relative rounded-2xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-xl shadow-black/10 dark:shadow-black/30">
         {/* Vertical counter strip — left edge */}
         {(!showImages || !bestImageUrl) && card.counter !== null && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center bg-slate-900 dark:bg-black px-[1px] py-4 rounded-r shadow-md">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center bg-slate-900 dark:bg-black py-4 rounded-r shadow-md">
             <span
-              className="text-xs font-bold text-white tracking-wider"
+              className="text-[10px] font-bold text-white tracking-wider leading-tight"
               style={{ writingMode: 'vertical-lr', textOrientation: 'mixed', transform: 'rotate(180deg)' }}
             >
               <span style={{ display: 'inline-block', verticalAlign: 'middle', transform: 'rotate(180deg)', marginRight: '2px' }}>⚡</span>COUNTER +{card.counter}
