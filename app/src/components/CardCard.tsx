@@ -68,10 +68,10 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
       {(!showImages && card.counter !== null) && (
         <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center bg-slate-900 dark:bg-black px-1 py-2 rounded-r-md shadow-md">
           <span
-            className="text-[8px] font-bold text-white tracking-wider"
+            className="text-[7px] font-bold text-white tracking-wider leading-tight"
             style={{ writingMode: 'vertical-lr', textOrientation: 'mixed', transform: 'rotate(180deg)' }}
           >
-            +{card.counter}
+            ⚡COUNTER+{card.counter}
           </span>
         </div>
       )}
