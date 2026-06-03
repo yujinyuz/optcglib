@@ -64,13 +64,25 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
         }}
       />
 
+      {/* Vertical counter strip — original card placement */}
+      {(!showImages && card.counter !== null) && (
+        <div className="absolute left-0 top-8 bottom-8 w-4 flex items-center justify-center bg-[#3498db]/10 border-r border-[#3498db]/20">
+          <span
+            className="text-[8px] font-bold text-[#3498db]"
+            style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+          >
+            +{card.counter}
+          </span>
+        </div>
+      )}
+
       {/* Top strip: Cost | Power | Attribute (only when no image) */}
       {(!showImages || !card.img_url) && (
       <div className="flex items-center justify-between px-2 py-1.5 shrink-0 min-h-[34px] bg-slate-50 dark:bg-[#13151f]">
         <div className="flex items-center gap-1.5">
           {card.cost !== null ? (
             <span
-              className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shadow-sm"
+              className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shadow-sm ${getTextColorForBg(primaryColor)}`}
               style={costBg}
             >
               {card.cost}
@@ -166,16 +178,18 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
           </div>
         )}
 
+        {/* Counter */}
+        {!showImages && card.counter !== null && (
+          <div className="mt-0.5 text-[9px] text-center font-bold text-slate-500 dark:text-[#64748b]">
+            ⚡ COUNTER +{card.counter}
+          </div>
+        )}
+
         {/* Effect — collapsible */}
         {hasEffect && (
           <div
             className="mt-1 text-left rounded bg-slate-50 dark:bg-[#13151f] px-1.5 py-1 cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-[#1a1d2e] transition-colors"
             onClick={handleToggleEffect}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleToggleEffect(e) }}
-            role="button"
-            tabIndex={0}
-            aria-expanded={effectExpanded}
-            aria-label={effectExpanded ? 'Collapse effect text' : 'Expand effect text'}
           >
             <div className={`text-[11px] leading-[1.3] text-slate-600 dark:text-[#94a3b8] ${effectExpanded ? '' : 'line-clamp-2'}`}>
               {card.effect && (
@@ -186,7 +200,7 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
               )}
             </div>
             <span className="text-[10px] text-slate-400 dark:text-[#475569] mt-0.5 inline-block">
-              {effectExpanded ? '▲ less' : '▼ more'}
+              {effectExpanded ? 'Show less' : 'Show more'}
             </span>
           </div>
         )}
@@ -197,9 +211,6 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
       <div className="shrink-0 px-2.5 py-1.5 bg-slate-900 dark:bg-[#0c0e17] text-white flex items-center justify-between text-[10px]">
         <span className="font-mono">{card.id}</span>
         <div className="flex items-center gap-1">
-          {(!showImages && card.counter !== null) && (
-            <span className="text-[9px] font-bold text-[#3498db]">⚡ +{card.counter}</span>
-          )}
           {isLeader ? (
             <span className="px-1 rounded font-bold bg-amber-500 text-white text-[10px]">
               L

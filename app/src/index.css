@@ -281,6 +281,22 @@ input[type="text"]:focus-visible {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* Skeleton shimmer loading effect */
+.skeleton-shimmer {
+  background-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.06) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+.dark .skeleton-shimmer {
+  background-image: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+}
+
+.skeleton-shimmer-dark {
+  background-image: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
 /* Swipe-dismiss drag indicator */
 @keyframes swipeHint {
   0% { transform: translateX(0); }

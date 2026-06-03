@@ -92,7 +92,7 @@ function CardTile({ card, displayName, index }: {
         ? { animation: `cardInSpring 200ms var(--ease-spring-default) ${Math.min(index * 16, 250)}ms both` }
         : undefined}
       onClick={handleClick}
-      className="active:scale-[0.97] transition-transform duration-150"
+      className="transition-transform duration-150"
     >
       <CardCard
         card={card}

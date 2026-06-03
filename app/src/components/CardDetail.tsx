@@ -3,9 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { getCardById, getCardPacks, getCardVariants } from '../db'
 import { useAppStore } from '../store'
 import type { Card } from '../types'
-import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
-import { decodeHtmlEntities, renderCardText, highlightSearchText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl, groupImagesByLanguage } from '../utils'
-import ImageLoader from './ImageLoader'
+import CardDetailContent from './CardDetailContent'
 
 export default function CardDetail() {
   const { id } = useParams<{ id: string }>()
@@ -83,12 +81,6 @@ export default function CardDetail() {
     )
   }
 
-  const primaryColor = card.colors[0] ? COLOR_HEX[card.colors[0]] : '#64748b'
-  const costBg = costCircleBg(card)
-
-  const categoryColor = CATEGORY_COLORS[card.category]
-
-  // Pick best image URL based on language preference
   const languagePriority: Record<string, number> = preferredLanguage === 'japanese'
     ? { japanese: 0, 'english-asia': 0, english: 1 }
     : { english: 0, 'english-asia': 1, japanese: 2 }
@@ -110,285 +102,17 @@ export default function CardDetail() {
         Back
       </Link>
 
-      {/* Card — matches tile layout but expanded */}
-      <div
-        className="rounded-2xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-xl shadow-black/10 dark:shadow-black/30"
-      >
-        {/* Top strip: Cost | Power | Attribute */}
-        <div
-          className="flex items-center justify-between px-4 pt-4 pb-2"
-          style={{ background: card.colors.length > 1 ? `linear-gradient(to right, ${card.colors.map(c => COLOR_HEX[c] || '#64748b').map(h => `${h}18`).join(', ')})` : `${primaryColor}18` }}
-        >
-          {card.cost !== null ? (
-            <span
-              className={`inline-flex items-center justify-center w-10 h-10 rounded-full text-lg font-bold shadow-md ${getTextColorForBg(primaryColor)}`}
-              style={costBg}
-            >
-              {card.cost}
-            </span>
-          ) : (
-            <span className="w-10" />
-          )}
-
-          <div className="flex items-center gap-2">
-            {card.power !== null && (
-              <span className="text-2xl font-bold text-slate-900 dark:text-white leading-none">
-                {card.power}
-              </span>
-            )}
-            {card.attributes.length > 0 && (
-              <div className={`inline-flex items-center ${card.attributes.length > 1 ? 'divide-x divide-white/20' : ''}`}>
-                {card.attributes.map((attr, i) => (
-                  <span
-                    key={attr}
-                    className={`inline-flex items-center justify-center w-8 h-8 text-sm font-bold ${getTextColorForBg(getAttributeColor(attr))} ${card.attributes.length === 1 ? 'rounded-full' : i === 0 ? 'rounded-l-full' : 'rounded-r-full'}`}
-                    style={{ backgroundColor: getAttributeColor(attr) }}
-                  >
-                    {getAttributeIcon(attr)}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Card image */}
-        {showImages && bestImageUrl ? (
-          <div className="flex items-center justify-center py-2">
-            <div className="relative w-full max-w-xs aspect-[5/7] rounded-lg overflow-hidden bg-slate-100 dark:bg-[#1a1d2e] shadow-md">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <img
-                  src="/loading-logo.webp"
-                  alt=""
-                  className="w-20 opacity-30 animate-pulse dark:invert"
-                />
-              </div>
-              <ImageLoader
-                key={bestImageUrl}
-                src={getExternalImageUrl(bestImageUrl)}
-                alt={card.name}
-                className="absolute inset-0 w-full h-full object-contain cursor-zoom-in"
-                onClick={() => window.open(getExternalImageUrl(bestImageUrl), '_blank')}
-              />
-            </div>
-          </div>
-        ) : bestImageUrl && (
-          <div className="flex items-center justify-center py-4">
-            <a
-              href={bestImageUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center w-14 h-14 rounded-full bg-white dark:bg-[#1a1d2e] text-slate-400 dark:text-[#64748b] hover:text-[#3b82f6] shadow-md hover:scale-110 transition-all"
-              title="Open card image in new tab"
-            >
-              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </a>
-          </div>
-        )}
-
-        {/* Card Effect */}
-        {(card.effect || card.trigger_text) && (
-          <div className="px-4 pb-3">
-            <div className="mt-3 rounded-xl bg-white dark:bg-[#0f1117] p-4">
-              {card.effect && (
-                <div
-                  className="text-sm text-slate-900 dark:text-white leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: highlightSearchText(renderCardText(card.effect), search) }}
-                />
-              )}
-              {/* Trigger — inline with effect */}
-              {card.trigger_text && (
-                <div
-                  className={`text-sm text-slate-700 dark:text-[#94a3b8] leading-relaxed ${card.effect ? 'mt-2' : ''}`}
-                  dangerouslySetInnerHTML={{ __html: highlightSearchText(renderCardText(card.trigger_text), search) }}
-                />
-              )}
-            </div>
-
-          </div>
-        )}
-
-        {/* Header: Category -> Name -> Type */}
-        <div className="px-4 pb-3">
-          {/* Category */}
-          <div
-            className="text-xs font-medium tracking-[0.3em] uppercase text-center"
-            style={card.rarity === 'Leader' ? { color: '#f59e0b' } : (categoryColor ? { color: categoryColor } : undefined)}
-          >
-            {card.rarity === 'Leader' && (
-              <svg className="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm2-2h10v2H7v-2z" />
-              </svg>
-            )}
-            {card.category === 'Don' ? 'DON!!' : card.category}
-          </div>
-
-          {/* Name */}
-          <h1 className="mt-1 text-2xl text-slate-900 dark:text-white text-center leading-tight card-name">
-            <span dangerouslySetInnerHTML={{ __html: highlightSearchText(decodeHtmlEntities(card.name), search) }} />{card.id !== card.base_id && <span className="text-sm font-normal text-slate-400 dark:text-[#64748b]">{card.id.match(/_p\d+$/) ? ' (Parallel)' : card.id.match(/_r\d+$/) ? ' (Reprint)' : ''}</span>}
-          </h1>
-
-          {/* Types */}
-          {card.types.length > 0 && (
-            <div className="mt-1 text-sm text-center text-slate-500 dark:text-[#94a3b8] truncate">
-              <span dangerouslySetInnerHTML={{ __html: highlightSearchText(card.types.join(' / '), search) }} />
-            </div>
-          )}
-        </div>
-
-        {/* Bottom banner: ID | Counter | Rarity | Block */}
-        <div className="px-4 py-3 bg-slate-900 dark:bg-[#0c0e17] text-white">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-mono">{card.id}</span>
-            <div className="flex items-center gap-2">
-              {(!showImages && card.counter !== null) && (
-                <span className="text-[10px] font-bold text-[#3498db]">⚡ +{card.counter}</span>
-              )}
-              {card.rarity === 'Leader' ? (
-                <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-amber-500 text-white">
-                  L
-                </span>
-              ) : (
-                <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-white/20">
-                  {RARITY_SHORT[card.rarity] || card.rarity}
-                </span>
-              )}
-              {card.block_number !== null && (
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-xs font-bold">
-                  {card.block_number}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Price links */}
-      <div className="flex items-center gap-1.5 mt-3 flex-wrap">
-        <span className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold shrink-0">Price</span>
-        <a
-          href={`https://www.mercardop.jp/product-list?keyword=${encodeURIComponent(card.base_id)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] hover:-translate-y-0.5 hover:shadow-sm transition-all"
-          style={{ transition: 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart), border-color 150ms, color 150ms' }}
-        >
-          <img src="/icons/mercard.png" alt="" className="w-4 h-4 rounded-sm shrink-0" />
-          Mercard
-        </a>
-        <a
-          href={`https://yuyu-tei.jp/sell/opc/s/search?search_word=${encodeURIComponent(card.base_id)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] hover:-translate-y-0.5 hover:shadow-sm transition-all"
-          style={{ transition: 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart), border-color 150ms, color 150ms' }}
-        >
-          <img src="/icons/yuyutei.png" alt="" className="w-4 h-4 rounded-sm shrink-0" />
-          Yuyu-Tei
-        </a>
-        <a
-          href={`https://www.tcgplayer.com/search/one-piece-card-game/product?q=${encodeURIComponent(card.base_id)}&view=grid&productLineName=one-piece-card-game`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] hover:-translate-y-0.5 hover:shadow-sm transition-all"
-          style={{ transition: 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart), border-color 150ms, color 150ms' }}
-        >
-          <img src="/icons/tcgplayer.png" alt="" className="w-4 h-4 rounded-sm shrink-0" />
-          TCGPlayer
-        </a>
-        <a
-          href={`https://www.cardrush-op.jp/product-list?keyword=${encodeURIComponent(card.base_id)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] hover:-translate-y-0.5 hover:shadow-sm transition-all"
-          style={{ transition: 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart), border-color 150ms, color 150ms' }}
-        >
-          <img src="/icons/cardrush.png" alt="" className="w-4 h-4 rounded-sm shrink-0" />
-          CardRush
-        </a>
-      </div>
-
-      {/* Image variants / alternate arts */}
-      {cardVariants.length > 0 && showImages && (
-        <div className="mt-4">
-          <h3 className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-2">
-            Alternate arts
-          </h3>
-          <div className="space-y-3">
-            {(() => {
-              const { english, japanese } = groupImagesByLanguage(cardVariants, card.id)
-              return (
-                <>
-                  {english.length > 0 && (
-                    <div>
-                      <div className="text-[10px] text-slate-400 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-1.5">English</div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {english.map((img) => (
-                          <a
-                            key={img.imgUrl}
-                            href={img.imgUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
-                          >
-                            {img.packName || 'Alt'}
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {japanese.length > 0 && (
-                    <div>
-                      <div className="text-[10px] text-slate-400 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-1.5">Japanese</div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {japanese.map((img) => (
-                          <a
-                            key={img.imgUrl}
-                            href={img.imgUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
-                          >
-                            {img.packName || 'Alt'}
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )
-            })()}
-          </div>
-        </div>
-      )}
-
-      {/* Packs */}
-      {cardPacks.length > 0 && (
-        <div className="mt-4">
-          <h3 className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-2">
-            Found in
-          </h3>
-          <div className="flex flex-wrap gap-1.5">
-                {cardPacks.map((pack) => (
-                  <span
-                    key={pack.packId}
-                    className="text-[11px] bg-slate-100 dark:bg-[#13151f] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-0.5 text-slate-600 dark:text-[#94a3b8]"
-                    title={pack.label}
-                  >
-                    {pack.rawTitle}
-                  </span>
-                ))}
-          </div>
-        </div>
-      )}
+      <CardDetailContent
+        card={card}
+        bestImageUrl={bestImageUrl}
+        cardVariants={cardVariants}
+        cardPacks={cardPacks}
+        showImages={showImages}
+        search={search}
+        preferredLanguage={preferredLanguage}
+        onMainImageClick={(url) => window.open(url, '_blank')}
+        variant="page"
+      />
     </div>
   )
 }
