@@ -51,7 +51,7 @@ export default function CardDetailContent({
         {(!showImages || !bestImageUrl) && card.counter !== null && (
           <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center bg-slate-900 dark:bg-black w-4 py-3 rounded-r shadow-md">
             <span
-              className="text-[10px] font-bold text-white tracking-wide leading-tight"
+              className="text-[10px] font-bold text-white tracking-wider leading-tight"
               style={{ writingMode: 'vertical-lr', textOrientation: 'mixed', transform: 'rotate(180deg)' }}
             >
               +{card.counter}
