@@ -64,18 +64,6 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
         }}
       />
 
-      {/* Vertical counter strip — original card placement */}
-      {(!showImages && card.counter !== null) && (
-        <div className="absolute left-0 top-8 bottom-8 w-4 flex items-center justify-center bg-[#3498db]/10 border-r border-[#3498db]/20">
-          <span
-            className="text-[8px] font-bold text-[#3498db]"
-            style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
-          >
-            +{card.counter}
-          </span>
-        </div>
-      )}
-
       {/* Top strip: Cost | Power | Attribute (only when no image) */}
       {(!showImages || !card.img_url) && (
       <div className="flex items-center justify-between px-2 py-1.5 shrink-0 min-h-[34px] bg-slate-50 dark:bg-[#13151f]">
