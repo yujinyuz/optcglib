@@ -57,6 +57,7 @@ export default function CardDetailContent({
             </span>
           </div>
         )}
+
         {/* Top strip: Cost | Power | Attribute */}
         {(!showImages || !bestImageUrl) && (
           <div
