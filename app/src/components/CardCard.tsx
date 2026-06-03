@@ -71,7 +71,7 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
             className="text-[7px] font-bold text-white tracking-wider leading-tight"
             style={{ writingMode: 'vertical-lr', textOrientation: 'mixed', transform: 'rotate(180deg)' }}
           >
-            ⚡ +{card.counter}
+            ⚡&nbsp;+{card.counter}
           </span>
         </div>
       )}
