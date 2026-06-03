@@ -54,7 +54,7 @@ export default function CardDetailContent({
               className="text-xs font-bold text-white tracking-wider"
               style={{ writingMode: 'vertical-lr', textOrientation: 'mixed', transform: 'rotate(180deg)' }}
             >
-              ⚡COUNTER+{card.counter}
+              ⚡COUNTER +{card.counter}
             </span>
           </div>
         )}
