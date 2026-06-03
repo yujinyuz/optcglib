@@ -69,7 +69,7 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
         <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center bg-slate-900 dark:bg-black px-1 py-2 rounded-r-md shadow-md">
           <span
             className="text-[8px] font-bold text-white tracking-wider"
-            style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+            style={{ writingMode: 'vertical-lr', textOrientation: 'mixed', transform: 'rotate(180deg)' }}
           >
             +{card.counter}
           </span>
