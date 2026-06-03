@@ -219,10 +219,11 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
           {/* Close button */}
           <button
             onClick={handleClose}
-            className="absolute top-3 right-3 z-10 p-1.5 rounded-lg text-slate-400 dark:text-[#64748b] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] transition-colors"
+            className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/90 dark:bg-black/60 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white shadow-md hover:shadow-lg hover:scale-105 transition-all flex items-center justify-center"
+            style={{ transition: 'transform 150ms var(--ease-spring-tight), box-shadow 150ms var(--ease-out-quart), color 150ms' }}
             aria-label="Close"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>

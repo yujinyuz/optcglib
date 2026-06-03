@@ -45,7 +45,18 @@ export default function CardDetailContent({
   return (
     <>
       {/* Card profile */}
-      <div className="rounded-2xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-xl shadow-black/10 dark:shadow-black/30">
+      <div className="relative rounded-2xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-xl shadow-black/10 dark:shadow-black/30">
+        {/* Vertical counter strip — left edge */}
+        {(!showImages || !bestImageUrl) && card.counter !== null && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center bg-slate-900 dark:bg-black px-1.5 py-3 rounded-r-lg shadow-lg">
+            <span
+              className="text-xs font-bold text-white tracking-wider"
+              style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+            >
+              +{card.counter}
+            </span>
+          </div>
+        )}
         {/* Top strip: Cost | Power | Attribute */}
         {(!showImages || !bestImageUrl) && (
           <div
@@ -178,12 +189,6 @@ export default function CardDetailContent({
             </div>
           )}
 
-          {/* Counter */}
-          {(!showImages || !bestImageUrl) && card.counter !== null && (
-            <div className="mt-0.5 text-xs text-center font-bold text-slate-500 dark:text-[#64748b]">
-              ⚡ COUNTER +{card.counter}
-            </div>
-          )}
         </div>
 
         {/* Bottom banner */}
