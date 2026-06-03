@@ -4,7 +4,8 @@ import { getCardById, getCardPacks, getCardVariants } from '../db'
 import { useAppStore } from '../store'
 import type { Card } from '../types'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
-import { decodeHtmlEntities, renderCardText, highlightSearchText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, groupImagesByLanguage } from '../utils'
+import { decodeHtmlEntities, renderCardText, highlightSearchText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl, groupImagesByLanguage } from '../utils'
+import ImageLoader from './ImageLoader'
 
 export default function CardDetail() {
   const { id } = useParams<{ id: string }>()
@@ -65,7 +66,7 @@ export default function CardDetail() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-8 h-8 border-2 border-slate-200 dark:border-[#2e303a] border-t-[#3b82f6] rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-slate-200 dark:border-[#2e303a] border-t-[#3b82f6] rounded-full animate-spin" role="status" aria-label="Loading card" />
       </div>
     )
   }
@@ -114,7 +115,10 @@ export default function CardDetail() {
         className="rounded-2xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-xl shadow-black/10 dark:shadow-black/30"
       >
         {/* Top strip: Cost | Power | Attribute */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+        <div
+          className="flex items-center justify-between px-4 pt-4 pb-2"
+          style={{ background: card.colors.length > 1 ? `linear-gradient(to right, ${card.colors.map(c => COLOR_HEX[c] || '#64748b').map(h => `${h}18`).join(', ')})` : `${primaryColor}18` }}
+        >
           {card.cost !== null ? (
             <span
               className={`inline-flex items-center justify-center w-10 h-10 rounded-full text-lg font-bold shadow-md ${getTextColorForBg(primaryColor)}`}
@@ -148,8 +152,27 @@ export default function CardDetail() {
           </div>
         </div>
 
-        {/* Image link — centered icon */}
-        {bestImageUrl && (
+        {/* Card image */}
+        {showImages && bestImageUrl ? (
+          <div className="flex items-center justify-center py-2">
+            <div className="relative w-full max-w-xs aspect-[5/7] rounded-lg overflow-hidden bg-slate-100 dark:bg-[#1a1d2e] shadow-md">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <img
+                  src="/loading-logo.webp"
+                  alt=""
+                  className="w-20 opacity-30 animate-pulse dark:invert"
+                />
+              </div>
+              <ImageLoader
+                key={bestImageUrl}
+                src={getExternalImageUrl(bestImageUrl)}
+                alt={card.name}
+                className="absolute inset-0 w-full h-full object-contain cursor-zoom-in"
+                onClick={() => window.open(getExternalImageUrl(bestImageUrl), '_blank')}
+              />
+            </div>
+          </div>
+        ) : bestImageUrl && (
           <div className="flex items-center justify-center py-4">
             <a
               href={bestImageUrl}
@@ -166,17 +189,19 @@ export default function CardDetail() {
         )}
 
         {/* Card Effect */}
-        {card.effect && (
+        {(card.effect || card.trigger_text) && (
           <div className="px-4 pb-3">
             <div className="mt-3 rounded-xl bg-white dark:bg-[#0f1117] p-4">
-              <div
-                className="text-sm text-slate-900 dark:text-white leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: highlightSearchText(renderCardText(card.effect), search) }}
-              />
+              {card.effect && (
+                <div
+                  className="text-sm text-slate-900 dark:text-white leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: highlightSearchText(renderCardText(card.effect), search) }}
+                />
+              )}
               {/* Trigger — inline with effect */}
               {card.trigger_text && (
                 <div
-                  className="mt-2 text-sm text-slate-700 dark:text-[#94a3b8] leading-relaxed"
+                  className={`text-sm text-slate-700 dark:text-[#94a3b8] leading-relaxed ${card.effect ? 'mt-2' : ''}`}
                   dangerouslySetInnerHTML={{ __html: highlightSearchText(renderCardText(card.trigger_text), search) }}
                 />
               )}
@@ -190,8 +215,13 @@ export default function CardDetail() {
           {/* Category */}
           <div
             className="text-xs font-medium tracking-[0.3em] uppercase text-center"
-            style={categoryColor ? { color: categoryColor } : undefined}
+            style={card.rarity === 'Leader' ? { color: '#f59e0b' } : (categoryColor ? { color: categoryColor } : undefined)}
           >
+            {card.rarity === 'Leader' && (
+              <svg className="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm2-2h10v2H7v-2z" />
+              </svg>
+            )}
             {card.category === 'Don' ? 'DON!!' : card.category}
           </div>
 
@@ -209,16 +239,22 @@ export default function CardDetail() {
         </div>
 
         {/* Bottom banner: ID | Counter | Rarity | Block */}
-        <div className="px-4 py-3 bg-slate-900 dark:bg-black text-white">
-          <div className="flex items-center justify-between text-sm opacity-90">
+        <div className="px-4 py-3 bg-slate-900 dark:bg-[#0c0e17] text-white">
+          <div className="flex items-center justify-between text-sm">
             <span className="font-mono">{card.id}</span>
             <div className="flex items-center gap-2">
-              {card.counter !== null && (
+              {(!showImages && card.counter !== null) && (
                 <span className="text-[10px] font-bold text-[#3498db]">⚡ +{card.counter}</span>
               )}
-              <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-white/20">
-                {RARITY_SHORT[card.rarity] || card.rarity}
-              </span>
+              {card.rarity === 'Leader' ? (
+                <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-amber-500 text-white">
+                  L
+                </span>
+              ) : (
+                <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-white/20">
+                  {RARITY_SHORT[card.rarity] || card.rarity}
+                </span>
+              )}
               {card.block_number !== null && (
                 <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-xs font-bold">
                   {card.block_number}

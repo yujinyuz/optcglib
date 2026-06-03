@@ -242,7 +242,10 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
           >
             {/* Top strip: Cost | Power | Attribute (only when no image) */}
             {(!showImages || !bestImageUrl) && (
-            <div className="flex items-center justify-between px-4 pt-4 pb-2">
+            <div
+              className="flex items-center justify-between px-4 pt-4 pb-2"
+              style={{ background: card.colors.length > 1 ? `linear-gradient(to right, ${card.colors.map(c => COLOR_HEX[c] || '#64748b').map(h => `${h}18`).join(', ')})` : `${primaryColor}18` }}
+            >
               {card.cost !== null ? (
                 <span
                   className={`inline-flex items-center justify-center w-10 h-10 rounded-full text-lg font-bold shadow-md ${getTextColorForBg(primaryColor)}`}
@@ -334,8 +337,13 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
             <div className="px-3 sm:px-4 pb-3">
               <div
                 className="text-[10px] font-medium tracking-[0.3em] uppercase text-center"
-                style={categoryColor ? { color: categoryColor } : undefined}
+                style={card.rarity === 'Leader' ? { color: '#f59e0b' } : (categoryColor ? { color: categoryColor } : undefined)}
               >
+                {card.rarity === 'Leader' && (
+                  <svg className="w-3 h-3 inline-block mr-0.5 -mt-0.5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm2-2h10v2H7v-2z" />
+                  </svg>
+                )}
                 {card.category === 'Don' ? 'DON!!' : card.category}
               </div>
 
@@ -363,16 +371,22 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
             </div>
 
             {/* Bottom banner */}
-            <div className="px-3 sm:px-4 py-3 bg-slate-900 dark:bg-black text-white">
-              <div className="flex items-center justify-between text-sm opacity-90">
+            <div className="px-3 sm:px-4 py-3 bg-slate-900 dark:bg-[#0c0e17] text-white">
+              <div className="flex items-center justify-between text-sm">
                 <span className="font-mono">{card.id}</span>
                 <div className="flex items-center gap-2">
                   {(!showImages && card.counter !== null) && (
                     <span className="text-[10px] font-bold text-[#3498db]">⚡ +{card.counter}</span>
                   )}
-                  <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-white/20">
-                    {RARITY_SHORT[card.rarity] || card.rarity}
-                  </span>
+                  {card.rarity === 'Leader' ? (
+                    <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-amber-500 text-white">
+                      L
+                    </span>
+                  ) : (
+                    <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-white/20">
+                      {RARITY_SHORT[card.rarity] || card.rarity}
+                    </span>
+                  )}
                   {card.block_number !== null && (
                     <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-xs font-bold">
                       {card.block_number}

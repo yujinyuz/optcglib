@@ -1,29 +1,13 @@
 import { useEffect, useState, useRef } from 'react'
 import { useAppStore } from '../store'
 import { prefersReducedMotion } from '../lib/spring'
-
-function useActiveFilterCount(): number {
-  const filters = useAppStore((state) => state.filters)
-
-  let count = 0
-  if (filters.search) count++
-  if (filters.colors.length > 0) count++
-  if (filters.categories.length > 0) count++
-  if (filters.rarities.length > 0) count++
-  if (filters.attributes.length > 0) count++
-  if (filters.sets.length > 0) count++
-  if (filters.blockMin != null || filters.blockMax != null) count++
-  if (filters.costMin != null || filters.costMax != null) count++
-  if (filters.powerMin != null || filters.powerMax != null) count++
-  if (filters.counterMin != null || filters.counterMax != null) count++
-
-  return count
-}
+import { getActiveFilterCount } from '../lib/filters'
 
 export default function FilterFAB({ sidebarOpen }: { sidebarOpen: boolean }) {
   const [mounted, setMounted] = useState(false)
   const reducedMotion = prefersReducedMotion()
-  const count = useActiveFilterCount()
+  const filters = useAppStore((state) => state.filters)
+  const count = getActiveFilterCount(filters)
   const btnRef = useRef<HTMLButtonElement>(null)
 
   // Animate in on mount

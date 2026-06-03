@@ -79,7 +79,7 @@ function SlowConnectionIndicator() {
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
       <span className="text-amber-700 dark:text-amber-300 text-xs">
-        Slow network &mdash; images disabled
+        Slow network: images disabled
       </span>
       <button
         onClick={() => setSlowConnectionOverride(true)}

@@ -9,15 +9,6 @@
   letter-spacing: 0.01em;
 }
 
-:root {
-  --color-red: #e74c3c;
-  --color-blue: #3498db;
-  --color-green: #2ecc71;
-  --color-purple: #9b59b6;
-  --color-black: #2c3e50;
-  --color-yellow: #f1c40f;
-}
-
 body {
   margin: 0;
   font-family: system-ui, -apple-system, sans-serif;
@@ -236,14 +227,9 @@ input[type="text"]:focus-visible {
 }
 
 /* View Transitions — card tile → modal morph */
-@keyframes cardMorph-expand {
-  from { transform: scale(1); opacity: 1; }
-  to { transform: scale(1); opacity: 1; }
-}
-
 ::view-transition-old(optcg-card-morph),
 ::view-transition-new(optcg-card-morph) {
-  animation: cardMorph-expand 300ms var(--ease-spring-default) both;
+  animation: none;
 }
 
 /* Spring-based panel transitions */

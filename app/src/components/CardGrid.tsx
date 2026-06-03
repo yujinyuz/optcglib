@@ -70,7 +70,6 @@ function CardTile({ card, displayName, index }: {
   card: Card
   displayName?: string
   index: number
-  sectionLang?: string
 }) {
   const tileRef = useRef<HTMLDivElement>(null)
   const useSpring = !prefersReducedMotion()
@@ -79,15 +78,10 @@ function CardTile({ card, displayName, index }: {
     const el = tileRef.current?.querySelector('[role="button"]') as HTMLElement | null
     if (el && 'startViewTransition' in document) {
       el.style.viewTransitionName = 'optcg-card-morph'
-      // Use direct setState — the modal will pick up the transition name
-      import('../store').then(({ useAppStore }) => {
-        useAppStore.getState().setSelectedCard(card)
-      })
+      useAppStore.getState().setSelectedCard(card)
       setTimeout(() => { el.style.viewTransitionName = '' }, 500)
     } else {
-      import('../store').then(({ useAppStore }) => {
-        useAppStore.getState().setSelectedCard(card)
-      })
+      useAppStore.getState().setSelectedCard(card)
     }
   }, [card])
 
@@ -150,7 +144,6 @@ export default function CardGrid() {
             card={displayCard}
             displayName={sectionLang !== 'english' ? card.name_translated || undefined : undefined}
             index={i}
-            sectionLang={sectionLang}
           />
         );
       })}

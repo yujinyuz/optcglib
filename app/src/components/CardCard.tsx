@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import type { Card } from '../types'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
-import { decodeHtmlEntities, renderCardText, highlightSearchText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl, getLeaderGradient } from '../utils'
+import { decodeHtmlEntities, renderCardText, highlightSearchText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
 import { useAppStore } from '../store'
 import ImageLoader from './ImageLoader'
 
@@ -42,11 +42,7 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
 
   const transition = 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart)'
   const isLeader = card.rarity === 'Leader'
-  const leaderMode = !showImages && isLeader
-  const leaderGradient = getLeaderGradient(card.colors)
-  const cardStyle = !showImages && !isLeader
-    ? { borderLeft: `3px solid ${primaryColor}`, transition }
-    : { transition }
+  const cardStyle = { transition }
 
   return (
     <div
@@ -55,9 +51,19 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
       tabIndex={0}
       onClick={() => { if (!disableClick) setSelectedCard(card) }}
       onKeyDown={(e) => { if (!disableClick && (e.key === 'Enter' || e.key === ' ')) setSelectedCard(card) }}
-      className="group flex flex-col rounded-xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-md shadow-black/5 dark:shadow-white/5 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-white/10 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-150 cursor-pointer h-full"
+      className={`group flex flex-col rounded-xl overflow-hidden bg-white dark:bg-[#1a1d2e] shadow-md shadow-black/5 dark:shadow-white/5 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-white/10 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-150 h-full ${disableClick ? 'cursor-default' : 'cursor-pointer'}`}
       style={cardStyle}
     >
+      {/* Color strip */}
+      <div
+        className="h-1.5 w-full shrink-0"
+        style={{
+          background: card.colors.length === 1
+            ? primaryColor
+            : `linear-gradient(90deg, ${card.colors.map((c) => COLOR_HEX[c]).join(', ')})`,
+        }}
+      />
+
       {/* Top strip: Cost | Power | Attribute (only when no image) */}
       {(!showImages || !card.img_url) && (
       <div className="flex items-center justify-between px-2 py-1.5 shrink-0 min-h-[34px] bg-slate-50 dark:bg-[#13151f]">
@@ -126,13 +132,16 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
         {/* Category */}
         <div
           className="text-[10px] font-medium tracking-[0.3em] uppercase text-center"
-          style={leaderMode
-            ? (leaderGradient
-              ? { background: leaderGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
-              : { color: primaryColor })
+          style={isLeader
+            ? { color: '#f59e0b' }
             : (categoryColor ? { color: categoryColor } : undefined)
           }
         >
+          {isLeader && (
+            <svg className="w-3 h-3 inline-block mr-0.5 -mt-0.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm2-2h10v2H7v-2z" />
+            </svg>
+          )}
           {card.category === 'Don' ? 'DON!!' : card.category}
         </div>
 
@@ -165,6 +174,8 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleToggleEffect(e) }}
             role="button"
             tabIndex={0}
+            aria-expanded={effectExpanded}
+            aria-label={effectExpanded ? 'Collapse effect text' : 'Expand effect text'}
           >
             <div className={`text-[11px] leading-[1.3] text-slate-600 dark:text-[#94a3b8] ${effectExpanded ? '' : 'line-clamp-2'}`}>
               {card.effect && (
@@ -174,7 +185,7 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
                 <span className="block mt-1 text-[10px] italic text-slate-700 dark:text-[#e2e8f0] bg-slate-200 dark:bg-[#020617] rounded px-1.5 py-0.5" dangerouslySetInnerHTML={{ __html: highlightSearchText(renderCardText(card.trigger_text), search) }} />
               )}
             </div>
-            <span className="text-[9px] text-slate-400 dark:text-[#475569] mt-0.5 inline-block">
+            <span className="text-[10px] text-slate-400 dark:text-[#475569] mt-0.5 inline-block">
               {effectExpanded ? '▲ less' : '▼ more'}
             </span>
           </div>
@@ -182,21 +193,15 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
 
       </div>
 
-      {/* Bottom banner — always black/dark */}
-      <div className="shrink-0 px-2.5 py-1.5 bg-slate-900 dark:bg-black text-white flex items-center justify-between text-[10px]">
+      {/* Bottom banner — always dark */}
+      <div className="shrink-0 px-2.5 py-1.5 bg-slate-900 dark:bg-[#0c0e17] text-white flex items-center justify-between text-[10px]">
         <span className="font-mono">{card.id}</span>
         <div className="flex items-center gap-1">
           {(!showImages && card.counter !== null) && (
             <span className="text-[9px] font-bold text-[#3498db]">⚡ +{card.counter}</span>
           )}
-          {leaderMode ? (
-            <span
-              className="px-1 rounded font-bold"
-              style={leaderGradient
-                ? { background: leaderGradient }
-                : { backgroundColor: primaryColor }
-              }
-            >
+          {isLeader ? (
+            <span className="px-1 rounded font-bold bg-amber-500 text-white text-[10px]">
               L
             </span>
           ) : (

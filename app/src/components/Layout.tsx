@@ -16,6 +16,7 @@ import {
   COLOR_HEX,
   CATEGORY_COLORS,
 } from '../types'
+import { getActiveFilterCount } from '../lib/filters'
 
 function isIOSDevice() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
@@ -480,21 +481,6 @@ function ActiveFilterChips() {
   )
 }
 
-function getActiveFilterCount(filters: ReturnType<typeof useAppStore.getState>['filters']): number {
-  let count = 0
-  if (filters.search) count++
-  if (filters.colors.length > 0) count++
-  if (filters.categories.length > 0) count++
-  if (filters.rarities.length > 0) count++
-  if (filters.attributes.length > 0) count++
-  if (filters.sets.length > 0) count++
-  if (filters.blockMin != null || filters.blockMax != null) count++
-  if (filters.costMin != null || filters.costMax != null) count++
-  if (filters.powerMin != null || filters.powerMax != null) count++
-  if (filters.counterMin != null || filters.counterMax != null) count++
-  return count
-}
-
 function InstallBanner({ deferredPrompt, onInstall }: {
   deferredPrompt: InstallPrompt | null
   onInstall: () => void
@@ -831,7 +817,7 @@ export default function Layout() {
             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
-            Installed — find it on your home screen
+            Installed! Find it on your home screen
           </div>
         </div>
       )}
