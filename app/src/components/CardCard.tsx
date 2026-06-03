@@ -66,12 +66,12 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
 
       {/* Vertical counter strip — left edge */}
       {(!showImages && card.counter !== null) && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center bg-slate-900 dark:bg-black py-3 rounded-r shadow-sm">
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center bg-slate-900 dark:bg-black w-3 py-2 rounded-r shadow-sm">
           <span
-            className="text-[6px] font-bold text-white tracking-wider leading-tight"
+            className="text-[5px] font-bold text-white tracking-wide leading-tight"
             style={{ writingMode: 'vertical-lr', textOrientation: 'mixed', transform: 'rotate(180deg)' }}
           >
-            <span style={{ display: 'inline-block', verticalAlign: 'middle', transform: 'rotate(180deg)', marginRight: '2px' }}>⚡</span>COUNTER +{card.counter}
+            <span style={{ display: 'inline-block', verticalAlign: 'middle', transform: 'rotate(180deg)' }}>⚡</span>COUNTER +{card.counter}
           </span>
         </div>
       )}
