@@ -140,7 +140,7 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
       )}
 
       {/* Effect -> Category -> Name -> Type */}
-      <div className="flex-1 px-2.5 py-2 flex flex-col min-h-0">
+      <div className={`flex-1 py-2 flex flex-col min-h-0 ${(!showImages && card.counter !== null) ? 'pl-5 pr-2.5' : 'px-2.5'}`}>
         {/* Category */}
         <div
           className="text-[10px] font-medium tracking-[0.3em] uppercase text-center"

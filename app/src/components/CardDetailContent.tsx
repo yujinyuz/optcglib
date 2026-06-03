@@ -29,7 +29,8 @@ export default function CardDetailContent({
   variant = 'page',
 }: CardDetailContentProps) {
   const isModal = variant === 'modal'
-  const px = isModal ? 'px-3 sm:px-4' : 'px-4'
+  const hasCounter = (!showImages || !bestImageUrl) && card.counter !== null
+  const px = isModal ? (hasCounter ? 'pl-6 pr-3 sm:pl-7 sm:pr-4' : 'px-3 sm:px-4') : (hasCounter ? 'pl-6 pr-4' : 'px-4')
   const p = isModal ? 'p-3 sm:p-4' : 'p-4'
 
   const primaryColor = card.colors[0] ? COLOR_HEX[card.colors[0]] : '#64748b'
