@@ -158,8 +158,9 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
       const ftsQuery = raw.split(/\s+/).map((w) => (w.endsWith('*') ? w : `${w}*`)).join(' ');
       q.withCte(
         '_search_ids',
-        `SELECT card_id as id FROM cards_fts WHERE search_text MATCH ? UNION SELECT id FROM cards WHERE id LIKE ?`,
+        `SELECT card_id as id FROM cards_fts WHERE search_text MATCH ? UNION SELECT id FROM cards WHERE id LIKE ? OR base_id LIKE ?`,
         ftsQuery,
+        `%${raw}%`,
         `%${raw}%`
       );
       q.join('_search_ids _s ON c.id = _s.id');

@@ -452,6 +452,7 @@ def rebuild_fts_index(conn: sqlite3.Connection):
     conn.execute("""
         INSERT INTO cards_fts (card_id, search_text)
         SELECT c.id,
+               COALESCE(c.id, '') || ' ' ||
                COALESCE(c.name, '') || ' ' ||
                COALESCE(c.effect, '') || ' ' ||
                COALESCE(c.trigger_text, '') || ' ' ||
@@ -460,7 +461,10 @@ def rebuild_fts_index(conn: sqlite3.Connection):
                          WHERE t.card_id = c.id), '') || ' ' ||
                COALESCE((SELECT GROUP_CONCAT(ct.type, ' ')
                          FROM card_types ct
-                         WHERE ct.card_id = c.id), '')
+                         WHERE ct.card_id = c.id), '') || ' ' ||
+               COALESCE((SELECT GROUP_CONCAT(cc.color, ' ')
+                         FROM card_colors cc
+                         WHERE cc.card_id = c.id), '')
         FROM cards c
     """)
     conn.commit()
