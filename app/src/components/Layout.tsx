@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import { useAppStore } from '../store'
 import FilterBar from './FilterBar'
 import FilterFAB from './FilterFAB'
@@ -543,8 +543,10 @@ function InstallBanner({ deferredPrompt, onInstall }: {
 }
 
 export default function Layout() {
+  const navigate = useNavigate()
   const filters = useAppStore((state) => state.filters)
   const resetFilters = useAppStore((state) => state.resetFilters)
+  const setSelectedCard = useAppStore((state) => state.setSelectedCard)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarClosing, setSidebarClosing] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
@@ -745,8 +747,12 @@ export default function Layout() {
               className={`shrink-0 group cursor-pointer transition-opacity duration-200 ${
                 searchFocused ? 'opacity-40' : 'opacity-100'
               }`}
-              onClick={() => window.location.reload()}
-              title="Reload page"
+              onClick={() => {
+                navigate('/')
+                resetFilters()
+                setSelectedCard(null)
+              }}
+              title="Go home"
             >
               <div className="transition-transform duration-200 group-hover:scale-[1.02]">
                 <img
