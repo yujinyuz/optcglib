@@ -143,7 +143,6 @@ function rowToCard(row: (string | number | null)[]): Record<string, unknown> {
     colors: parseJsonArray(row[11] as string | null),
     attributes: parseJsonArray(row[12] as string | null),
     types: parseJsonArray(row[13] as string | null),
-    img_count: 0,
   };
 }
 
@@ -213,8 +212,7 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
     SELECT card_id,
       MAX(CASE WHEN language = 'english' THEN img_full_url END) as img_en,
       MAX(CASE WHEN language = 'english-asia' THEN img_full_url END) as img_ea,
-      MAX(CASE WHEN language = 'japanese' THEN img_full_url END) as img_jp,
-      COUNT(*) as img_count
+      MAX(CASE WHEN language = 'japanese' THEN img_full_url END) as img_jp
     FROM card_images
     WHERE img_full_url IS NOT NULL AND img_full_url != ''
     GROUP BY card_id
@@ -231,7 +229,7 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
   const countRes = db.exec(countQ.sql, countQ.params);
   const total = (countRes[0]?.values[0]?.[0] as number) || 0;
 
-  const dataQ = q.select(buildCardColumns(filters.preferredLanguage) + `, COALESCE(ci.img_en, ci.img_ea, ci.img_jp) as img_url, COALESCE(ci.img_count, 0) as img_count`, 'cards c', limit, offset);
+  const dataQ = q.select(buildCardColumns(filters.preferredLanguage) + `, COALESCE(ci.img_en, ci.img_ea, ci.img_jp) as img_url`, 'cards c', limit, offset);
   const dataRes = db.exec(dataQ.sql, dataQ.params);
 
   const cards: unknown[] = [];
@@ -239,7 +237,6 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
     for (const row of dataRes[0].values) {
       const card = rowToCard(row);
       (card as Record<string, unknown>).img_url = row[14] || null;
-      (card as Record<string, unknown>).img_count = row[15] || 0;
       cards.push(card);
     }
   }

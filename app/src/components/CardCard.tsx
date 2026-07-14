@@ -205,9 +205,9 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
               {card.block_number}
             </span>
           )}
-          {card.img_count > 1 && (
-            <span className="inline-flex items-center justify-center h-4 px-1 rounded-full bg-[#3b82f6]/80 text-[10px] font-bold" title={`${card.img_count} card images`}>
-              {card.img_count}
+          {card.id.includes('_p') && (
+            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/80 text-[10px] font-bold" title="Parallel art">
+              ★
             </span>
           )}
         </div>
