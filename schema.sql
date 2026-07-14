@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS packs (
     title TEXT NOT NULL DEFAULT '',  -- e.g. "ROMANCE DAWN"
     label TEXT NOT NULL DEFAULT '',  -- e.g. "OP-01"
     raw_title TEXT NOT NULL DEFAULT '', -- e.g. "BOOSTER PACK -ROMANCE DAWN- [OP-01]"
+    sort_order INTEGER DEFAULT 999,    -- manual display priority (lower = first)
     PRIMARY KEY (id, language)
 );
 
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS cards (
     effect TEXT,
     trigger_text TEXT,
     block_number INTEGER,            -- e.g. 1, 2, 3, 4, 5 (from Japanese source data)
+    sort_order INTEGER DEFAULT 999,  -- derived from pack sort_order for display ordering
     colors_json TEXT NOT NULL DEFAULT '[]',       -- JSON array of colors
     attributes_json TEXT NOT NULL DEFAULT '[]',    -- JSON array of attributes
     types_json TEXT NOT NULL DEFAULT '[]'          -- JSON array of types

@@ -25,10 +25,78 @@ DEFAULT_LANGUAGES = ["english", "english-asia", "japanese"]
 DEFAULT_DB = "optcg.db"
 SCHEMA_FILE = ROOT / "schema.sql"
 
+# Manual display priority for pack labels (earlier in list = shown first).
+# Auto-derived from pack label if not listed here.
+PACK_SORT_ORDER: list[str] = [
+    "OP-16",
+    "OP-15",
+    "EB-04",
+    "OP-14",
+    "PRB-02",
+    "OP-13",
+    "EB-03",
+    "OP-12",
+    "OP-11",
+    "EB-02",
+    "OP-10",
+    "OP-09",
+    "PRB-01",
+    "OP-08",
+    "OP-07",
+    "EB-01",
+    "OP-06",
+    "OP-05",
+    "OP-04",
+    "OP-03",
+    "OP-02",
+    "OP-01",
+]
+
 
 def decode_html(text: str) -> str:
     """Decode HTML entities in text (e.g. &amp; -> &)."""
     return html.unescape(text) if text else text
+
+
+def extract_label_from_raw_title(raw_title: str) -> str:
+    """Extract pack label like OP-01 or ST-30 from raw title brackets."""
+    import re
+
+    if not raw_title:
+        return ""
+    # Match [LABEL] or 【LABEL】
+    m = re.search(r"[\[【]([A-Z0-9\-]+)[\]】]", raw_title)
+    return m.group(1) if m else ""
+
+
+def compute_pack_sort_order(label: str) -> int:
+    """Derive a sort order from a pack label.
+
+    Earlier entries in PACK_SORT_ORDER take precedence.
+    Unlisted labels get an auto-derived value; unrecognised labels fall back to 999.
+    """
+    if not label:
+        return 999
+    try:
+        return PACK_SORT_ORDER.index(label)
+    except ValueError:
+        pass
+
+    import re
+
+    # OP-##, ST-##, EB-##, PRB-##
+    m = re.match(r"^(OP|ST|EB|PRB)-(\d+)$", label)
+    if m:
+        prefix, num = m.group(1), int(m.group(2))
+        base = {"OP": 1000, "ST": 2000, "EB": 3000, "PRB": 4000}[prefix]
+        return base - num * 10
+
+    # Edge-case labels like OP14-EB04, OP15-EB04
+    m = re.match(r"^OP(\d+)-EB(\d+)$", label)
+    if m:
+        return 1000 - int(m.group(1)) * 10
+
+    return 999
 
 
 def load_json(path: Path):
@@ -59,16 +127,21 @@ def seed_packs(conn: sqlite3.Connection, language: str) -> dict:
 
     inserted = 0
     for pack_id, pack in packs.items():
+        label = decode_html(pack.get("title_parts", {}).get("label") or "")
+        if not label:
+            label = extract_label_from_raw_title(decode_html(pack.get("raw_title", "")))
+        sort_order = compute_pack_sort_order(label)
         conn.execute(
-            """INSERT OR IGNORE INTO packs (id, language, prefix, title, label, raw_title)
-               VALUES (?, ?, ?, ?, ?, ?)""",
+            """INSERT OR REPLACE INTO packs (id, language, prefix, title, label, raw_title, sort_order)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
             (
                 pack_id,
                 language,
                 decode_html(pack.get("title_parts", {}).get("prefix") or ""),
                 decode_html(pack.get("title_parts", {}).get("title") or ""),
-                decode_html(pack.get("title_parts", {}).get("label") or ""),
+                label,
                 decode_html(pack.get("raw_title", "")),
+                sort_order,
             ),
         )
         inserted += 1
@@ -83,7 +156,9 @@ def build_block_number_map() -> dict[str, int]:
     block_map: dict[str, int] = {}
     jp_packs_file = VENDOR / "japanese" / "packs.json"
     if not jp_packs_file.exists():
-        print("  Warning: Japanese packs.json not found, block_number mapping will be empty")
+        print(
+            "  Warning: Japanese packs.json not found, block_number mapping will be empty"
+        )
         return block_map
 
     jp_packs = load_json(jp_packs_file)
@@ -103,7 +178,14 @@ def build_block_number_map() -> dict[str, int]:
     return block_map
 
 
-def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: dict[str, int], is_primary: bool, existing_ids: set[str] | None = None):
+def seed_cards(
+    conn: sqlite3.Connection,
+    language: str,
+    packs: dict,
+    block_map: dict[str, int],
+    is_primary: bool,
+    existing_ids: set[str] | None = None,
+):
     """Insert card data for all packs in a language from local files.
 
     Each card (base + variants) gets its own row in the cards table with a
@@ -148,7 +230,11 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
         canonical = base_cards[base_id]
 
         if not is_primary:
-            if language in ("english-asia", "japanese") and existing_ids and card_id in existing_ids:
+            if (
+                language in ("english-asia", "japanese")
+                and existing_ids
+                and card_id in existing_ids
+            ):
                 # Card already exists from primary source — but check if
                 # english-asia has <br> in effect/trigger that english lacks.
                 if language == "english-asia":
@@ -156,11 +242,20 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
                     ea_trigger = canonical.get("trigger") or ""
                     if "<br>" in ea_effect or "<br>" in ea_trigger:
                         existing = conn.execute(
-                            "SELECT effect, trigger_text FROM cards WHERE id = ?", (card_id,)
+                            "SELECT effect, trigger_text FROM cards WHERE id = ?",
+                            (card_id,),
                         ).fetchone()
                         if existing:
-                            new_effect = decode_html(ea_effect) if "<br>" in ea_effect else existing[0]
-                            new_trigger = decode_html(ea_trigger) if "<br>" in ea_trigger else existing[1]
+                            new_effect = (
+                                decode_html(ea_effect)
+                                if "<br>" in ea_effect
+                                else existing[0]
+                            )
+                            new_trigger = (
+                                decode_html(ea_trigger)
+                                if "<br>" in ea_trigger
+                                else existing[1]
+                            )
                             if new_effect != existing[0] or new_trigger != existing[1]:
                                 conn.execute(
                                     "UPDATE cards SET effect = ?, trigger_text = ? WHERE id = ?",
@@ -170,7 +265,9 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
             if language not in ("english-asia", "japanese"):
                 continue
 
-        block_number = block_map.get(card_id, block_map.get(base_id, canonical.get("block_number")))
+        block_number = block_map.get(
+            card_id, block_map.get(base_id, canonical.get("block_number"))
+        )
 
         cursor = conn.execute(
             """INSERT OR REPLACE INTO cards
@@ -185,7 +282,10 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
                 canonical.get("cost"),
                 # Character cards should always have a power value; upstream
                 # data sometimes has null — default to 0.
-                canonical.get("power") if canonical.get("power") is not None or canonical.get("category") != "Character" else 0,
+                canonical.get("power")
+                if canonical.get("power") is not None
+                or canonical.get("category") != "Character"
+                else 0,
                 canonical.get("counter"),
                 decode_html(canonical.get("effect") or ""),
                 decode_html(canonical.get("trigger") or ""),
@@ -244,13 +344,18 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
                 )
 
             # FTS index: index ALL variant IDs so searching by "OP01-001_p1" works
-            search_text = " ".join(filter(None, [
-                card_id,
-                card.get("name", ""),
-                card.get("effect", "") or "",
-                card.get("trigger", "") or "",
-                " ".join(card.get("types", [])),
-            ]))
+            search_text = " ".join(
+                filter(
+                    None,
+                    [
+                        card_id,
+                        card.get("name", ""),
+                        card.get("effect", "") or "",
+                        card.get("trigger", "") or "",
+                        " ".join(card.get("types", [])),
+                    ],
+                )
+            )
             conn.execute(
                 "INSERT OR IGNORE INTO cards_fts (card_id, search_text) VALUES (?, ?)",
                 (card_id, search_text),
@@ -271,12 +376,17 @@ def seed_cards(conn: sqlite3.Connection, language: str, packs: dict, block_map: 
                 ),
             )
             # Also add to FTS so searching in this language works
-            search_text = " ".join(filter(None, [
-                decode_html(card.get("name", "")),
-                decode_html(card.get("effect") or ""),
-                decode_html(card.get("trigger") or ""),
-                " ".join([decode_html(t) for t in card.get("types", [])]),
-            ]))
+            search_text = " ".join(
+                filter(
+                    None,
+                    [
+                        decode_html(card.get("name", "")),
+                        decode_html(card.get("effect") or ""),
+                        decode_html(card.get("trigger") or ""),
+                        " ".join([decode_html(t) for t in card.get("types", [])]),
+                    ],
+                )
+            )
             if search_text.strip():
                 conn.execute(
                     "INSERT INTO cards_fts (card_id, search_text) VALUES (?, ?)",
@@ -337,8 +447,12 @@ def fill_missing_japanese_images(conn: sqlite3.Connection):
 
     inserted = 0
     for card_id, img_url, img_full_url in rows:
-        jp_url = (img_url or "").replace("en.onepiece-cardgame.com", "www.onepiece-cardgame.com")
-        jp_full = (img_full_url or "").replace("en.onepiece-cardgame.com", "www.onepiece-cardgame.com")
+        jp_url = (img_url or "").replace(
+            "en.onepiece-cardgame.com", "www.onepiece-cardgame.com"
+        )
+        jp_full = (img_full_url or "").replace(
+            "en.onepiece-cardgame.com", "www.onepiece-cardgame.com"
+        )
         if jp_full:
             conn.execute(
                 "INSERT OR REPLACE INTO card_images (card_id, language, img_url, img_full_url) VALUES (?, 'japanese', ?, ?)",
@@ -350,17 +464,48 @@ def fill_missing_japanese_images(conn: sqlite3.Connection):
     print(f"  Derived {inserted} Japanese image URLs from English entries")
 
 
+def update_card_sort_orders(conn: sqlite3.Connection):
+    """Sync cards.sort_order from the best (lowest) pack sort_order for each card."""
+    conn.execute("""
+        UPDATE cards
+        SET sort_order = (
+            SELECT COALESCE(MIN(p.sort_order), 999)
+            FROM card_packs cp
+            JOIN packs p ON cp.pack_id = p.id AND cp.language = p.language
+            WHERE cp.card_id = cards.id
+        )
+    """)
+    conn.commit()
+
+    # Report how many cards got non-default sort orders
+    cur = conn.execute("SELECT COUNT(*) FROM cards WHERE sort_order != 999")
+    count = cur.fetchone()[0]
+    print(f"  Updated sort_order for {count} cards")
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Seed OPTCG database from local Punk Records data")
+    parser = argparse.ArgumentParser(
+        description="Seed OPTCG database from local Punk Records data"
+    )
     parser.add_argument(
         "--languages",
         nargs="+",
         default=DEFAULT_LANGUAGES,
-        choices=["english", "english-asia", "japanese", "chinese-hongkong", "chinese-taiwan", "thai", "french"],
+        choices=[
+            "english",
+            "english-asia",
+            "japanese",
+            "chinese-hongkong",
+            "chinese-taiwan",
+            "thai",
+            "french",
+        ],
         help="Languages to import (english-asia should be first for primary data)",
     )
     parser.add_argument("--db", default=DEFAULT_DB, help="SQLite database path")
-    parser.add_argument("--clean", action="store_true", help="Delete existing database before seeding")
+    parser.add_argument(
+        "--clean", action="store_true", help="Delete existing database before seeding"
+    )
     args = parser.parse_args()
 
     if not VENDOR.exists():
@@ -376,7 +521,7 @@ def main():
 
     total_unique = 0
     for i, language in enumerate(args.languages):
-        is_primary = (i == 0)
+        is_primary = i == 0
 
         # Track which base_ids exist before each pass (for english-asia gap-fill logic)
         if is_primary:
@@ -386,15 +531,22 @@ def main():
                 row[0] for row in conn.execute("SELECT id FROM cards").fetchall()
             )
 
-        print(f"\nProcessing {language}...{' (primary)' if is_primary else ' (secondary)'}")
+        print(
+            f"\nProcessing {language}...{' (primary)' if is_primary else ' (secondary)'}"
+        )
         packs = seed_packs(conn, language)
-        total, unique = seed_cards(conn, language, packs, block_map, is_primary, existing_ids)
+        total, unique = seed_cards(
+            conn, language, packs, block_map, is_primary, existing_ids
+        )
         total_unique += unique
         print(f"  Total cards for {language}: {total} ({unique} new unique)")
 
     rebuild_fts_index(conn)
     update_search_text(conn)
     fill_missing_japanese_images(conn)
+
+    print("\nUpdating card sort orders...")
+    update_card_sort_orders(conn)
 
     # Print summary
     cur = conn.cursor()
@@ -409,7 +561,9 @@ def main():
     cur.execute("SELECT COUNT(*) FROM card_images")
     image_count = cur.fetchone()[0]
 
-    print(f"\n✓ Database seeded: {pack_count} packs, {unique_count} unique cards ({card_count} total rows)")
+    print(
+        f"\n✓ Database seeded: {pack_count} packs, {unique_count} unique cards ({card_count} total rows)"
+    )
     print(f"  Pack memberships: {pack_memberships}")
     print(f"  Image variants: {image_count}")
 

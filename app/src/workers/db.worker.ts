@@ -421,9 +421,20 @@ self.onmessage = async (e: MessageEvent<{ type: string; id: string; payload?: un
     switch (type) {
       case 'init': {
         const SQL = await initSqlJs({ locateFile: (file: string) => `/${file}` });
-        const response = await fetch('/optcg.db');
+        const response = await fetch('/optcg.db', { cache: 'no-store' });
         const buffer = await response.arrayBuffer();
         db = new SQL.Database(new Uint8Array(buffer));
+
+        // Sanity-check: verify the sort_order column exists and report first card
+        try {
+          const check = db.exec("SELECT id, sort_order FROM cards WHERE base_id = id ORDER BY sort_order, id LIMIT 1");
+          if (check[0]?.values[0]) {
+            console.log('[DB] First card:', check[0].values[0][0], 'sort_order:', check[0].values[0][1]);
+          }
+        } catch {
+          console.log('[DB] sort_order column not found — old DB loaded');
+        }
+
         self.postMessage({ type: 'init-done', id });
         break;
       }
