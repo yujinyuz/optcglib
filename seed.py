@@ -28,7 +28,14 @@ SCHEMA_FILE = ROOT / "schema.sql"
 # Manual display priority for pack labels (earlier in list = shown first).
 # Auto-derived from pack label if not listed here.
 PACK_SORT_ORDER: list[str] = [
+    "ST-36",
+    "ST-35",
+    "ST-34",
+    "ST-33",
+    "ST-32",
+    "ST-31",
     "OP-16",
+    "ST-30",
     "OP-15",
     "EB-04",
     "OP-14",
@@ -109,6 +116,11 @@ def create_database(db_path: str, clean: bool = False):
     """Create the SQLite database with the schema."""
     if clean and Path(db_path).exists():
         Path(db_path).unlink()
+        # Also remove WAL companion files so SQLite doesn't see stale data
+        for suffix in ("-wal", "-shm"):
+            wal = Path(db_path + suffix)
+            if wal.exists():
+                wal.unlink()
 
     conn = sqlite3.connect(db_path)
     conn.execute("PRAGMA journal_mode = WAL")
