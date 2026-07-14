@@ -11,11 +11,9 @@ export default function ImageLoader({ src, alt, className = '', onClick }: Image
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState(false)
 
-  if (error) return null
-
   return (
     <div className={`relative ${className}`}>
-      {!loaded && (
+      {!loaded && !error && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-[#1a1d2e]">
           <img
             src="/loading-logo.webp"
@@ -24,15 +22,26 @@ export default function ImageLoader({ src, alt, className = '', onClick }: Image
           />
         </div>
       )}
-      <img
-        src={src}
-        alt={alt}
-        className={`${className} ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
-        loading="lazy"
-        onLoad={() => setLoaded(true)}
-        onError={() => setError(true)}
-        onClick={onClick}
-      />
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-[#1a1d2e]">
+          <img
+            src="/loading-logo.webp"
+            alt=""
+            className="w-16 opacity-20 dark:invert"
+          />
+        </div>
+      )}
+      {!error && (
+        <img
+          src={src}
+          alt={alt}
+          className={`${className} ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+          loading="lazy"
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+          onClick={onClick}
+        />
+      )}
     </div>
   )
 }

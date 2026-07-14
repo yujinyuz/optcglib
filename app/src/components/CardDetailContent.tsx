@@ -242,7 +242,7 @@ export default function CardDetailContent({
                               <ImageLoader
                                 src={getExternalImageUrl(img.imgUrl)}
                                 alt=""
-                                className={`w-full rounded-lg shadow-md cursor-zoom-in ${img.isCurrentVariant ? 'ring-2 ring-[#3b82f6]' : ''}`}
+                                className={`w-full aspect-[5/7] rounded-lg shadow-md cursor-zoom-in ${img.isCurrentVariant ? 'ring-2 ring-[#3b82f6]' : ''}`}
                                 onClick={() => onAltImageClick(getExternalImageUrl(img.imgUrl))}
                               />
                               <span className="text-[10px] text-slate-500 dark:text-[#64748b]">
@@ -262,7 +262,7 @@ export default function CardDetailContent({
                               <ImageLoader
                                 src={getExternalImageUrl(img.imgUrl)}
                                 alt=""
-                                className={`w-full rounded-lg shadow-md cursor-zoom-in ${img.isCurrentVariant ? 'ring-2 ring-[#3b82f6]' : ''}`}
+                                className={`w-full aspect-[5/7] rounded-lg shadow-md cursor-zoom-in ${img.isCurrentVariant ? 'ring-2 ring-[#3b82f6]' : ''}`}
                                 onClick={() => onAltImageClick(getExternalImageUrl(img.imgUrl))}
                               />
                               <span className="text-[10px] text-slate-500 dark:text-[#64748b]">
