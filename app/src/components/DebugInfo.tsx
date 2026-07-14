@@ -105,6 +105,13 @@ async function getStorageEstimate(): Promise<{ used: number | null; quota: numbe
   }
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ])
+}
+
 export default function DebugInfo() {
   const [data, setData] = useState<DebugData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -115,11 +122,11 @@ export default function DebugInfo() {
     async function load() {
       try {
         const [stats, dbSize, swState, storage, cacheInfo] = await Promise.all([
-          getStats(),
-          fetchDbSize(),
-          getSwState(),
-          getStorageEstimate(),
-          readCacheInfo(),
+          withTimeout(getStats(), 3000, { totalCards: 0 }),
+          withTimeout(fetchDbSize(), 3000, null),
+          withTimeout(getSwState(), 3000, 'unknown'),
+          withTimeout(getStorageEstimate(), 3000, { used: null, quota: null }),
+          withTimeout(readCacheInfo(), 3000, { count: 0, size: 0, cacheNames: [] }),
         ])
 
         if (cancelled) return

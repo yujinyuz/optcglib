@@ -249,8 +249,8 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
           </button>
         </div>
       )}
-      <AboutModal key={aboutOpen ? 'open' : 'closed'} isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
-      <HelpModal key={helpOpen ? 'open' : 'closed'} isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
+      <AboutModal key={aboutOpen ? 'about-open' : 'about-closed'} isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <HelpModal key={helpOpen ? 'help-open' : 'help-closed'} isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
       {/* Install tooltip */}
       {installTooltip && (
         <div
