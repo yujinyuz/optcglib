@@ -114,12 +114,12 @@ export async function getStats(): Promise<{ totalCards: number }> {
   return result;
 }
 
-export async function queryImageUrlsBySets(sets: string[]): Promise<string[]> {
-  const result = await sendRequest<string[]>('queryImageUrlsBySets', { sets });
+export async function queryImageUrlsBySets(sets: string[], language: 'english' | 'japanese'): Promise<string[]> {
+  const result = await sendRequest<string[]>('queryImageUrlsBySets', { sets, language });
   return result;
 }
 
-export async function queryAllSetImageUrls(): Promise<Record<string, string[]>> {
-  const result = await sendRequest<Record<string, string[]>>('queryAllSetImageUrls');
+export async function queryAllSetImageUrls(language: 'english' | 'japanese'): Promise<Record<string, string[]>> {
+  const result = await sendRequest<Record<string, string[]>>('queryAllSetImageUrls', { language });
   return result;
 }

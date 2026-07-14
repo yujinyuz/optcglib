@@ -15,8 +15,8 @@ export type WorkerMessage =
   | { type: 'getRelatedCards'; cardId: string; types: string[]; limit?: number }
   | { type: 'getCardVariants'; cardId: string }
   | { type: 'getStats' }
-  | { type: 'queryImageUrlsBySets'; sets: string[] }
-  | { type: 'queryAllSetImageUrls' };
+  | { type: 'queryImageUrlsBySets'; sets: string[]; language: 'english' | 'japanese' }
+  | { type: 'queryAllSetImageUrls'; language: 'english' | 'japanese' };
 
 export type QueryCardsFilters = {
   search?: string;
@@ -422,28 +422,41 @@ function getRelatedCards(db: Database, cardId: string, types: string[], limit: n
   return cards;
 }
 
-function queryImageUrlsBySets(db: Database, sets: string[]): string[] {
+function queryImageUrlsBySets(db: Database, sets: string[], language: 'english' | 'japanese'): string[] {
   if (!sets.length) return [];
   const clauses = sets.map(() => 'c.id LIKE ?').join(' OR ');
   const params = sets.map((s) => `${s}-%`);
+
+  const coalesce = language === 'japanese'
+    ? `COALESCE(MAX(CASE WHEN ci.language = 'japanese' THEN ci.img_full_url END), MAX(CASE WHEN ci.language = 'english-asia' THEN ci.img_full_url END), MAX(CASE WHEN ci.language = 'english' THEN ci.img_full_url END))`
+    : `COALESCE(MAX(CASE WHEN ci.language = 'english-asia' THEN ci.img_full_url END), MAX(CASE WHEN ci.language = 'english' THEN ci.img_full_url END), MAX(CASE WHEN ci.language = 'japanese' THEN ci.img_full_url END))`;
+
   const result = db.exec(
-    `SELECT DISTINCT ci.img_full_url
-     FROM card_images ci
-     JOIN cards c ON ci.card_id = c.id
+    `SELECT ${coalesce} as img_url
+     FROM cards c
+     LEFT JOIN card_images ci ON c.id = ci.card_id
      WHERE (${clauses})
-       AND ci.img_full_url IS NOT NULL AND ci.img_full_url != ''`,
+       AND ci.img_full_url IS NOT NULL AND ci.img_full_url != ''
+     GROUP BY c.id
+     HAVING img_url IS NOT NULL`,
     params
   );
   if (!result[0]) return [];
   return result[0].values.map((row) => row[0] as string);
 }
 
-function queryAllSetImageUrls(db: Database): Record<string, string[]> {
+function queryAllSetImageUrls(db: Database, language: 'english' | 'japanese'): Record<string, string[]> {
+  const coalesce = language === 'japanese'
+    ? `COALESCE(MAX(CASE WHEN ci.language = 'japanese' THEN ci.img_full_url END), MAX(CASE WHEN ci.language = 'english-asia' THEN ci.img_full_url END), MAX(CASE WHEN ci.language = 'english' THEN ci.img_full_url END))`
+    : `COALESCE(MAX(CASE WHEN ci.language = 'english-asia' THEN ci.img_full_url END), MAX(CASE WHEN ci.language = 'english' THEN ci.img_full_url END), MAX(CASE WHEN ci.language = 'japanese' THEN ci.img_full_url END))`;
+
   const result = db.exec(
-    `SELECT DISTINCT SUBSTR(c.id, 1, INSTR(c.id, '-') - 1) as set_prefix, ci.img_full_url
-     FROM card_images ci
-     JOIN cards c ON ci.card_id = c.id
-     WHERE ci.img_full_url IS NOT NULL AND ci.img_full_url != ''`
+    `SELECT SUBSTR(c.id, 1, INSTR(c.id, '-') - 1) as set_prefix, ${coalesce} as img_url
+     FROM cards c
+     LEFT JOIN card_images ci ON c.id = ci.card_id
+     WHERE ci.img_full_url IS NOT NULL AND ci.img_full_url != ''
+     GROUP BY c.id
+     HAVING img_url IS NOT NULL`
   );
   const map: Record<string, string[]> = {};
   if (!result[0]) return map;
@@ -549,14 +562,15 @@ self.onmessage = async (e: MessageEvent<{ type: string; id: string; payload?: un
       }
       case 'queryImageUrlsBySets': {
         if (!db) throw new Error('DB not initialized');
-        const { sets } = payload as { sets: string[] };
-        const result = queryImageUrlsBySets(db, sets);
+        const { sets, language } = payload as { sets: string[]; language: 'english' | 'japanese' };
+        const result = queryImageUrlsBySets(db, sets, language);
         self.postMessage({ type: 'result', id, data: result });
         break;
       }
       case 'queryAllSetImageUrls': {
         if (!db) throw new Error('DB not initialized');
-        const result = queryAllSetImageUrls(db);
+        const { language } = payload as { language: 'english' | 'japanese' };
+        const result = queryAllSetImageUrls(db, language);
         self.postMessage({ type: 'result', id, data: result });
         break;
       }

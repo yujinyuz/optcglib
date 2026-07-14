@@ -66,6 +66,7 @@ export default function ImageCacheModal({ isOpen, onClose }: ImageCacheModalProp
   const [closing, setClosing] = useState(false)
   const reducedMotion = prefersReducedMotion()
   const storeSets = useAppStore((state) => state.sets)
+  const preferredLanguage = useAppStore((state) => state.preferredLanguage)
 
   const [sets] = useState<string[]>(() => storeSets)
   const [selectedSets, setSelectedSets] = useState<string[]>([])
@@ -83,7 +84,7 @@ export default function ImageCacheModal({ isOpen, onClose }: ImageCacheModalProp
 
   const refreshSetStatus = useCallback(async () => {
     const [allUrls, cachedSet] = await Promise.all([
-      queryAllSetImageUrls(),
+      queryAllSetImageUrls(preferredLanguage),
       getCachedProxyUrlSet(),
     ]);
     const next: Record<string, { total: number; cached: number }> = {};
@@ -133,7 +134,7 @@ export default function ImageCacheModal({ isOpen, onClose }: ImageCacheModalProp
     abortRef.current = false
 
     try {
-      const rawUrls = await queryImageUrlsBySets(selectedSets)
+      const rawUrls = await queryImageUrlsBySets(selectedSets, preferredLanguage)
       if (abortRef.current) return
 
       const proxyUrls = rawUrls.map(getExternalImageUrl)
