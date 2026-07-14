@@ -103,7 +103,9 @@ export default function CacheStatus() {
           <span className="text-[11px] text-slate-400 dark:text-[#64748b]">
             {hasNoCaches
               ? 'No service worker caches found'
-              : `${cacheInfo.count} images · ${formatBytes(cacheInfo.size)}`}
+              : cacheInfo.count > 0 && cacheInfo.size === 0
+                ? `${cacheInfo.count} images · size hidden (cross-origin)`
+                : `${cacheInfo.count} images · ${formatBytes(cacheInfo.size)}`}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
