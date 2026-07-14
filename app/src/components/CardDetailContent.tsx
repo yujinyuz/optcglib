@@ -207,9 +207,9 @@ export default function CardDetailContent({
                   {RARITY_SHORT[card.rarity] || card.rarity}
                 </span>
               )}
-              {card.block_number !== null && (
+              {(
                 <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-xs font-bold">
-                  {card.block_number}
+                  {card.block_number ?? 'X'}
                 </span>
               )}
             </div>

@@ -199,8 +199,8 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
     const clauses = filters.sets.map(() => 'c.id LIKE ?').join(' OR ');
     q.where(`(${clauses})`, ...filters.sets.map(s => `${s}-%`));
   }
-  if (filters.blockMin != null) q.where('c.block_number >= ?', filters.blockMin);
-  if (filters.blockMax != null) q.where('c.block_number <= ?', filters.blockMax);
+  if (filters.blockMin != null) q.where('(c.block_number >= ? OR c.block_number IS NULL)', filters.blockMin);
+  if (filters.blockMax != null) q.where('(c.block_number <= ? OR c.block_number IS NULL)', filters.blockMax);
   if (filters.colors?.length) {
     q.where(`c.base_id IN (SELECT card_id FROM card_colors WHERE color IN (${placeholders(filters.colors.length)}))`, ...filters.colors);
   }

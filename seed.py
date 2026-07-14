@@ -163,28 +163,59 @@ def seed_packs(conn: sqlite3.Connection, language: str) -> dict:
     return packs
 
 
-def build_block_number_map() -> dict[str, int]:
-    """Build a mapping of card_id -> block_number from Japanese source data."""
-    block_map: dict[str, int] = {}
-    jp_packs_file = VENDOR / "japanese" / "packs.json"
-    if not jp_packs_file.exists():
-        print(
-            "  Warning: Japanese packs.json not found, block_number mapping will be empty"
-        )
-        return block_map
+def build_block_number_map(languages: list[str]) -> dict[str, int | None]:
+    """Build a mapping of card_id -> block_number from all available source data.
 
-    jp_packs = load_json(jp_packs_file)
-    jp_data_dir = VENDOR / "japanese" / "data"
-
-    for pack_id in jp_packs:
-        card_file = jp_data_dir / f"{pack_id}.json"
-        if not card_file.exists():
+    If ANY variant of a base card has a null block_number, ALL variants of that
+    base card are treated as Block X (returned as None).
+    """
+    # First pass: collect block numbers per base_id across all languages
+    base_blocks: dict[str, list[int | None]] = {}
+    for language in languages:
+        packs_file = VENDOR / language / "packs.json"
+        if not packs_file.exists():
             continue
-        cards = load_json(card_file)
-        for card in cards:
-            bn = card.get("block_number")
-            if bn is not None:
-                block_map[card["id"]] = bn
+        packs = load_json(packs_file)
+        data_dir = VENDOR / language / "data"
+        for pack_id in packs:
+            card_file = data_dir / f"{pack_id}.json"
+            if not card_file.exists():
+                continue
+            cards = load_json(card_file)
+            for card in cards:
+                bn = card.get("block_number")
+                base_id = card["id"].split("_")[0] if "_" in card["id"] else card["id"]
+                if base_id not in base_blocks:
+                    base_blocks[base_id] = []
+                base_blocks[base_id].append(bn)
+
+    # Second pass: resolve block number per base_id
+    # If ANY variant is null, the whole card is Block X (None)
+    base_block_map: dict[str, int | None] = {}
+    for base_id, bns in base_blocks.items():
+        if any(bn is None for bn in bns):
+            base_block_map[base_id] = None
+        else:
+            # All variants have a number — use the first one (they should agree)
+            base_block_map[base_id] = next(bn for bn in bns if bn is not None)
+
+    # Build variant-level map from base_id resolution
+    block_map: dict[str, int | None] = {}
+    for language in languages:
+        packs_file = VENDOR / language / "packs.json"
+        if not packs_file.exists():
+            continue
+        packs = load_json(packs_file)
+        data_dir = VENDOR / language / "data"
+        for pack_id in packs:
+            card_file = data_dir / f"{pack_id}.json"
+            if not card_file.exists():
+                continue
+            cards = load_json(card_file)
+            for card in cards:
+                base_id = card["id"].split("_")[0] if "_" in card["id"] else card["id"]
+                if card["id"] not in block_map:
+                    block_map[card["id"]] = base_block_map.get(base_id)
 
     print(f"  Built block_number map: {len(block_map)} cards")
     return block_map
@@ -194,7 +225,7 @@ def seed_cards(
     conn: sqlite3.Connection,
     language: str,
     packs: dict,
-    block_map: dict[str, int],
+    block_map: dict[str, int | None],
     is_primary: bool,
     existing_ids: set[str] | None = None,
 ):
@@ -277,9 +308,12 @@ def seed_cards(
             if language not in ("english-asia", "japanese"):
                 continue
 
-        block_number = block_map.get(
-            card_id, block_map.get(base_id, canonical.get("block_number"))
-        )
+        if card_id in block_map:
+            block_number = block_map[card_id]
+        elif base_id in block_map:
+            block_number = block_map[base_id]
+        else:
+            block_number = canonical.get("block_number")
 
         cursor = conn.execute(
             """INSERT OR REPLACE INTO cards
@@ -528,8 +562,8 @@ def main():
     print(f"Creating database: {args.db}")
     conn = create_database(args.db, clean=args.clean)
 
-    print("\nBuilding block_number mapping from Japanese data...")
-    block_map = build_block_number_map()
+    print("\nBuilding block_number mapping from source data...")
+    block_map = build_block_number_map(args.languages)
 
     total_unique = 0
     for i, language in enumerate(args.languages):

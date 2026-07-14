@@ -200,9 +200,9 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
               {RARITY_SHORT[card.rarity] || card.rarity}
             </span>
           )}
-          {card.block_number !== null && (
+          {(
             <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white/20 text-[10px] font-bold">
-              {card.block_number}
+              {card.block_number ?? 'X'}
             </span>
           )}
           {card.has_parallel && (
