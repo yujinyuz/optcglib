@@ -205,7 +205,7 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
               {card.block_number}
             </span>
           )}
-          {card.id.includes('_p') && (
+          {card.has_parallel && (
             <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/80 text-[10px] font-bold" title="Parallel art">
               ★
             </span>

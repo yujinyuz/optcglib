@@ -23,6 +23,7 @@ export interface Card {
   types: string[];
   block_number: number | null;
   img_url: string | null;
+  has_parallel: boolean;
 }
 
 export type CardCategory = 'Leader' | 'Character' | 'Event' | 'Stage' | 'Don';

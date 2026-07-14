@@ -53,7 +53,7 @@ class QueryBuilder {
   private ctes: Array<{ sql: string; params: (string | number | null)[] }> = [];
   private joins: string[] = [];
   private conditions: Array<{ sql: string; params: (string | number | null)[] }> = [];
-  private orderCols = 'c.id';
+  private orderCols = 'c.sort_order, c.id';
 
   private allParams(): (string | number | null)[] {
     const cteParams = this.ctes.flatMap((c) => c.params);
@@ -143,6 +143,7 @@ function rowToCard(row: (string | number | null)[]): Record<string, unknown> {
     colors: parseJsonArray(row[11] as string | null),
     attributes: parseJsonArray(row[12] as string | null),
     types: parseJsonArray(row[13] as string | null),
+    has_parallel: false,
   };
 }
 
@@ -229,7 +230,7 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
   const countRes = db.exec(countQ.sql, countQ.params);
   const total = (countRes[0]?.values[0]?.[0] as number) || 0;
 
-  const dataQ = q.select(buildCardColumns(filters.preferredLanguage) + `, COALESCE(ci.img_en, ci.img_ea, ci.img_jp) as img_url`, 'cards c', limit, offset);
+  const dataQ = q.select(buildCardColumns(filters.preferredLanguage) + `, COALESCE(ci.img_en, ci.img_ea, ci.img_jp) as img_url, EXISTS(SELECT 1 FROM cards cv WHERE cv.base_id = c.base_id AND INSTR(cv.id, '_p') > 0) as has_parallel`, 'cards c', limit, offset);
   const dataRes = db.exec(dataQ.sql, dataQ.params);
 
   const cards: unknown[] = [];
@@ -237,6 +238,7 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
     for (const row of dataRes[0].values) {
       const card = rowToCard(row);
       (card as Record<string, unknown>).img_url = row[14] || null;
+      (card as Record<string, unknown>).has_parallel = !!row[15];
       cards.push(card);
     }
   }
