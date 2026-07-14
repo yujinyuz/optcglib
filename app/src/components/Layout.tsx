@@ -5,6 +5,7 @@ import FilterBar from './FilterBar'
 import FilterFAB from './FilterFAB'
 import AboutModal from './AboutModal'
 import HelpModal from './HelpModal'
+import CacheStatus from './CacheStatus'
 import { prefersReducedMotion } from '../lib/spring'
 import {
   clearInstallPrompt,
@@ -195,6 +196,7 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
               </button>
             </div>
           </div>
+          <CacheStatus />
           <div className="border-t border-slate-100 dark:border-[#2e303a] my-1" />
           {!isStandalone && installSuccess && (
             <div className="flex items-center gap-2 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400">
