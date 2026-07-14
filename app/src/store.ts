@@ -187,7 +187,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   selectedCard: null,
   theme: getInitialTheme(),
   preferredLanguage: getInitialLanguage(),
-  loadExternalImages: localStorage.getItem('optcg-external-images') === 'true',
+  loadExternalImages: localStorage.getItem('optcg-external-images') !== 'false',
   isOnline: navigator.onLine,
   isSlowConnection: false,
   slowConnectionOverride: false,
