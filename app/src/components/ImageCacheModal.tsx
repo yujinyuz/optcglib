@@ -153,7 +153,7 @@ export default function ImageCacheModal({ isOpen, onClose }: ImageCacheModalProp
       for (let i = 0; i < proxyUrls.length; i += BATCH_SIZE) {
         if (abortRef.current) break
         const batch = proxyUrls.slice(i, i + BATCH_SIZE)
-        const results = await Promise.allSettled(batch.map((url) => fetch(url)))
+        const results = await Promise.allSettled(batch.map((url) => fetch(url, { mode: 'no-cors' })))
         if (abortRef.current) break
         failed += results.filter(
           (r) => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)
