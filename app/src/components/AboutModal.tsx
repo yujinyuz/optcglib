@@ -152,6 +152,9 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
             Cache card images for offline use
+            <span className="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+              Experimental
+            </span>
           </button>
 
           {/* Tech footer */}
