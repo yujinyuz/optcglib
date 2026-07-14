@@ -13,7 +13,8 @@ export type WorkerMessage =
   | { type: 'getCardPacks'; cardId: string }
   | { type: 'getCardImages'; cardId: string }
   | { type: 'getRelatedCards'; cardId: string; types: string[]; limit?: number }
-  | { type: 'getCardVariants'; cardId: string };
+  | { type: 'getCardVariants'; cardId: string }
+  | { type: 'getStats' };
 
 export type QueryCardsFilters = {
   search?: string;
@@ -271,6 +272,12 @@ function queryBlocks(db: Database): number[] {
   return result[0].values.map((row) => row[0] as number);
 }
 
+function getStats(db: Database): { totalCards: number } {
+  const result = db.exec('SELECT COUNT(*) FROM cards');
+  const totalCards = result[0]?.values[0]?.[0] as number | undefined || 0;
+  return { totalCards };
+}
+
 function getCardById(db: Database, id: string, preferredLanguage?: 'english' | 'japanese'): unknown | null {
   const translationJoin = preferredLanguage === 'japanese'
     ? " LEFT JOIN card_translations t ON cards.base_id = t.card_id AND t.language = 'japanese'"
@@ -495,6 +502,12 @@ self.onmessage = async (e: MessageEvent<{ type: string; id: string; payload?: un
         if (!db) throw new Error('DB not initialized');
         const { cardId: variantCardId, preferredLanguage } = payload as { cardId: string; preferredLanguage?: 'english' | 'japanese' };
         const result = getCardVariants(db, variantCardId, preferredLanguage);
+        self.postMessage({ type: 'result', id, data: result });
+        break;
+      }
+      case 'getStats': {
+        if (!db) throw new Error('DB not initialized');
+        const result = getStats(db);
         self.postMessage({ type: 'result', id, data: result });
         break;
       }

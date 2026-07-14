@@ -108,3 +108,8 @@ export async function getCardVariants(cardId: string, preferredLanguage?: 'engli
   const result = await sendRequest<{ variants: { card: Card; images: { language: string; imgUrl: string | null }[]; packs: { title: string; language: string }[] }[] }>('getCardVariants', { cardId, preferredLanguage });
   return result;
 }
+
+export async function getStats(): Promise<{ totalCards: number }> {
+  const result = await sendRequest<{ totalCards: number }>('getStats');
+  return result;
+}

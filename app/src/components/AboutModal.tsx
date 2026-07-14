@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { prefersReducedMotion } from '../lib/spring'
-import CacheStatus from './CacheStatus'
+import DebugInfo from './DebugInfo'
 
 interface AboutModalProps {
   isOpen: boolean
@@ -138,7 +138,7 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
 
           {/* Diagnostics */}
           <div className="mt-5 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#13151f] border border-slate-100 dark:border-[#25283a]">
-            <CacheStatus />
+            <DebugInfo />
           </div>
 
           {/* Tech footer */}
