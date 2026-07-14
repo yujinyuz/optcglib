@@ -113,17 +113,23 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
                 <div className="flex items-start gap-2">
                   <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">2</span>
                   <div>
-                    <strong className="text-slate-900 dark:text-white">Filter</strong> — Tap the funnel icon to open the filter panel. Narrow down by color, category, rarity, attribute, cost, power, counter, set, or block.
+                    <strong className="text-slate-900 dark:text-white">Smart search</strong> — Combine terms like <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-[#25283a] text-[11px] font-mono text-[#3b82f6]">op13 luffy green</code> to find all green Luffy cards from OP-13. Case does not matter — <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-[#25283a] text-[11px] font-mono text-[#3b82f6]">LUFFY</code>, <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-[#25283a] text-[11px] font-mono text-[#3b82f6]">luffy</code>, and <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-[#25283a] text-[11px] font-mono text-[#3b82f6]">Luffy</code> all work the same.
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">3</span>
                   <div>
-                    <strong className="text-slate-900 dark:text-white">Browse</strong> — Tap any card tile to see full details: larger image, effect text, price links, and which packs it appears in.
+                    <strong className="text-slate-900 dark:text-white">Filter</strong> — Tap the funnel icon to open the filter panel. Narrow down by color, category, rarity, attribute, cost, power, counter, set, or block.
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">4</span>
+                  <div>
+                    <strong className="text-slate-900 dark:text-white">Browse</strong> — Tap any card tile to see full details: larger image, effect text, price links, and which packs it appears in.
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">5</span>
                   <div>
                     <strong className="text-slate-900 dark:text-white">Clear filters</strong> — Active filters show as chips below the navbar. Tap any chip to remove it, or tap "Clear all" to reset everything.
                   </div>
