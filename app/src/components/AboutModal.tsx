@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { prefersReducedMotion } from '../lib/spring'
+import CacheStatus from './CacheStatus'
 
 interface AboutModalProps {
   isOpen: boolean
@@ -133,6 +134,11 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
               no server round-trips, no loading spinners. It was built for the moment when someone says
               "wait, what does that card do again?" and you need the answer in 3 seconds.
             </StorySection>
+          </div>
+
+          {/* Diagnostics */}
+          <div className="mt-5 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#13151f] border border-slate-100 dark:border-[#25283a]">
+            <CacheStatus />
           </div>
 
           {/* Tech footer */}
