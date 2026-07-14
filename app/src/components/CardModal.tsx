@@ -238,7 +238,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
               search={search}
               preferredLanguage={preferredLanguage}
               onMainImageClick={(url) => setZoomedImg(url)}
-              onAltImageClick={(url) => setZoomedImg(url)}
+              {...(showImages ? { onAltImageClick: (url: string) => setZoomedImg(url) } : {})}
               variant="modal"
             />
           </div>

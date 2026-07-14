@@ -220,11 +220,11 @@ export default function CardDetailContent({
       {/* Price links */}
       <PriceLinks baseId={card.base_id} />
 
-      {/* Image variants / alternate arts */}
-      {cardVariants.length > 0 && showImages && (
+      {/* Image variants / card images */}
+      {cardVariants.length > 0 && (
         <div className="mt-4">
           <h3 className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-2">
-            Alternate arts
+            Card Images
           </h3>
           {onAltImageClick ? (
             /* Inline images with zoom */

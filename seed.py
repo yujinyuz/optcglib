@@ -350,25 +350,6 @@ def fill_missing_japanese_images(conn: sqlite3.Connection):
     print(f"  Derived {inserted} Japanese image URLs from English entries")
 
 
-def build_card_best_images(conn: sqlite3.Connection):
-    """Pre-compute best image URLs per card to eliminate correlated subquery at query time."""
-    conn.execute("DELETE FROM card_best_images")
-    conn.execute("""
-        INSERT INTO card_best_images (card_id, img_url_en, img_url_jp)
-        SELECT
-            card_id,
-            MAX(CASE WHEN language = 'english' THEN img_full_url END),
-            COALESCE(
-                MAX(CASE WHEN language = 'japanese' THEN img_full_url END),
-                MAX(CASE WHEN language = 'english' THEN img_full_url END)
-            )
-        FROM card_images
-        WHERE img_full_url IS NOT NULL AND img_full_url != ''
-        GROUP BY card_id
-    """)
-    conn.commit()
-
-
 def main():
     parser = argparse.ArgumentParser(description="Seed OPTCG database from local Punk Records data")
     parser.add_argument(
@@ -414,7 +395,6 @@ def main():
     rebuild_fts_index(conn)
     update_search_text(conn)
     fill_missing_japanese_images(conn)
-    build_card_best_images(conn)
 
     # Print summary
     cur = conn.cursor()

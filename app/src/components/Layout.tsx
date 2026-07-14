@@ -71,8 +71,6 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
   const isSlowConnection = useAppStore((state) => state.isSlowConnection)
   const slowConnectionOverride = useAppStore((state) => state.slowConnectionOverride)
   const setSlowConnectionOverride = useAppStore((state) => state.setSlowConnectionOverride)
-  const showAlternateArts = useAppStore((state) => state.showAlternateArts)
-  const setShowAlternateArts = useAppStore((state) => state.setShowAlternateArts)
   const theme = useAppStore((state) => state.theme)
   const toggleTheme = useAppStore((state) => state.toggleTheme)
   const preferredLanguage = useAppStore((state) => state.preferredLanguage)
@@ -195,23 +193,6 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
               </button>
             </div>
           </div>
-          {loadExternalImages && (
-            <div className="flex items-center justify-between px-6 py-2">
-              <span className="text-xs text-slate-600 dark:text-[#94a3b8]">Show alternate arts</span>
-              <div className="flex items-center gap-2">
-                {!isOnline && (
-                  <span className="text-[10px] text-slate-400 dark:text-[#64748b]">No network</span>
-                )}
-                <button
-                  onClick={() => setShowAlternateArts(!showAlternateArts)}
-                  className={`relative w-9 h-5 rounded-full transition-all ${showAlternateArts ? 'bg-[#3b82f6]' : 'bg-slate-200 dark:bg-[#3a3d4a]'} ${!isOnline ? 'opacity-40' : ''}`}
-                  disabled={!isOnline}
-                >
-                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${showAlternateArts ? 'translate-x-4' : 'translate-x-0'}`} />
-                </button>
-              </div>
-            </div>
-          )}
           <div className="border-t border-slate-100 dark:border-[#2e303a] my-1" />
           {!isStandalone && installSuccess && (
             <div className="flex items-center gap-2 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400">

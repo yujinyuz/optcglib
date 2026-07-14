@@ -1,5 +1,5 @@
 import { useRef, useCallback, useState, useEffect } from 'react'
-import { useAppStore, getLanguageSections } from '../store'
+import { useAppStore } from '../store'
 import CardCard from './CardCard'
 import SkeletonCard from './SkeletonCard'
 import { prefersReducedMotion } from '../lib/spring'
@@ -66,9 +66,8 @@ function PullToRefresh({ onRefresh }: { onRefresh: () => void }) {
 }
 
 /** Individual card tile wrapper — handles View Transition + spring animation */
-function CardTile({ card, displayName, index }: {
+function CardTile({ card, index }: {
   card: Card
-  displayName?: string
   index: number
 }) {
   const tileRef = useRef<HTMLDivElement>(null)
@@ -96,7 +95,6 @@ function CardTile({ card, displayName, index }: {
     >
       <CardCard
         card={card}
-        displayName={displayName}
         disableClick
       />
     </div>
@@ -109,10 +107,7 @@ export default function CardGrid() {
   const hasMore = useAppStore((state) => state.hasMore)
   const searching = useAppStore((state) => state.searching)
   const searchLoading = useAppStore((state) => state.searchLoading)
-  const filters = useAppStore((state) => state.filters)
   const loadMore = useAppStore((state) => state.loadMore)
-  const sections = getLanguageSections()
-  const isSearching = !!filters.search
   const [resultKey, setResultKey] = useState('0')
   const [countPulse, setCountPulse] = useState(false)
   const reducedMotion = prefersReducedMotion()
@@ -131,40 +126,19 @@ export default function CardGrid() {
     wasSearchingRef.current = searching
   }, [searching, reducedMotion])
 
-  const renderCardGrid = (sectionCards: typeof cards, sectionLang?: string) => (
+  const renderCardGrid = (sectionCards: typeof cards) => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-      {sectionCards.map((card, i) => {
-        const imgUrlKey = sectionLang === 'japanese' ? 'img_url_jp' : 'img_url_en';
-        const displayCard = sectionLang
-          ? { ...card, img_url: card[imgUrlKey as 'img_url_en' | 'img_url_jp'] || card.img_url }
-          : card;
-        return (
-          <CardTile
-            key={`${card.id}${sectionLang ? `-${sectionLang}` : ''}`}
-            card={displayCard}
-            displayName={sectionLang !== 'english' ? card.name_translated || undefined : undefined}
-            index={i}
-          />
-        );
-      })}
+      {sectionCards.map((card, i) => (
+        <CardTile
+          key={card.id}
+          card={card}
+          index={i}
+        />
+      ))}
       {searching && sectionCards.length === 0 && Array.from({ length: 12 }, (_, i) => (
         <SkeletonCard key={`skeleton-${i}`} />
       ))}
     </div>
-  )
-
-  const renderCount = (displayCount: number, displayTotal: number) => (
-    <span className={`text-sm text-slate-600 dark:text-[#94a3b8] transition-all ${countPulse && !reducedMotion ? 'scale-110' : 'scale-100'}`} style={{ transition: 'transform 150ms var(--ease-out-quart)' }}>
-      {searchLoading && displayCount === 0 ? (
-        'Searching...'
-      ) : (
-        <>
-          <span className="text-slate-900 dark:text-white font-medium">{displayCount}</span>
-          {' '}of{' '}
-          <span className="text-slate-900 dark:text-white font-medium">{displayTotal}</span> cards
-        </>
-      )}
-    </span>
   )
 
   return (
@@ -172,42 +146,22 @@ export default function CardGrid() {
       <PullToRefresh onRefresh={() => useAppStore.getState().init()} />
 
       <div className="flex items-center justify-between mb-3">
-        {isSearching && sections.length > 1 ? (
-          <span className="text-sm text-slate-600 dark:text-[#94a3b8]">
-            {searchLoading && cards.length === 0 ? (
-              'Searching...'
-            ) : (
-              <>
-                <span className="text-slate-900 dark:text-white font-medium">{cards.length}</span>
-                {' '}of{' '}
-                <span className="text-slate-900 dark:text-white font-medium">{totalCards}</span> cards
-                {' '}across{' '}
-                <span className="text-slate-900 dark:text-white font-medium">{sections.length}</span> language{sections.length > 1 ? 's' : ''}
-              </>
-            )}
-          </span>
-        ) : (
-          renderCount(cards.length, totalCards)
-        )}
+        <span className={`text-sm text-slate-600 dark:text-[#94a3b8] transition-all ${countPulse && !reducedMotion ? 'scale-110' : 'scale-100'}`} style={{ transition: 'transform 150ms var(--ease-out-quart)' }}>
+          {searchLoading && cards.length === 0 ? (
+            'Searching...'
+          ) : (
+            <>
+              <span className="text-slate-900 dark:text-white font-medium">{cards.length}</span>
+              {' '}of{' '}
+              <span className="text-slate-900 dark:text-white font-medium">{totalCards}</span> cards
+            </>
+          )}
+        </span>
       </div>
 
-      {isSearching && sections.length > 1 ? (
-        sections.map((section) => (
-          <div key={`${section.lang}-${resultKey}`} className="mb-8">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
-              {section.title}
-              <span className="ml-2 text-sm font-normal text-slate-500 dark:text-[#64748b]">
-                ({section.cards.length})
-              </span>
-            </h2>
-            {renderCardGrid(section.cards, section.lang)}
-          </div>
-        ))
-      ) : (
-        <div key={resultKey} className="animate-[fadeIn_150ms_var(--ease-out-quart)_both]">
-          {renderCardGrid(isSearching && sections.length === 1 ? sections[0].cards : cards, isSearching && sections.length === 1 ? sections[0].lang : undefined)}
-        </div>
-      )}
+      <div key={resultKey} className="animate-[fadeIn_150ms_var(--ease-out-quart)_both]">
+        {renderCardGrid(cards)}
+      </div>
 
       {cards.length === 0 && !searching && (
         <div className="mt-16 text-center">

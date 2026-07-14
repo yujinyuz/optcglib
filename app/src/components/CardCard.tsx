@@ -1,4 +1,3 @@
-import { useState, useCallback } from 'react'
 import type { Card } from '../types'
 import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
 import { decodeHtmlEntities, renderCardText, highlightSearchText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
@@ -22,13 +21,7 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
   const primaryColor = card.colors[0] ? COLOR_HEX[card.colors[0]] : '#64748b'
   const categoryColor = CATEGORY_COLORS[card.category]
 
-  const [effectExpanded, setEffectExpanded] = useState(!showImages)
   const hasEffect = !!(card.effect || card.trigger_text)
-
-  const handleToggleEffect = useCallback((e: React.MouseEvent | React.KeyboardEvent) => {
-    e.stopPropagation()
-    setEffectExpanded((prev) => !prev)
-  }, [])
 
   const costBg = costCircleBg(card)
 
@@ -178,13 +171,10 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
           </div>
         )}
 
-        {/* Effect — collapsible */}
+        {/* Effect */}
         {hasEffect && (
-          <div
-            className="mt-1 text-left rounded bg-slate-50 dark:bg-[#13151f] px-1.5 py-1 cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-[#1a1d2e] transition-colors"
-            onClick={handleToggleEffect}
-          >
-            <div className={`text-[11px] leading-[1.3] text-slate-600 dark:text-[#94a3b8] ${effectExpanded ? '' : 'line-clamp-2'}`}>
+          <div className="mt-1 text-left rounded bg-slate-50 dark:bg-[#13151f] px-1.5 py-1">
+            <div className="text-[11px] leading-[1.3] text-slate-600 dark:text-[#94a3b8]">
               {card.effect && (
                 <span dangerouslySetInnerHTML={{ __html: highlightSearchText(renderCardText(card.effect), search) }} />
               )}
@@ -192,9 +182,6 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
                 <span className="block mt-1 text-[10px] italic text-slate-700 dark:text-[#e2e8f0] bg-slate-200 dark:bg-[#020617] rounded px-1.5 py-0.5" dangerouslySetInnerHTML={{ __html: highlightSearchText(renderCardText(card.trigger_text), search) }} />
               )}
             </div>
-            <span className="text-[10px] text-slate-400 dark:text-[#475569] mt-0.5 inline-block">
-              {effectExpanded ? 'Show less' : 'Show more'}
-            </span>
           </div>
         )}
 

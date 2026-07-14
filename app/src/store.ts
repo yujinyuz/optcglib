@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { initDB, queryCards, queryPacks, querySets, queryBlocks } from './db';
 import type { QueryCardsFilters } from './db';
 import type { Card, Pack, CardFilters, SearchScope } from './types';
-import { DEFAULT_FILTERS, SEARCH_LANGUAGES, SEARCH_LANGUAGE_DISPLAY } from './types';
+import { DEFAULT_FILTERS } from './types';
 
 type Theme = 'light' | 'dark';
 type PreferredLanguage = 'english' | 'japanese';
@@ -96,9 +96,6 @@ function buildQueryParams(
   limit: number,
   offset: number,
   preferredLanguage: PreferredLanguage,
-  showAlternateArts: boolean,
-  loadExternalImages: boolean,
-  isOnline: boolean,
 ): QueryCardsFilters {
   return {
     search: filters.search || undefined,
@@ -117,7 +114,7 @@ function buildQueryParams(
     blockMin: filters.blockMin,
     blockMax: filters.blockMax,
     preferredLanguage,
-    hideVariants: !loadExternalImages || !showAlternateArts || !isOnline,
+    hideVariants: true,
     limit,
     offset,
   };
@@ -142,7 +139,6 @@ interface AppState {
   theme: Theme;
   preferredLanguage: PreferredLanguage;
   loadExternalImages: boolean;
-  showAlternateArts: boolean;
   isOnline: boolean;
   isSlowConnection: boolean;
   slowConnectionOverride: boolean;
@@ -164,7 +160,6 @@ interface AppState {
   toggleTheme: () => void;
   setPreferredLanguage: (lang: PreferredLanguage) => void;
   setLoadExternalImages: (enabled: boolean) => void;
-  setShowAlternateArts: (enabled: boolean) => void;
   setSlowConnection: (slow: boolean) => void;
   setSlowConnectionOverride: (override: boolean) => void;
   dismissSlowToast: () => void;
@@ -192,7 +187,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   theme: getInitialTheme(),
   preferredLanguage: getInitialLanguage(),
   loadExternalImages: localStorage.getItem('optcg-external-images') === 'true',
-  showAlternateArts: localStorage.getItem('optcg-show-alternate-arts') === 'true',
   isOnline: navigator.onLine,
   isSlowConnection: false,
   slowConnectionOverride: false,
@@ -261,7 +255,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   loadMore: async () => {
-    const { offset, limit, totalCards, cards, filters, searching, preferredLanguage, showAlternateArts, loadExternalImages, isOnline } = get();
+    const { offset, limit, totalCards, cards, filters, searching, preferredLanguage } = get();
     if (searching || cards.length >= totalCards) return;
 
     const newOffset = offset + limit;
@@ -269,7 +263,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     try {
       const { cards: moreCards, total } = await queryCards(
-        buildQueryParams(filters, limit, newOffset, preferredLanguage, showAlternateArts, loadExternalImages, isOnline)
+        buildQueryParams(filters, limit, newOffset, preferredLanguage)
       );
       set({
         cards: [...cards, ...moreCards],
@@ -307,18 +301,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setLoadExternalImages: (enabled) => {
     localStorage.setItem('optcg-external-images', String(enabled));
-    if (enabled) {
-      localStorage.setItem('optcg-show-alternate-arts', 'true');
-      set({ loadExternalImages: enabled, showAlternateArts: true });
-    } else {
-      set({ loadExternalImages: enabled });
-    }
-    get().search();
-  },
-
-  setShowAlternateArts: (enabled) => {
-    localStorage.setItem('optcg-show-alternate-arts', String(enabled));
-    set({ showAlternateArts: enabled });
+    set({ loadExternalImages: enabled });
     get().search();
   },
 
@@ -354,11 +337,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   search: async (append = false) => {
-    const { filters, limit, offset, preferredLanguage, showAlternateArts, loadExternalImages, isOnline } = get();
+    const { filters, limit, offset, preferredLanguage } = get();
     set({ searchLoading: true });
     try {
       const { cards, total } = await queryCards(
-        buildQueryParams(filters, limit, offset, preferredLanguage, showAlternateArts, loadExternalImages, isOnline)
+        buildQueryParams(filters, limit, offset, preferredLanguage)
       );
       set({
         cards: append ? [...get().cards, ...cards] : cards,
@@ -373,33 +356,3 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 }));
 
-/* ── Language section grouping (search only) ────────────────── */
-
-export interface LanguageSection {
-  lang: string;
-  title: string;
-  cards: Card[];
-}
-
-export function getLanguageSections(): LanguageSection[] {
-  const { cards, filters, loadExternalImages, isOnline } = useAppStore.getState();
-  if (!filters.search) return [];
-
-  const showImages = loadExternalImages && isOnline;
-  // When images are off, only show a single English section (no language headers)
-  const langs = showImages ? SEARCH_LANGUAGES : (['english'] as const);
-
-  return langs
-    .map((lang) => ({
-      lang,
-      title: showImages
-        ? (SEARCH_LANGUAGE_DISPLAY as Record<string, string>)[lang] || lang
-        : lang,
-      cards: cards.filter((c) => {
-        if (!c.has_images?.[lang]) return false;
-        if (lang === 'english') return true;
-        return !!c.name_translated;
-      }),
-    }))
-    .filter((s) => s.cards.length > 0);
-}
