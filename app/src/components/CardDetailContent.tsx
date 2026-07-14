@@ -288,7 +288,7 @@ export default function CardDetailContent({
                       <div>
                         <div className="text-[10px] text-slate-400 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-1.5">English</div>
                         <div className="flex flex-wrap gap-1.5">
-                          {english.map((img) => (
+                          {english.filter(img => img.packName).map((img) => (
                             <a
                               key={img.imgUrl}
                               href={img.imgUrl}
@@ -296,7 +296,7 @@ export default function CardDetailContent({
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
                             >
-                              {img.packName || 'Alt'}{img.variantSuffix}
+                              {img.packName}{img.variantSuffix}
                               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                               </svg>
@@ -309,7 +309,7 @@ export default function CardDetailContent({
                       <div>
                         <div className="text-[10px] text-slate-400 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-1.5">Japanese</div>
                         <div className="flex flex-wrap gap-1.5">
-                          {japanese.map((img) => (
+                          {japanese.filter(img => img.packName).map((img) => (
                             <a
                               key={img.imgUrl}
                               href={img.imgUrl}
@@ -317,7 +317,7 @@ export default function CardDetailContent({
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
                             >
-                              {img.packName || 'Alt'}{img.variantSuffix}
+                              {img.packName}{img.variantSuffix}
                               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                               </svg>
