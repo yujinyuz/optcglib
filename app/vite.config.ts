@@ -39,6 +39,9 @@ export default defineConfig({
             handler: 'CacheFirst',
             options: {
               cacheName: 'card-images',
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
               expiration: {
                 maxEntries: 5000,
                 maxAgeSeconds: 180 * 24 * 60 * 60, // 180 days (~6 months)
