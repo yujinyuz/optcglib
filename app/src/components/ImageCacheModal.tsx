@@ -155,9 +155,16 @@ export default function ImageCacheModal({ isOpen, onClose }: ImageCacheModalProp
         const batch = proxyUrls.slice(i, i + BATCH_SIZE)
         const results = await Promise.allSettled(batch.map((url) => fetch(url, { mode: 'no-cors' })))
         if (abortRef.current) break
-        failed += results.filter(
-          (r) => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)
-        ).length
+        results.forEach((r, idx) => {
+          const url = batch[idx]
+          if (r.status === 'rejected') {
+            console.warn('[Cache] Network error fetching:', url, r.reason)
+            failed++
+          } else if (!r.value.ok && r.value.type !== 'opaque') {
+            console.warn('[Cache] HTTP error fetching:', url, r.value.status)
+            failed++
+          }
+        })
         done = Math.min(i + BATCH_SIZE, total)
         setProgress({ total, done, failed })
       }
