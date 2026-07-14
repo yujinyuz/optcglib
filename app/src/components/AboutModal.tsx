@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { prefersReducedMotion } from '../lib/spring'
 import DebugInfo from './DebugInfo'
+import ImageCacheModal from './ImageCacheModal'
 
 interface AboutModalProps {
   isOpen: boolean
@@ -9,6 +10,7 @@ interface AboutModalProps {
 
 export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
   const [closing, setClosing] = useState(false)
+  const [cacheModalOpen, setCacheModalOpen] = useState(false)
   const reducedMotion = prefersReducedMotion()
 
   const handleClose = useCallback(() => {
@@ -141,6 +143,17 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
             <DebugInfo />
           </div>
 
+          {/* Cache images */}
+          <button
+            onClick={() => setCacheModalOpen(true)}
+            className="mt-5 flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#13151f] border border-slate-100 dark:border-[#25283a] text-sm text-slate-600 dark:text-[#94a3b8] hover:bg-slate-100 dark:hover:bg-[#1a1d2e] transition-colors"
+          >
+            <svg className="w-4 h-4 text-slate-400 dark:text-[#64748b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Cache card images for offline use
+          </button>
+
           {/* Tech footer */}
           <div className="mt-6 pt-5 border-t border-slate-100 dark:border-[#2e303a]">
             <div className="flex items-center justify-between">
@@ -162,6 +175,7 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
           </div>
         </div>
       </div>
+      <ImageCacheModal isOpen={cacheModalOpen} onClose={() => setCacheModalOpen(false)} />
     </div>
   )
 }

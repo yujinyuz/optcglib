@@ -14,7 +14,9 @@ export type WorkerMessage =
   | { type: 'getCardImages'; cardId: string }
   | { type: 'getRelatedCards'; cardId: string; types: string[]; limit?: number }
   | { type: 'getCardVariants'; cardId: string }
-  | { type: 'getStats' };
+  | { type: 'getStats' }
+  | { type: 'queryImageUrlsBySets'; sets: string[] }
+  | { type: 'queryAllSetImageUrls' };
 
 export type QueryCardsFilters = {
   search?: string;
@@ -420,6 +422,40 @@ function getRelatedCards(db: Database, cardId: string, types: string[], limit: n
   return cards;
 }
 
+function queryImageUrlsBySets(db: Database, sets: string[]): string[] {
+  if (!sets.length) return [];
+  const clauses = sets.map(() => 'c.id LIKE ?').join(' OR ');
+  const params = sets.map((s) => `${s}-%`);
+  const result = db.exec(
+    `SELECT DISTINCT ci.img_full_url
+     FROM card_images ci
+     JOIN cards c ON ci.card_id = c.id
+     WHERE (${clauses})
+       AND ci.img_full_url IS NOT NULL AND ci.img_full_url != ''`,
+    params
+  );
+  if (!result[0]) return [];
+  return result[0].values.map((row) => row[0] as string);
+}
+
+function queryAllSetImageUrls(db: Database): Record<string, string[]> {
+  const result = db.exec(
+    `SELECT DISTINCT SUBSTR(c.id, 1, INSTR(c.id, '-') - 1) as set_prefix, ci.img_full_url
+     FROM card_images ci
+     JOIN cards c ON ci.card_id = c.id
+     WHERE ci.img_full_url IS NOT NULL AND ci.img_full_url != ''`
+  );
+  const map: Record<string, string[]> = {};
+  if (!result[0]) return map;
+  for (const row of result[0].values) {
+    const set = row[0] as string;
+    const url = row[1] as string;
+    if (!map[set]) map[set] = [];
+    map[set].push(url);
+  }
+  return map;
+}
+
 /* ── Worker message handler ───────────────────────────────────── */
 
 self.onmessage = async (e: MessageEvent<{ type: string; id: string; payload?: unknown }>) => {
@@ -508,6 +544,19 @@ self.onmessage = async (e: MessageEvent<{ type: string; id: string; payload?: un
       case 'getStats': {
         if (!db) throw new Error('DB not initialized');
         const result = getStats(db);
+        self.postMessage({ type: 'result', id, data: result });
+        break;
+      }
+      case 'queryImageUrlsBySets': {
+        if (!db) throw new Error('DB not initialized');
+        const { sets } = payload as { sets: string[] };
+        const result = queryImageUrlsBySets(db, sets);
+        self.postMessage({ type: 'result', id, data: result });
+        break;
+      }
+      case 'queryAllSetImageUrls': {
+        if (!db) throw new Error('DB not initialized');
+        const result = queryAllSetImageUrls(db);
         self.postMessage({ type: 'result', id, data: result });
         break;
       }

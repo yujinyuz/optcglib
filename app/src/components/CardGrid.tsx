@@ -113,7 +113,6 @@ export default function CardGrid() {
   const [countPulse, setCountPulse] = useState(false)
   const reducedMotion = prefersReducedMotion()
   const wasSearchingRef = useRef(false)
-
   useEffect(() => {
     if (!searching && wasSearchingRef.current && !lastSearchWasAppend) {
       setTimeout(() => {
@@ -126,7 +125,6 @@ export default function CardGrid() {
     }
     wasSearchingRef.current = searching
   }, [searching, reducedMotion, lastSearchWasAppend])
-
   const renderCardGrid = (sectionCards: typeof cards) => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
       {sectionCards.map((card, i) => (
@@ -157,9 +155,8 @@ export default function CardGrid() {
               <span className="text-slate-900 dark:text-white font-medium">{totalCards}</span> cards
             </>
           )}
-        </span>
-      </div>
-
+          </span>
+        </div>
       <div key={resultKey} className="animate-[fadeIn_150ms_var(--ease-out-quart)_both]">
         {renderCardGrid(cards)}
       </div>
