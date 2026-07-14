@@ -107,6 +107,7 @@ export default function CardGrid() {
   const hasMore = useAppStore((state) => state.hasMore)
   const searching = useAppStore((state) => state.searching)
   const searchLoading = useAppStore((state) => state.searchLoading)
+  const lastSearchWasAppend = useAppStore((state) => state.lastSearchWasAppend)
   const loadMore = useAppStore((state) => state.loadMore)
   const [resultKey, setResultKey] = useState('0')
   const [countPulse, setCountPulse] = useState(false)
@@ -114,7 +115,7 @@ export default function CardGrid() {
   const wasSearchingRef = useRef(false)
 
   useEffect(() => {
-    if (!searching && wasSearchingRef.current) {
+    if (!searching && wasSearchingRef.current && !lastSearchWasAppend) {
       setTimeout(() => {
         setResultKey((k) => String(Number(k) + 1))
         if (!reducedMotion) {
@@ -124,7 +125,7 @@ export default function CardGrid() {
       }, 0)
     }
     wasSearchingRef.current = searching
-  }, [searching, reducedMotion])
+  }, [searching, reducedMotion, lastSearchWasAppend])
 
   const renderCardGrid = (sectionCards: typeof cards) => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">

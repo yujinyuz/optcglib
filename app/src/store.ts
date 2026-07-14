@@ -147,6 +147,7 @@ interface AppState {
   showOfflineToast: boolean;
   searching: boolean;
   searchLoading: boolean;
+  lastSearchWasAppend: boolean;
 
   init: () => Promise<void>;
   setFilters: (filters: Partial<CardFilters>) => void;
@@ -195,6 +196,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   showOfflineToast: false,
   searching: false,
   searchLoading: false,
+  lastSearchWasAppend: false,
 
   init: async () => {
     try {
@@ -259,7 +261,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (searching || cards.length >= totalCards) return;
 
     const newOffset = offset + limit;
-    set({ offset: newOffset, searching: true });
+    set({ offset: newOffset, searching: true, lastSearchWasAppend: true });
 
     try {
       const { cards: moreCards, total } = await queryCards(
@@ -338,7 +340,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   search: async (append = false) => {
     const { filters, limit, offset, preferredLanguage } = get();
-    set({ searchLoading: true });
+    set({ searchLoading: true, lastSearchWasAppend: append });
     try {
       const { cards, total } = await queryCards(
         buildQueryParams(filters, limit, offset, preferredLanguage)
