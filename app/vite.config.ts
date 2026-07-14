@@ -33,6 +33,19 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/serveproxy\.com\/.*/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'card-images',
+              expiration: {
+                maxEntries: 5000,
+                maxAgeSeconds: 180 * 24 * 60 * 60, // 180 days (~6 months)
+              },
+            },
+          },
+        ],
       },
     }),
   ],
