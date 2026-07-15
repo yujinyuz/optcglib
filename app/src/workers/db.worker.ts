@@ -206,30 +206,35 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
     }
   }
 
-  if (filters.categories?.length) {
-    q.where(`c.category IN (${placeholders(filters.categories.length)})`, ...filters.categories);
+
+  // Array-based filter mapping for IN/subquery filters
+  const arrayFilters: { key: keyof QueryCardsFilters; buildWhere: (values: string[]) => { sql: string; params: string[] } }[] = [
+    { key: 'categories', buildWhere: (vals) => ({ sql: `c.category IN (${placeholders(vals.length)})`, params: vals }) },
+    { key: 'rarities', buildWhere: (vals) => ({ sql: `c.rarity IN (${placeholders(vals.length)})`, params: vals }) },
+    { key: 'attributes', buildWhere: (vals) => ({ sql: `c.base_id IN (SELECT card_id FROM card_attributes WHERE attribute IN (${placeholders(vals.length)}))`, params: vals }) },
+    { key: 'colors', buildWhere: (vals) => ({ sql: `c.base_id IN (SELECT card_id FROM card_colors WHERE color IN (${placeholders(vals.length)}))`, params: vals }) },
+    { key: 'sets', buildWhere: (vals) => {
+      const clauses = vals.map(() => 'c.id LIKE ?').join(' OR ');
+      return { sql: `(${clauses})`, params: vals.map(s => `${s}-%`) };
+    }},
+  ];
+
+  for (const filter of arrayFilters) {
+    const values = filters[filter.key] as string[] | undefined;
+    if (values?.length) {
+      const { sql, params } = filter.buildWhere(values);
+      q.where(sql, ...params);
+    }
   }
-  if (filters.rarities?.length) {
-    q.where(`c.rarity IN (${placeholders(filters.rarities.length)})`, ...filters.rarities);
-  }
-  if (filters.attributes?.length) {
-    q.where(`c.base_id IN (SELECT card_id FROM card_attributes WHERE attribute IN (${placeholders(filters.attributes.length)}))`, ...filters.attributes);
-  }
+
   if (filters.costMin != null) q.where('c.cost >= ?', filters.costMin);
   if (filters.costMax != null) q.where('c.cost <= ?', filters.costMax);
   if (filters.powerMin != null) q.where('c.power >= ?', filters.powerMin);
   if (filters.powerMax != null) q.where('c.power <= ?', filters.powerMax);
   if (filters.counterMin != null) q.where('c.counter >= ?', filters.counterMin);
   if (filters.counterMax != null) q.where('c.counter <= ?', filters.counterMax);
-  if (filters.sets?.length) {
-    const clauses = filters.sets.map(() => 'c.id LIKE ?').join(' OR ');
-    q.where(`(${clauses})`, ...filters.sets.map(s => `${s}-%`));
-  }
   if (filters.blockMin != null) q.where('(c.block_number >= ? OR c.block_number IS NULL)', filters.blockMin);
   if (filters.blockMax != null) q.where('(c.block_number <= ? OR c.block_number IS NULL)', filters.blockMax);
-  if (filters.colors?.length) {
-    q.where(`c.base_id IN (SELECT card_id FROM card_colors WHERE color IN (${placeholders(filters.colors.length)}))`, ...filters.colors);
-  }
   if (filters.hideVariants) {
     q.where('c.base_id = c.id');
   }
@@ -497,108 +502,74 @@ self.onmessage = async (e: MessageEvent<{ type: string; id: string; payload?: un
   const { type, id, payload } = e.data;
 
   try {
-    switch (type) {
-      case 'init': {
-        const SQL = await initSqlJs({ locateFile: (file: string) => `/${file}` });
-        const response = await fetch('/optcg.db', { cache: 'no-store' });
-        const buffer = await response.arrayBuffer();
-        db = new SQL.Database(new Uint8Array(buffer));
+    // Special case: init doesn't need db guard and sets the db
+    if (type === 'init') {
+      const SQL = await initSqlJs({ locateFile: (file: string) => `/${file}` });
+      const response = await fetch('/optcg.db', { cache: 'no-store' });
+      const buffer = await response.arrayBuffer();
+      db = new SQL.Database(new Uint8Array(buffer));
 
-        // Sanity-check: verify the sort_order column exists and report first card
-        try {
-          const check = db.exec("SELECT id, sort_order FROM cards WHERE base_id = id ORDER BY sort_order, id LIMIT 1");
-          if (check[0]?.values[0]) {
-            console.log('[DB] First card:', check[0].values[0][0], 'sort_order:', check[0].values[0][1]);
-          }
-        } catch {
-          console.log('[DB] sort_order column not found — old DB loaded');
+      // Sanity-check: verify the sort_order column exists and report first card
+      try {
+        const check = db.exec("SELECT id, sort_order FROM cards WHERE base_id = id ORDER BY sort_order, id LIMIT 1");
+        if (check[0]?.values[0]) {
+          console.log('[DB] First card:', check[0].values[0][0], 'sort_order:', check[0].values[0][1]);
         }
+      } catch {
+        console.log('[DB] sort_order column not found — old DB loaded');
+      }
 
-        self.postMessage({ type: 'init-done', id });
-        break;
-      }
-      case 'queryCards': {
-        if (!db) throw new Error('DB not initialized');
-        const result = queryCards(db, payload as QueryCardsFilters);
-        self.postMessage({ type: 'result', id, data: result });
-        break;
-      }
-      case 'queryPacks': {
-        if (!db) throw new Error('DB not initialized');
-        const result = queryPacks(db);
-        self.postMessage({ type: 'result', id, data: result });
-        break;
-      }
-      case 'querySets': {
-        if (!db) throw new Error('DB not initialized');
-        const result = querySets(db);
-        self.postMessage({ type: 'result', id, data: result });
-        break;
-      }
-      case 'queryBlocks': {
-        if (!db) throw new Error('DB not initialized');
-        const result = queryBlocks(db);
-        self.postMessage({ type: 'result', id, data: result });
-        break;
-      }
-      case 'getCardById': {
-        if (!db) throw new Error('DB not initialized');
-        const { id: cardId, preferredLanguage } = payload as { id: string; preferredLanguage?: 'english' | 'japanese' };
-        const result = getCardById(db, cardId, preferredLanguage);
-        self.postMessage({ type: 'result', id, data: result });
-        break;
-      }
-      case 'getCardPacks': {
-        if (!db) throw new Error('DB not initialized');
-        const { cardId } = payload as { cardId: string };
-        const result = getCardPacks(db, cardId);
-        self.postMessage({ type: 'result', id, data: result });
-        break;
-      }
-      case 'getCardImages': {
-        if (!db) throw new Error('DB not initialized');
-        const { cardId } = payload as { cardId: string };
-        const result = getCardImages(db, cardId);
-        self.postMessage({ type: 'result', id, data: result });
-        break;
-      }
-      case 'getRelatedCards': {
-        if (!db) throw new Error('DB not initialized');
-        const { cardId: relCardId, types, limit } = payload as { cardId: string; types: string[]; limit?: number };
-        const result = getRelatedCards(db, relCardId, types, limit || 8);
-        self.postMessage({ type: 'result', id, data: result });
-        break;
-      }
-      case 'getCardVariants': {
-        if (!db) throw new Error('DB not initialized');
-        const { cardId: variantCardId, preferredLanguage } = payload as { cardId: string; preferredLanguage?: 'english' | 'japanese' };
-        const result = getCardVariants(db, variantCardId, preferredLanguage);
-        self.postMessage({ type: 'result', id, data: result });
-        break;
-      }
-      case 'getStats': {
-        if (!db) throw new Error('DB not initialized');
-        const result = getStats(db);
-        self.postMessage({ type: 'result', id, data: result });
-        break;
-      }
-      case 'queryImageUrlsBySets': {
-        if (!db) throw new Error('DB not initialized');
-        const { sets, language } = payload as { sets: string[]; language: 'english' | 'japanese' };
-        const result = queryImageUrlsBySets(db, sets, language);
-        self.postMessage({ type: 'result', id, data: result });
-        break;
-      }
-      case 'queryAllSetImageUrls': {
-        if (!db) throw new Error('DB not initialized');
-        const { language } = payload as { language: 'english' | 'japanese' };
-        const result = queryAllSetImageUrls(db, language);
-        self.postMessage({ type: 'result', id, data: result });
-        break;
-      }
-      default:
-        self.postMessage({ type: 'error', id, error: `Unknown message type: ${type}` });
+      self.postMessage({ type: 'init-done', id });
+      return;
     }
+
+    // All other types require initialized DB
+    if (!db) throw new Error('DB not initialized');
+
+    const handlers: Record<string, (payload: unknown) => unknown> = {
+      queryCards: (p) => queryCards(db!, p as QueryCardsFilters),
+      queryPacks: () => queryPacks(db!),
+      querySets: () => querySets(db!),
+      queryBlocks: () => queryBlocks(db!),
+      getCardById: (p) => {
+        const { id: cardId, preferredLanguage } = p as { id: string; preferredLanguage?: 'english' | 'japanese' };
+        return getCardById(db!, cardId, preferredLanguage);
+      },
+      getCardPacks: (p) => {
+        const { cardId } = p as { cardId: string };
+        return getCardPacks(db!, cardId);
+      },
+      getCardImages: (p) => {
+        const { cardId } = p as { cardId: string };
+        return getCardImages(db!, cardId);
+      },
+      getRelatedCards: (p) => {
+        const { cardId, types, limit } = p as { cardId: string; types: string[]; limit?: number };
+        return getRelatedCards(db!, cardId, types, limit || 8);
+      },
+      getCardVariants: (p) => {
+        const { cardId, preferredLanguage } = p as { cardId: string; preferredLanguage?: 'english' | 'japanese' };
+        return getCardVariants(db!, cardId, preferredLanguage);
+      },
+      getStats: () => getStats(db!),
+      queryImageUrlsBySets: (p) => {
+        const { sets, language } = p as { sets: string[]; language: 'english' | 'japanese' };
+        return queryImageUrlsBySets(db!, sets, language);
+      },
+      queryAllSetImageUrls: (p) => {
+        const { language } = p as { language: 'english' | 'japanese' };
+        return queryAllSetImageUrls(db!, language);
+      },
+    };
+
+    const handler = handlers[type];
+    if (!handler) {
+      self.postMessage({ type: 'error', id, error: `Unknown message type: ${type}` });
+      return;
+    }
+
+    const result = handler(payload);
+    self.postMessage({ type: 'result', id, data: result });
   } catch (err) {
     self.postMessage({ type: 'error', id, error: String(err) });
   }

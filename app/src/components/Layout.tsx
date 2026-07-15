@@ -56,6 +56,165 @@ function getAndroidInstallGuide() {
 
 const DISMISS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
+// ── Extracted SettingsMenu sub-components ─────────────────────────
+
+function LanguageToggle({ value, onChange }: { value: 'english' | 'japanese'; onChange: (lang: 'english' | 'japanese') => void }) {
+  return (
+    <div className="flex items-center justify-between px-3 py-3">
+      <span className="text-sm text-slate-700 dark:text-[#cbd5e1]">Language</span>
+      <div className="flex rounded-lg border border-slate-200 dark:border-[#2e303a] overflow-hidden">
+        <button
+          onClick={() => onChange('english')}
+          className={`px-2.5 py-1 text-xs font-bold transition-colors ${value === 'english' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
+        >
+          EN
+        </button>
+        <button
+          onClick={() => onChange('japanese')}
+          className={`px-2.5 py-1 text-xs font-bold transition-colors ${value === 'japanese' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
+        >
+          JP
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function ThemeToggle({ value, onChange }: { value: string; onChange: () => void }) {
+  return (
+    <div className="flex items-center justify-between px-3 py-3">
+      <span className="text-sm text-slate-700 dark:text-[#cbd5e1]">Theme</span>
+      <div className="flex rounded-lg border border-slate-200 dark:border-[#2e303a] overflow-hidden">
+        <button
+          onClick={() => { if (value === 'dark') onChange() }}
+          className={`p-1.5 transition-colors ${value !== 'dark' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </button>
+        <button
+          onClick={() => { if (value !== 'dark') onChange() }}
+          className={`p-1.5 transition-colors ${value === 'dark' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function ExternalImagesToggle({ value, onChange, isSlowConnection, slowConnectionOverride }: {
+  value: boolean
+  onChange: (next: boolean) => void
+  isSlowConnection: boolean
+  slowConnectionOverride: boolean
+}) {
+  return (
+    <div className="flex items-center justify-between px-3 py-3">
+      <span className="text-sm text-slate-700 dark:text-[#cbd5e1]">Card images</span>
+      <div className="flex items-center gap-2">
+        {isSlowConnection && !slowConnectionOverride && value && (
+          <span className="text-[10px] text-amber-500 dark:text-amber-400">Slow network</span>
+        )}
+        <button
+          onClick={() => onChange(!value)}
+          className={`relative w-11 h-6 rounded-full transition-all ${value ? 'bg-[#3b82f6]' : 'bg-slate-200 dark:bg-[#3a3d4a]'}`}
+        >
+          <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${value ? 'translate-x-5' : 'translate-x-0'}`} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function InstallTooltip({ isIOS, androidInstallGuide, onClose }: {
+  isIOS: boolean
+  androidInstallGuide: string[]
+  onClose: () => void
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white dark:bg-[#1a1d2e] rounded-2xl shadow-xl p-6 max-w-xs mx-4 mb-8 sm:mb-0"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">Install app</h3>
+          <button
+            onClick={onClose}
+            className="p-2.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#25283a] rounded-lg transition-all"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <ol className="text-sm text-slate-600 dark:text-[#cbd5e1] space-y-3">
+          {isIOS ? (
+            <>
+              <li className="flex items-start gap-2">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">1</span>
+                <span>Tap the <strong>Share</strong> button in Safari</span>
+              </li>
+              <li className="flex items-center justify-center py-2">
+                <svg className="w-8 h-8 text-[#007aff]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                </svg>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">2</span>
+                <span>Scroll down and tap <strong>"Add to Home Screen"</strong></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">3</span>
+                <span>Tap <strong>"Add"</strong> to confirm</span>
+              </li>
+            </>
+          ) : navigator.maxTouchPoints > 0 ? (
+            <>
+              <li className="flex items-start gap-2">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">1</span>
+                <span dangerouslySetInnerHTML={{ __html: androidInstallGuide[0].replace('⋮', '<strong>⋮</strong>').replace('≡', '<strong>≡</strong>') }} />
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">2</span>
+                <span dangerouslySetInnerHTML={{ __html: androidInstallGuide[1].replace(/"([^"]+)"/g, '<strong>"$1"</strong>') }} />
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">3</span>
+                <span dangerouslySetInnerHTML={{ __html: androidInstallGuide[2].replace(/"([^"]+)"/g, '<strong>"$1"</strong>') }} />
+              </li>
+            </>
+          ) : (
+            <>
+              <li className="flex items-start gap-2">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">1</span>
+                <span>Click the <strong>install icon</strong> in the address bar (or press <strong>⋮</strong> menu)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">2</span>
+                <span>Select <strong>"Install app"</strong> or <strong>"Add to Home Screen"</strong></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">3</span>
+                <span>Click <strong>"Install"</strong> to confirm</span>
+              </li>
+            </>
+          )}
+        </ol>
+      </div>
+    </div>
+  )
+}
+
+// ── SettingsMenu ─────────────────────────────────────────────────
+
 function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
   deferredPrompt: InstallPrompt | null
   onInstall: () => void
@@ -134,63 +293,18 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
             : { animation: `menuInSpring ${reducedMotion ? 100 : 180}ms var(--ease-spring-tight) forwards` }
           }
         >
-          <div className="flex items-center justify-between px-3 py-3">
-            <span className="text-sm text-slate-700 dark:text-[#cbd5e1]">Language</span>
-            <div className="flex rounded-lg border border-slate-200 dark:border-[#2e303a] overflow-hidden">
-              <button
-                onClick={() => setPreferredLanguage('english')}
-                className={`px-2.5 py-1 text-xs font-bold transition-colors ${preferredLanguage === 'english' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setPreferredLanguage('japanese')}
-                className={`px-2.5 py-1 text-xs font-bold transition-colors ${preferredLanguage === 'japanese' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
-              >
-                JP
-              </button>
-            </div>
-          </div>
-          <div className="flex items-center justify-between px-3 py-3">
-            <span className="text-sm text-slate-700 dark:text-[#cbd5e1]">Theme</span>
-            <div className="flex rounded-lg border border-slate-200 dark:border-[#2e303a] overflow-hidden">
-              <button
-                onClick={() => { if (theme === 'dark') toggleTheme() }}
-                className={`p-1.5 transition-colors ${theme !== 'dark' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-              </button>
-              <button
-                onClick={() => { if (theme !== 'dark') toggleTheme() }}
-                className={`p-1.5 transition-colors ${theme === 'dark' ? 'bg-[#3b82f6] text-white' : 'text-slate-500 dark:text-[#64748b] hover:bg-slate-100 dark:hover:bg-[#25283a]'}`}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-              </button>
-            </div>
-          </div>
+          <LanguageToggle value={preferredLanguage} onChange={setPreferredLanguage} />
+          <ThemeToggle value={theme} onChange={toggleTheme} />
           <div className="border-t border-slate-100 dark:border-[#2e303a] my-1" />
-          <div className="flex items-center justify-between px-3 py-3">
-            <span className="text-sm text-slate-700 dark:text-[#cbd5e1]">Card images</span>
-            <div className="flex items-center gap-2">
-              {isSlowConnection && !slowConnectionOverride && loadExternalImages && (
-                <span className="text-[10px] text-amber-500 dark:text-amber-400">Slow network</span>
-              )}
-              <button
-                onClick={() => {
-                  const next = !loadExternalImages
-                  setLoadExternalImages(next)
-                  if (next && isSlowConnection) setSlowConnectionOverride(true)
-                }}
-                className={`relative w-11 h-6 rounded-full transition-all ${loadExternalImages ? 'bg-[#3b82f6]' : 'bg-slate-200 dark:bg-[#3a3d4a]'}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${loadExternalImages ? 'translate-x-5' : 'translate-x-0'}`} />
-              </button>
-            </div>
-          </div>
+          <ExternalImagesToggle
+            value={loadExternalImages}
+            onChange={(next) => {
+              setLoadExternalImages(next)
+              if (next && isSlowConnection) setSlowConnectionOverride(true)
+            }}
+            isSlowConnection={isSlowConnection}
+            slowConnectionOverride={slowConnectionOverride}
+          />
 
           <div className="border-t border-slate-100 dark:border-[#2e303a] my-1" />
           {!isStandalone && installSuccess && (
@@ -251,84 +365,8 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
       )}
       <AboutModal key={aboutOpen ? 'about-open' : 'about-closed'} isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
       <HelpModal key={helpOpen ? 'help-open' : 'help-closed'} isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
-      {/* Install tooltip */}
       {installTooltip && (
-        <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
-          onClick={() => setInstallTooltip(false)}
-        >
-          <div
-            className="bg-white dark:bg-[#1a1d2e] rounded-2xl shadow-xl p-6 max-w-xs mx-4 mb-8 sm:mb-0"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Install app</h3>
-              <button
-                onClick={() => setInstallTooltip(false)}
-                className="p-2.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#25283a] rounded-lg transition-all"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <ol className="text-sm text-slate-600 dark:text-[#cbd5e1] space-y-3">
-              {isIOS ? (
-                <>
-                  <li className="flex items-start gap-2">
-                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">1</span>
-                    <span>Tap the <strong>Share</strong> button in Safari</span>
-                  </li>
-                  <li className="flex items-center justify-center py-2">
-                    <svg className="w-8 h-8 text-[#007aff]" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-                    </svg>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">2</span>
-                    <span>Scroll down and tap <strong>"Add to Home Screen"</strong></span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">3</span>
-                    <span>Tap <strong>"Add"</strong> to confirm</span>
-                  </li>
-                </>
-              ) : navigator.maxTouchPoints > 0 ? (
-                /* Mobile Android / tablet */
-                <>
-                  <li className="flex items-start gap-2">
-                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">1</span>
-                    <span dangerouslySetInnerHTML={{ __html: androidInstallGuide[0].replace('⋮', '<strong>⋮</strong>').replace('≡', '<strong>≡</strong>') }} />
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">2</span>
-                    <span dangerouslySetInnerHTML={{ __html: androidInstallGuide[1].replace(/"([^"]+)"/g, '<strong>"$1"</strong>') }} />
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">3</span>
-                    <span dangerouslySetInnerHTML={{ __html: androidInstallGuide[2].replace(/"([^"]+)"/g, '<strong>"$1"</strong>') }} />
-                  </li>
-                </>
-              ) : (
-                /* Desktop browsers */
-                <>
-                  <li className="flex items-start gap-2">
-                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">1</span>
-                    <span>Click the <strong>install icon</strong> in the address bar (or press <strong>⋮</strong> menu)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">2</span>
-                    <span>Select <strong>"Install app"</strong> or <strong>"Add to Home Screen"</strong></span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="shrink-0 w-5 h-5 rounded-full bg-[#3b82f6] text-white text-xs font-bold flex items-center justify-center">3</span>
-                    <span>Click <strong>"Install"</strong> to confirm</span>
-                  </li>
-                </>
-              )}
-            </ol>
-          </div>
-        </div>
+        <InstallTooltip isIOS={isIOS} androidInstallGuide={androidInstallGuide} onClose={() => setInstallTooltip(false)} />
       )}
     </div>
   )
@@ -386,6 +424,23 @@ function TopSearchBar({ onFocusChange }: { onFocusChange: (focused: boolean) => 
   )
 }
 
+// ── Format helpers for ActiveFilterChips ─────────────────────────
+
+function formatPowerValue(value: number | null): string {
+  if (value == null) return ''
+  return value >= 1000 ? `${value / 1000}k` : String(value)
+}
+
+function formatCostValue(value: number | null): string {
+  return value != null ? String(value) : ''
+}
+
+function formatRangeLabel(min: number | null, max: number | null, defaultMin: string, defaultMax: string): string {
+  const minStr = min != null ? String(min) : defaultMin
+  const maxStr = max != null ? String(max) : defaultMax
+  return `${minStr}–${maxStr}`
+}
+
 /** Active filter chips shown below navbar */
 function ActiveFilterChips() {
   const filters = useAppStore((state) => state.filters)
@@ -438,18 +493,19 @@ function ActiveFilterChips() {
     }))
 
     if (filters.blockMin != null || filters.blockMax != null) {
-      const label = [filters.blockMin ?? '1', filters.blockMax ?? '5'].join('–')
+      const label = formatRangeLabel(filters.blockMin, filters.blockMax, '1', '5')
       chips.push({ key: 'block', label: `Block ${label}`, onRemove: () => setFilters({ blockMin: null, blockMax: null }) })
     }
 
     if (filters.costMin != null || filters.costMax != null) {
-      const label = [filters.costMin ?? '0', filters.costMax ?? '10'].join('–')
-      chips.push({ key: 'cost', label: `Cost ${label}`, onRemove: () => setFilters({ costMin: null, costMax: null }) })
+      const min = formatCostValue(filters.costMin) || '0'
+      const max = formatCostValue(filters.costMax) || '10'
+      chips.push({ key: 'cost', label: `Cost ${min}–${max}`, onRemove: () => setFilters({ costMin: null, costMax: null }) })
     }
 
     if (filters.powerMin != null || filters.powerMax != null) {
-      const min = filters.powerMin != null ? (filters.powerMin >= 1000 ? `${filters.powerMin / 1000}k` : filters.powerMin) : '0'
-      const max = filters.powerMax != null ? (filters.powerMax >= 1000 ? `${filters.powerMax / 1000}k` : filters.powerMax) : '13k'
+      const min = formatPowerValue(filters.powerMin) || '0'
+      const max = formatPowerValue(filters.powerMax) || '13k'
       chips.push({ key: 'power', label: `Power ${min}–${max}`, onRemove: () => setFilters({ powerMin: null, powerMax: null }) })
     }
 

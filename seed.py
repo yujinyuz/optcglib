@@ -16,6 +16,7 @@ No external dependencies required — reads from vendor/punk-records.
 import argparse
 import html
 import json
+import re
 import sqlite3
 from pathlib import Path
 
@@ -59,6 +60,9 @@ PACK_SORT_ORDER: list[str] = [
     "OP-01",
 ]
 
+# Base sort values for pack prefix types (higher = sorted later)
+PREFIX_BASE: dict[str, int] = {"OP": 1000, "ST": 2000, "EB": 3000, "PRB": 4000}
+
 
 def decode_html(text: str) -> str:
     """Decode HTML entities in text (e.g. &amp; -> &)."""
@@ -67,8 +71,6 @@ def decode_html(text: str) -> str:
 
 def extract_label_from_raw_title(raw_title: str) -> str:
     """Extract pack label like OP-01 or ST-30 from raw title brackets."""
-    import re
-
     if not raw_title:
         return ""
     # Match [LABEL] or 【LABEL】
@@ -84,19 +86,16 @@ def compute_pack_sort_order(label: str) -> int:
     """
     if not label:
         return 999
+
     try:
         return PACK_SORT_ORDER.index(label)
     except ValueError:
         pass
 
-    import re
-
-    # OP-##, ST-##, EB-##, PRB-##
+    # OP-##, ST-##, EB-##, PRB-##  →  base - num*10 (so newer packs sort first)
     m = re.match(r"^(OP|ST|EB|PRB)-(\d+)$", label)
     if m:
-        prefix, num = m.group(1), int(m.group(2))
-        base = {"OP": 1000, "ST": 2000, "EB": 3000, "PRB": 4000}[prefix]
-        return base - num * 10
+        return PREFIX_BASE[m.group(1)] - int(m.group(2)) * 10
 
     # Edge-case labels like OP14-EB04, OP15-EB04
     m = re.match(r"^OP(\d+)-EB(\d+)$", label)
@@ -163,62 +162,92 @@ def seed_packs(conn: sqlite3.Connection, language: str) -> dict:
     return packs
 
 
+def load_all_cards(languages: list[str]) -> list[dict]:
+    """Load every card from every language into a single flat list."""
+    all_cards: list[dict] = []
+    for language in languages:
+        packs_file = VENDOR / language / "packs.json"
+        if not packs_file.exists():
+            continue
+        packs = load_json(packs_file)
+        data_dir = VENDOR / language / "data"
+        for pack_id in packs:
+            card_file = data_dir / f"{pack_id}.json"
+            if not card_file.exists():
+                continue
+            all_cards.extend(load_json(card_file))
+    return all_cards
+
+
 def build_block_number_map(languages: list[str]) -> dict[str, int | None]:
     """Build a mapping of card_id -> block_number from all available source data.
 
     If ANY variant of a base card has a null block_number, ALL variants of that
     base card are treated as Block X (returned as None).
     """
-    # First pass: collect block numbers per base_id across all languages
-    base_blocks: dict[str, list[int | None]] = {}
-    for language in languages:
-        packs_file = VENDOR / language / "packs.json"
-        if not packs_file.exists():
-            continue
-        packs = load_json(packs_file)
-        data_dir = VENDOR / language / "data"
-        for pack_id in packs:
-            card_file = data_dir / f"{pack_id}.json"
-            if not card_file.exists():
-                continue
-            cards = load_json(card_file)
-            for card in cards:
-                bn = card.get("block_number")
-                base_id = card["id"].split("_")[0] if "_" in card["id"] else card["id"]
-                if base_id not in base_blocks:
-                    base_blocks[base_id] = []
-                base_blocks[base_id].append(bn)
+    all_cards = load_all_cards(languages)
 
-    # Second pass: resolve block number per base_id
+    # Collect block numbers per base_id from every card variant
+    base_blocks: dict[str, list[int | None]] = {}
+    for card in all_cards:
+        bn = card.get("block_number")
+        base_id = card["id"].split("_")[0] if "_" in card["id"] else card["id"]
+        if base_id not in base_blocks:
+            base_blocks[base_id] = []
+        base_blocks[base_id].append(bn)
+
+    # Resolve block number per base_id
     # If ANY variant is null, the whole card is Block X (None)
     base_block_map: dict[str, int | None] = {}
     for base_id, bns in base_blocks.items():
         if any(bn is None for bn in bns):
             base_block_map[base_id] = None
         else:
-            # All variants have a number — use the first one (they should agree)
+            # All variants have a number — use the first non-None
             base_block_map[base_id] = next(bn for bn in bns if bn is not None)
 
-    # Build variant-level map from base_id resolution
+    # Build variant-level map from base_id resolution (single pass)
     block_map: dict[str, int | None] = {}
-    for language in languages:
-        packs_file = VENDOR / language / "packs.json"
-        if not packs_file.exists():
-            continue
-        packs = load_json(packs_file)
-        data_dir = VENDOR / language / "data"
-        for pack_id in packs:
-            card_file = data_dir / f"{pack_id}.json"
-            if not card_file.exists():
-                continue
-            cards = load_json(card_file)
-            for card in cards:
-                base_id = card["id"].split("_")[0] if "_" in card["id"] else card["id"]
-                if card["id"] not in block_map:
-                    block_map[card["id"]] = base_block_map.get(base_id)
+    for card in all_cards:
+        base_id = card["id"].split("_")[0] if "_" in card["id"] else card["id"]
+        if card["id"] not in block_map:
+            block_map[card["id"]] = base_block_map.get(base_id)
 
     print(f"  Built block_number map: {len(block_map)} cards")
     return block_map
+
+
+def merge_english_asia_effects(
+    conn: sqlite3.Connection, card_id: str, canonical: dict
+) -> bool:
+    """Update effect/trigger_text from english-asia data when it contains <br> tags.
+
+    The english source sometimes lacks line-break formatting that english-asia has.
+    Returns True if an update was made.
+    """
+    ea_effect = canonical.get("effect") or ""
+    ea_trigger = canonical.get("trigger") or ""
+    if "<br>" not in ea_effect and "<br>" not in ea_trigger:
+        return False
+
+    existing = conn.execute(
+        "SELECT effect, trigger_text FROM cards WHERE id = ?",
+        (card_id,),
+    ).fetchone()
+    if not existing:
+        return False
+
+    new_effect = decode_html(ea_effect) if "<br>" in ea_effect else existing[0]
+    new_trigger = decode_html(ea_trigger) if "<br>" in ea_trigger else existing[1]
+
+    if new_effect == existing[0] and new_trigger == existing[1]:
+        return False
+
+    conn.execute(
+        "UPDATE cards SET effect = ?, trigger_text = ? WHERE id = ?",
+        (new_effect, new_trigger, card_id),
+    )
+    return True
 
 
 def seed_cards(
@@ -273,39 +302,15 @@ def seed_cards(
         canonical = base_cards[base_id]
 
         if not is_primary:
-            if (
-                language in ("english-asia", "japanese")
-                and existing_ids
-                and card_id in existing_ids
-            ):
-                # Card already exists from primary source — but check if
-                # english-asia has <br> in effect/trigger that english lacks.
-                if language == "english-asia":
-                    ea_effect = canonical.get("effect") or ""
-                    ea_trigger = canonical.get("trigger") or ""
-                    if "<br>" in ea_effect or "<br>" in ea_trigger:
-                        existing = conn.execute(
-                            "SELECT effect, trigger_text FROM cards WHERE id = ?",
-                            (card_id,),
-                        ).fetchone()
-                        if existing:
-                            new_effect = (
-                                decode_html(ea_effect)
-                                if "<br>" in ea_effect
-                                else existing[0]
-                            )
-                            new_trigger = (
-                                decode_html(ea_trigger)
-                                if "<br>" in ea_trigger
-                                else existing[1]
-                            )
-                            if new_effect != existing[0] or new_trigger != existing[1]:
-                                conn.execute(
-                                    "UPDATE cards SET effect = ?, trigger_text = ? WHERE id = ?",
-                                    (new_effect, new_trigger, card_id),
-                                )
-                continue
+            # Skip languages that don't contribute card data
             if language not in ("english-asia", "japanese"):
+                continue
+
+            # Card already exists from primary source — only english-asia may
+            # contribute <br>-formatted effect/trigger improvements
+            if existing_ids and card_id in existing_ids:
+                if language == "english-asia":
+                    merge_english_asia_effects(conn, card_id, canonical)
                 continue
 
         if card_id in block_map:

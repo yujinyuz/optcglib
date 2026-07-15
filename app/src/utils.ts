@@ -48,8 +48,8 @@ export function renderCardText(text: string | null | undefined): string {
  * Wraps keywords in styled spans without breaking existing HTML tags.
  */
 function highlightKeywords(html: string): string {
-  // Keyword → CSS class mapping (longest first to avoid partial matches)
-  const keywordMap: [RegExp, string, string][] = [
+  // Static non-DON!! entries
+  const staticEntries: [RegExp, string, string][] = [
     [/\[On Your Opponent's Attack\]/g, 'kw-on-opponent-attack', "On Your Opponent's Attack"],
     [/\[Activate: Main\]/g, 'kw-activate-main', 'Activate: Main'],
     [/\[Rush: Character\]/g, 'kw-rush-char', 'Rush: Character'],
@@ -57,16 +57,6 @@ function highlightKeywords(html: string): string {
     [/\[Opponent's Turn\]/g, 'kw-opponent-turn', "Opponent's Turn"],
     [/\[Once Per Turn\]/g, 'kw-once-per-turn', 'Once Per Turn'],
     [/\[When Attacking\]/g, 'kw-when-attacking', 'When Attacking'],
-    [/\[DON!! x(\d)\]/g, 'kw-don', 'DON!! x$1'],
-    [/\[DON!! -10\]/g, 'kw-don', 'DON!! -10'],
-    [/\[DON!! -8\]/g, 'kw-don', 'DON!! -8'],
-    [/\[DON!! -7\]/g, 'kw-don', 'DON!! -7'],
-    [/\[DON!! -6\]/g, 'kw-don', 'DON!! -6'],
-    [/\[DON!! -5\]/g, 'kw-don', 'DON!! -5'],
-    [/\[DON!! -4\]/g, 'kw-don', 'DON!! -4'],
-    [/\[DON!! -3\]/g, 'kw-don', 'DON!! -3'],
-    [/\[DON!! -2\]/g, 'kw-don', 'DON!! -2'],
-    [/\[DON!! -1\]/g, 'kw-don', 'DON!! -1'],
     [/\[Counter\]/g, 'kw-counter', 'Counter'],
     [/\[Blocker\]/g, 'kw-blocker', 'Blocker'],
     [/\[Trigger\]/g, 'kw-trigger', 'Trigger'],
@@ -79,6 +69,29 @@ function highlightKeywords(html: string): string {
     [/\[Main\]/g, 'kw-main', 'Main'],
     [/\[Rush\]/g, 'kw-rush', 'Rush'],
     [/\[Double Attack\]/g, 'kw-double-attack', 'Double Attack'],
+  ]
+
+  // Generated DON!! -N entries
+  const donNegativeValues = [-10, -8, -7, -6, -5, -4, -3, -2, -1]
+  const donNegativeEntries: [RegExp, string, string][] = donNegativeValues.map(n => [
+    new RegExp(`\\[DON!! ${n}\\]`, 'g'),
+    'kw-don',
+    `DON!! ${n}`,
+  ])
+
+  // Generated DON!! xN entries
+  const donXValues = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+  const donXEntries: [RegExp, string, string][] = donXValues.map(n => [
+    new RegExp(`\\[DON!! x${n}\\]`, 'g'),
+    'kw-don',
+    `DON!! x${n}`,
+  ])
+
+  // Keyword → CSS class mapping (longest first to avoid partial matches)
+  const keywordMap: [RegExp, string, string][] = [
+    ...staticEntries,
+    ...donNegativeEntries,
+    ...donXEntries,
   ]
 
   // Split into HTML tags and text segments, only replace in text
@@ -113,6 +126,17 @@ export function highlightSearchText(text: string, query: string): string {
       return segment.replace(regex, '<mark class="search-highlight">$1</mark>')
     })
     .join('')
+}
+
+/**
+ * Get language priority mapping for image selection.
+ * When preferredLanguage is 'japanese', both japanese and english-asia have equal priority.
+ * Otherwise english is preferred, then english-asia, then japanese.
+ */
+export function getLanguagePriority(preferredLanguage: string): Record<string, number> {
+  return preferredLanguage === 'japanese'
+    ? { japanese: 0, 'english-asia': 0, english: 1 }
+    : { english: 0, 'english-asia': 1, japanese: 2 }
 }
 
 /** Get kanji icon for a card attribute */

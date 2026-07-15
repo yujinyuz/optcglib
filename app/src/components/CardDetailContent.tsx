@@ -17,6 +17,76 @@ interface CardDetailContentProps {
   variant?: 'page' | 'modal'
 }
 
+interface CardImageGalleryProps {
+  variants: { card: Card; images: { language: string; imgUrl: string | null }[]; packs: { title: string; language: string }[] }[]
+  currentCardId: string
+  onAltImageClick?: (url: string) => void
+}
+
+function CardImageGallery({ variants, currentCardId, onAltImageClick }: CardImageGalleryProps) {
+  const { english, japanese } = groupImagesByLanguage(variants, currentCardId)
+  const groups: [string, typeof english][] = [['English', english], ['Japanese', japanese]]
+
+  if (onAltImageClick) {
+    /* Inline images with zoom */
+    return (
+      <div className="space-y-4">
+        {groups.map(([label, images]) =>
+          images.length > 0 && (
+            <div key={label}>
+              <div className="text-[10px] text-slate-400 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-1.5">{label}</div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {images.map((img) => (
+                  <div key={img.imgUrl} className="flex flex-col items-center gap-1">
+                    <ImageLoader
+                      src={getExternalImageUrl(img.imgUrl)}
+                      alt=""
+                      className={`w-full aspect-[5/7] rounded-lg shadow-md cursor-zoom-in ${img.isCurrentVariant ? 'ring-2 ring-[#3b82f6]' : ''}`}
+                      onClick={() => onAltImageClick(getExternalImageUrl(img.imgUrl))}
+                    />
+                    <span className="text-[10px] text-slate-500 dark:text-[#64748b]">
+                      {img.packName || ''}{img.variantSuffix}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        )}
+      </div>
+    )
+  }
+
+  /* External links */
+  return (
+    <div className="space-y-3">
+      {groups.map(([label, images]) =>
+        images.length > 0 && (
+          <div key={label}>
+            <div className="text-[10px] text-slate-400 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-1.5">{label}</div>
+            <div className="flex flex-wrap gap-1.5">
+              {images.filter(img => img.packName).map((img) => (
+                <a
+                  key={img.imgUrl}
+                  href={img.imgUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
+                >
+                  {img.packName}{img.variantSuffix}
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              ))}
+            </div>
+          </div>
+        )
+      )}
+    </div>
+  )
+}
+
 export default function CardDetailContent({
   card,
   bestImageUrl,
@@ -226,67 +296,7 @@ export default function CardDetailContent({
           <h3 className="text-[11px] text-slate-500 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-2">
             Card Images
           </h3>
-          {(() => {
-            const { english, japanese } = groupImagesByLanguage(cardVariants, card.id)
-            const groups: [string, typeof english][] = [['English', english], ['Japanese', japanese]]
-            if (onAltImageClick) {
-              /* Inline images with zoom */
-              return (
-                <div className="space-y-4">
-                  {groups.map(([label, images]) =>
-                    images.length > 0 && (
-                      <div key={label}>
-                        <div className="text-[10px] text-slate-400 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-1.5">{label}</div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                          {images.map((img) => (
-                            <div key={img.imgUrl} className="flex flex-col items-center gap-1">
-                              <ImageLoader
-                                src={getExternalImageUrl(img.imgUrl)}
-                                alt=""
-                                className={`w-full aspect-[5/7] rounded-lg shadow-md cursor-zoom-in ${img.isCurrentVariant ? 'ring-2 ring-[#3b82f6]' : ''}`}
-                                onClick={() => onAltImageClick(getExternalImageUrl(img.imgUrl))}
-                              />
-                              <span className="text-[10px] text-slate-500 dark:text-[#64748b]">
-                                {img.packName || ''}{img.variantSuffix}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              )
-            }
-            /* External links */
-            return (
-              <div className="space-y-3">
-                {groups.map(([label, images]) =>
-                  images.length > 0 && (
-                    <div key={label}>
-                      <div className="text-[10px] text-slate-400 dark:text-[#64748b] uppercase tracking-wider font-semibold mb-1.5">{label}</div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {images.filter(img => img.packName).map((img) => (
-                          <a
-                            key={img.imgUrl}
-                            href={img.imgUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] transition-all"
-                          >
-                            {img.packName}{img.variantSuffix}
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                )}
-              </div>
-            )
-          })()}
+          <CardImageGallery variants={cardVariants} currentCardId={card.id} onAltImageClick={onAltImageClick} />
         </div>
       )}
 

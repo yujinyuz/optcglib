@@ -4,6 +4,7 @@ import { useAppStore } from '../store'
 import type { Card } from '../types'
 import { prefersReducedMotion } from '../lib/spring'
 import { useSwipe, snapBack } from '../lib/gesture'
+import { getLanguagePriority } from '../utils'
 import CardDetailContent from './CardDetailContent'
 import ImageLoader from './ImageLoader'
 
@@ -146,9 +147,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
       </div>
     )
   } else {
-    const languagePriority: Record<string, number> = preferredLanguage === 'japanese'
-      ? { japanese: 0, 'english-asia': 0, english: 1 }
-      : { english: 0, 'english-asia': 1, japanese: 2 }
+    const languagePriority = getLanguagePriority(preferredLanguage)
 
     const currentVariant = cardVariants.find((v) => v.card.id === card.id)
     const currentImages = currentVariant?.images.filter((img): img is { language: string; imgUrl: string } => !!img.imgUrl) ?? []

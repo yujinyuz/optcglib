@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { getCardById, getCardPacks, getCardVariants } from '../db'
 import { useAppStore } from '../store'
 import type { Card } from '../types'
+import { getLanguagePriority } from '../utils'
 import CardDetailContent from './CardDetailContent'
 
 export default function CardDetail() {
@@ -80,9 +81,7 @@ export default function CardDetail() {
     )
   }
 
-  const languagePriority: Record<string, number> = preferredLanguage === 'japanese'
-    ? { japanese: 0, 'english-asia': 0, english: 1 }
-    : { english: 0, 'english-asia': 1, japanese: 2 }
+  const languagePriority = getLanguagePriority(preferredLanguage)
   const bestImageUrl = cardVariants
     .flatMap((v) => v.images)
     .filter((img): img is { language: string; imgUrl: string } => !!img.imgUrl)
