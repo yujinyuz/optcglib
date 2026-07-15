@@ -40,6 +40,23 @@ export type QueryCardsFilters = {
   offset?: number;
 };
 
+function parseCostFromSearch(raw: string): { search: string; cost: number | null } {
+  const patterns = [
+    /\b(\d+)c\b/i,      // 7c, 12c
+    /\bcost[:=]?(\d+)\b/i, // cost7, cost:7, cost=7
+    /\b(\d+)cost\b/i,   // 7cost
+  ];
+  for (const re of patterns) {
+    const m = raw.match(re);
+    if (m) {
+      const cost = parseInt(m[1], 10);
+      const cleaned = raw.replace(m[0], ' ').replace(/\s+/g, ' ').trim();
+      return { search: cleaned, cost };
+    }
+  }
+  return { search: raw, cost: null };
+}
+
 function parseJsonArray(value: string | null): string[] {
   if (!value) return [];
   try {
@@ -154,10 +171,15 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
   const q = new QueryBuilder();
 
   if (filters.search) {
-    const raw = filters.search.trim();
+    let raw = filters.search.trim();
     const scopes = filters.searchScope;
+    const parsed = parseCostFromSearch(raw);
+    if (parsed.cost != null) {
+      q.where('c.cost = ?', parsed.cost);
+      raw = parsed.search;
+    }
 
-    if (!scopes || scopes.length === 0) {
+    if (raw && (!scopes || scopes.length === 0)) {
       const ftsQuery = raw.split(/\s+/).map((w) => (w.endsWith('*') ? w : `${w}*`)).join(' ');
       q.withCte(
         '_search_ids',
@@ -167,7 +189,7 @@ function queryCards(db: Database, filters: QueryCardsFilters): { cards: unknown[
         `%${raw}%`
       );
       q.join('_search_ids _s ON c.id = _s.id');
-    } else {
+    } else if (raw && scopes && scopes.length > 0) {
       const colClauses: string[] = [];
       const colParams: string[] = [];
       for (const s of scopes) {
