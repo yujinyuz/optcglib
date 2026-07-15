@@ -4,6 +4,18 @@
 
 Offline-first One Piece TCG card database browser. Vite + React 19 + TypeScript + Tailwind CSS v4 + Zustand. SQLite (sql.js WASM) runs in a Web Worker. Data sourced from a local clone of `buhbbl/punk-records`.
 
+## Repository Map
+
+See [`codemap.md`](codemap.md) for the full architectural atlas. Sub-maps exist for each major directory:
+
+| Directory | Codemap |
+|-----------|---------|
+| `app/` | [`app/codemap.md`](app/codemap.md) |
+| `app/src/` | [`app/src/codemap.md`](app/src/codemap.md) |
+| `app/src/components/` | [`app/src/components/codemap.md`](app/src/components/codemap.md) |
+| `app/src/lib/` | [`app/src/lib/codemap.md`](app/src/lib/codemap.md) |
+| `app/src/workers/` | [`app/src/workers/codemap.md`](app/src/workers/codemap.md) |
+
 ## Directory layout
 
 ```
