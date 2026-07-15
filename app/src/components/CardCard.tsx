@@ -1,5 +1,5 @@
 import type { Card } from '../types'
-import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
+import { COLOR_HEX, RARITY_SHORT, RARITY_FULL, CATEGORY_COLORS } from '../types'
 import { decodeHtmlEntities, renderCardText, highlightSearchText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
 import { useAppStore } from '../store'
 import ImageLoader from './ImageLoader'
@@ -191,21 +191,21 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
         <span className="font-mono">{card.id}</span>
         <div className="flex items-center gap-1">
           {isLeader ? (
-            <span className="px-1 rounded font-bold bg-amber-500 text-white text-[10px]">
+            <span className="px-1 rounded font-bold bg-amber-500 text-white text-[10px]" title="Leader">
               L
             </span>
           ) : (
-            <span className="px-1 rounded bg-white/20 font-bold">
+            <span className="px-1 rounded bg-white/20 font-bold" title={RARITY_FULL[RARITY_SHORT[card.rarity]] || card.rarity}>
               {RARITY_SHORT[card.rarity] || card.rarity}
             </span>
           )}
           {(
-            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white/20 text-[10px] font-bold">
+            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white/20 text-[10px] font-bold" title={`Block ${card.block_number ?? 'X'}`}>
               {card.block_number ?? 'X'}
             </span>
           )}
           {card.has_parallel && (
-            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/80 text-[10px] font-bold" title="Parallel art">
+            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/80 text-[10px] font-bold" title="Parallel art available">
               ★
             </span>
           )}

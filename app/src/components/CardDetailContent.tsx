@@ -1,5 +1,5 @@
 import type { Card } from '../types'
-import { COLOR_HEX, RARITY_SHORT, CATEGORY_COLORS } from '../types'
+import { COLOR_HEX, RARITY_SHORT, RARITY_FULL, CATEGORY_COLORS } from '../types'
 import { decodeHtmlEntities, renderCardText, highlightSearchText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl, groupImagesByLanguage } from '../utils'
 import ImageLoader from './ImageLoader'
 import PriceLinks from './PriceLinks'
@@ -199,16 +199,16 @@ export default function CardDetailContent({
             <span className="font-mono">{card.id}</span>
             <div className="flex items-center gap-2">
               {card.rarity === 'Leader' ? (
-                <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-amber-500 text-white">
+                <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-amber-500 text-white" title="Leader">
                   L
                 </span>
               ) : (
-                <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-white/20">
+                <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-white/20" title={RARITY_FULL[RARITY_SHORT[card.rarity]] || card.rarity}>
                   {RARITY_SHORT[card.rarity] || card.rarity}
                 </span>
               )}
               {(
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-xs font-bold">
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-xs font-bold" title={`Block ${card.block_number ?? 'X'}`}>
                   {card.block_number ?? 'X'}
                 </span>
               )}

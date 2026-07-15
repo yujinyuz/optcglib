@@ -84,6 +84,18 @@ export const RARITY_SHORT: Record<string, string> = {
   Promo: 'P',
 };
 
+export const RARITY_FULL: Record<string, string> = {
+  C: 'Common',
+  UC: 'Uncommon',
+  R: 'Rare',
+  SR: 'Super Rare',
+  SEC: 'Secret Rare',
+  L: 'Leader',
+  SP: 'Special',
+  TR: 'Treasure Rare',
+  P: 'Promo',
+};
+
 export const COLOR_HEX: Record<string, string> = {
   Red: '#e74c3c',
   Blue: '#3498db',
