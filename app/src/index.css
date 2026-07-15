@@ -110,12 +110,16 @@ body {
   background: #f39c12;
 }
 .kw-trigger {
+  display: inline-block;
   border-radius: 0;
   clip-path: polygon(0% 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
   background: #FFF51D;
   color: #1a1a2e;
   padding: 1px 6px;
   font-size: 0.75em;
+  line-height: 1;
+  vertical-align: middle;
+  font-weight: 500;
 }
 .dark .kw-trigger {
   background: #FFF51D;
