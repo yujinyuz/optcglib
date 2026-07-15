@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { Card } from '../types'
 import { COLOR_HEX, RARITY_SHORT, RARITY_FULL, CATEGORY_COLORS } from '../types'
 import { decodeHtmlEntities, renderCardText, highlightSearchText, getAttributeIcon, getAttributeColor, getTextColorForBg, costCircleBg, getExternalImageUrl } from '../utils'
@@ -10,7 +11,7 @@ interface CardCardProps {
   disableClick?: boolean
 }
 
-export default function CardCard({ card, displayName, disableClick }: CardCardProps) {
+const CardCard = memo(function CardCard({ card, displayName, disableClick }: CardCardProps) {
   const setSelectedCard = useAppStore((state) => state.setSelectedCard)
   const search = useAppStore((state) => state.filters.search)
   const loadExternalImages = useAppStore((state) => state.loadExternalImages)
@@ -213,4 +214,6 @@ export default function CardCard({ card, displayName, disableClick }: CardCardPr
       </div>
     </div>
   )
-}
+})
+
+export default CardCard

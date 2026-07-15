@@ -176,7 +176,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
         {hasPrev && (
           <button
             onClick={(e) => { e.stopPropagation(); goPrev() }}
-            className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-white/90 dark:bg-black/60 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white shadow-lg hover:scale-105 transition-all touch-manipulation"
+            className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 z-20 p-[10px] sm:p-3 rounded-full bg-white/90 dark:bg-black/60 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white shadow-lg hover:scale-105 transition-all touch-manipulation"
             style={{ transition: 'transform 200ms var(--ease-spring-snappy), box-shadow 150ms var(--ease-out-quart)' }}
             aria-label="Previous card"
           >
@@ -190,7 +190,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
         {hasNext && (
           <button
             onClick={(e) => { e.stopPropagation(); goNext() }}
-            className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-white/90 dark:bg-black/60 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white shadow-lg hover:scale-105 transition-all touch-manipulation"
+            className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 z-20 p-[10px] sm:p-3 rounded-full bg-white/90 dark:bg-black/60 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white shadow-lg hover:scale-105 transition-all touch-manipulation"
             style={{ transition: 'transform 200ms var(--ease-spring-snappy), box-shadow 150ms var(--ease-out-quart)' }}
             aria-label="Next card"
           >
@@ -218,7 +218,7 @@ export default function CardModal({ cardId, onClose }: CardModalProps) {
           {/* Close button */}
           <button
             onClick={handleClose}
-            className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/90 dark:bg-black/60 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white shadow-md hover:shadow-lg hover:scale-105 transition-all flex items-center justify-center"
+            className="absolute top-3 right-3 z-10 w-11 h-11 rounded-full bg-white/90 dark:bg-black/60 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white shadow-md hover:shadow-lg hover:scale-105 transition-all flex items-center justify-center"
             style={{ transition: 'transform 150ms var(--ease-spring-tight), box-shadow 150ms var(--ease-out-quart), color 150ms' }}
             aria-label="Close"
           >

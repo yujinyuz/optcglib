@@ -66,7 +66,7 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
         {/* Close button */}
         <button
           onClick={handleClose}
-          className="absolute top-3 right-3 p-1.5 rounded-lg text-slate-400 dark:text-[#64748b] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#25283a] transition-colors z-10"
+          className="absolute top-3 right-3 p-3 rounded-lg text-slate-400 dark:text-[#64748b] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#25283a] transition-colors z-10"
           aria-label="Close"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

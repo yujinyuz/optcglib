@@ -35,7 +35,8 @@ export default function ImageLoader({ src, alt, className = '', onClick }: Image
         <img
           src={src}
           alt={alt}
-          className={`${className} ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+          className={`${className} ${loaded ? 'opacity-100' : 'opacity-0'}`}
+          style={{ transition: 'opacity 200ms var(--ease-out-quart)' }}
           loading="lazy"
           onLoad={() => setLoaded(true)}
           onError={() => setError(true)}

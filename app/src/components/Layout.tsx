@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useAppStore } from '../store'
 import FilterBar from './FilterBar'
@@ -117,7 +117,7 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
           if (open) { setClosing(true); setTimeout(() => { setOpen(false); setClosing(false) }, reducedMotion ? 100 : 150) }
           else { setOpen(true); setClosing(false) }
         }}
-        className={`p-2 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] rounded-lg transition-all ${open ? 'rotate-45' : 'rotate-0'}`}
+        className={`p-3.5 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] rounded-lg transition-all ${open ? 'rotate-45' : 'rotate-0'}`}
         style={{ transition: `color 150ms, background-color 150ms, transform ${reducedMotion ? 150 : 200}ms var(--ease-spring-tight)` }}
         aria-label="Settings"
       >
@@ -134,7 +134,7 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
             : { animation: `menuInSpring ${reducedMotion ? 100 : 180}ms var(--ease-spring-tight) forwards` }
           }
         >
-          <div className="flex items-center justify-between px-3 py-2">
+          <div className="flex items-center justify-between px-3 py-3">
             <span className="text-sm text-slate-700 dark:text-[#cbd5e1]">Language</span>
             <div className="flex rounded-lg border border-slate-200 dark:border-[#2e303a] overflow-hidden">
               <button
@@ -151,7 +151,7 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
               </button>
             </div>
           </div>
-          <div className="flex items-center justify-between px-3 py-2">
+          <div className="flex items-center justify-between px-3 py-3">
             <span className="text-sm text-slate-700 dark:text-[#cbd5e1]">Theme</span>
             <div className="flex rounded-lg border border-slate-200 dark:border-[#2e303a] overflow-hidden">
               <button
@@ -173,7 +173,7 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
             </div>
           </div>
           <div className="border-t border-slate-100 dark:border-[#2e303a] my-1" />
-          <div className="flex items-center justify-between px-3 py-2">
+          <div className="flex items-center justify-between px-3 py-3">
             <span className="text-sm text-slate-700 dark:text-[#cbd5e1]">Card images</span>
             <div className="flex items-center gap-2">
               {isSlowConnection && !slowConnectionOverride && loadExternalImages && (
@@ -185,9 +185,9 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
                   setLoadExternalImages(next)
                   if (next && isSlowConnection) setSlowConnectionOverride(true)
                 }}
-                className={`relative w-9 h-5 rounded-full transition-all ${loadExternalImages ? 'bg-[#3b82f6]' : 'bg-slate-200 dark:bg-[#3a3d4a]'}`}
+                className={`relative w-11 h-6 rounded-full transition-all ${loadExternalImages ? 'bg-[#3b82f6]' : 'bg-slate-200 dark:bg-[#3a3d4a]'}`}
               >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${loadExternalImages ? 'translate-x-4' : 'translate-x-0'}`} />
+                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${loadExternalImages ? 'translate-x-5' : 'translate-x-0'}`} />
               </button>
             </div>
           </div>
@@ -205,7 +205,7 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
             <button
               onClick={handleInstall}
               disabled={installDismissed}
-              className={`flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors ${
+              className={`flex items-center gap-2 w-full px-3 py-3 text-sm transition-colors ${
                 installDismissed
                   ? 'text-slate-400 dark:text-[#64748b] cursor-default'
                   : 'text-slate-700 dark:text-[#cbd5e1] hover:bg-slate-100 dark:hover:bg-[#25283a]'
@@ -222,7 +222,7 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
             href="https://ko-fi.com/yujinyuz"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-[#cbd5e1] hover:bg-slate-100 dark:hover:bg-[#25283a] transition-colors"
+            className="flex items-center gap-2 px-3 py-3 text-sm text-slate-700 dark:text-[#cbd5e1] hover:bg-slate-100 dark:hover:bg-[#25283a] transition-colors"
           >
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 7.324-.022 11.822c.164 2.424 2.586 2.672 2.586 2.672s8.267-.023 11.966-.049c2.438-.426 2.683-2.566 2.658-3.734 4.352.24 7.422-2.831 6.649-6.916zm-11.062 3.511c-1.246 1.453-4.011 3.976-4.011 3.976s-.121.119-.31.023c-.076-.057-.108-.09-.108-.09-.443-.441-3.368-3.049-4.034-3.954-.709-.965-1.041-2.7-.091-3.71.951-1.01 3.005-1.086 4.363.407 0 0 1.565-1.782 3.468-.963 1.904.82 1.832 3.011.723 4.311zm6.173.478c-.928.116-1.682.028-1.682.028V7.284h1.77s1.971.551 1.971 2.638c0 1.913-.985 2.667-2.059 3.015z"/>
@@ -231,7 +231,7 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
           </a>
           <button
             onClick={() => { setOpen(false); setHelpOpen(true) }}
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-[#cbd5e1] hover:bg-slate-100 dark:hover:bg-[#25283a] transition-colors"
+            className="flex items-center gap-2 w-full px-3 py-3 text-sm text-slate-700 dark:text-[#cbd5e1] hover:bg-slate-100 dark:hover:bg-[#25283a] transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -240,7 +240,7 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
           </button>
           <button
             onClick={() => { setOpen(false); setAboutOpen(true) }}
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-[#cbd5e1] hover:bg-slate-100 dark:hover:bg-[#25283a] transition-colors"
+            className="flex items-center gap-2 w-full px-3 py-3 text-sm text-slate-700 dark:text-[#cbd5e1] hover:bg-slate-100 dark:hover:bg-[#25283a] transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -265,7 +265,7 @@ function SettingsMenu({ deferredPrompt, onInstall, installSuccess }: {
               <h3 className="text-base font-bold text-slate-900 dark:text-white">Install app</h3>
               <button
                 onClick={() => setInstallTooltip(false)}
-                className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#25283a] rounded-lg transition-all"
+                className="p-2.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#25283a] rounded-lg transition-all"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -338,6 +338,7 @@ function TopSearchBar({ onFocusChange }: { onFocusChange: (focused: boolean) => 
   const searchInput = useAppStore((state) => state.searchInput)
   const setSearchInput = useAppStore((state) => state.setSearchInput)
   const setSearchFilter = useAppStore((state) => state.setSearchFilter)
+  const searchLoading = useAppStore((state) => state.searchLoading)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleChange = useCallback((value: string) => {
@@ -358,22 +359,28 @@ function TopSearchBar({ onFocusChange }: { onFocusChange: (focused: boolean) => 
         onChange={(e) => handleChange(e.target.value)}
         onFocus={() => onFocusChange(true)}
         onBlur={() => onFocusChange(false)}
-        className="w-full bg-transparent border-0 border-b border-slate-300 dark:border-[#3a3d4a] rounded-none pl-2 pr-9 py-2 text-base sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:border-slate-900 dark:focus:border-white focus:ring-0 focus-visible:outline-none transition-colors"
+        className={`w-full bg-transparent border-0 border-b rounded-none pl-2 pr-14 py-2 text-base sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#64748b] focus:outline-none focus:ring-0 focus-visible:outline-none transition-colors ${searchLoading ? 'border-[#3b82f6] dark:border-[#60a5fa]' : 'border-slate-300 dark:border-[#3a3d4a] focus:border-slate-900 dark:focus:border-white'}`}
       />
       <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
-        {searchInput && (
+        {searchInput && !searchLoading && (
           <button
             onClick={() => handleChange('')}
-            className="p-1 text-slate-400 dark:text-[#64748b] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#25283a] rounded-lg transition-all"
+            className="p-2 text-slate-400 dark:text-[#64748b] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#25283a] rounded-lg transition-all"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         )}
-        <svg className="w-4 h-4 text-slate-400 dark:text-[#64748b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+        {searchLoading ? (
+          <svg className="w-4 h-4 text-[#3b82f6] dark:text-[#60a5fa] animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        ) : (
+          <svg className="w-4 h-4 text-slate-400 dark:text-[#64748b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        )}
       </div>
     </div>
   )
@@ -384,69 +391,107 @@ function ActiveFilterChips() {
   const filters = useAppStore((state) => state.filters)
   const setFilters = useAppStore((state) => state.setFilters)
   const resetFilters = useAppStore((state) => state.resetFilters)
+  const [exiting, setExiting] = useState<{ key: string; label: string; color?: string; onRemove: () => void }[]>([])
+  const reducedMotion = prefersReducedMotion()
 
-  const chips: { label: string; onRemove: () => void; color?: string }[] = []
+  const currentChips = useMemo(() => {
+    const chips: { key: string; label: string; onRemove: () => void; color?: string }[] = []
 
-  if (filters.search) {
-    chips.push({
-      label: `"${filters.search}"`,
-      onRemove: () => { setFilters({ search: '' }); useAppStore.getState().setSearchInput('') },
-    })
+    if (filters.search) {
+      chips.push({
+        key: 'search',
+        label: `"${filters.search}"`,
+        onRemove: () => { setFilters({ search: '' }); useAppStore.getState().setSearchInput('') },
+      })
+    }
+
+    filters.colors.forEach((c) => chips.push({
+      key: `color-${c}`,
+      label: c,
+      onRemove: () => setFilters({ colors: filters.colors.filter((v) => v !== c) }),
+      color: COLOR_HEX[c],
+    }))
+
+    filters.categories.forEach((c) => chips.push({
+      key: `cat-${c}`,
+      label: c === 'Don' ? 'DON!!' : c,
+      onRemove: () => setFilters({ categories: filters.categories.filter((v) => v !== c) }),
+      color: CATEGORY_COLORS[c],
+    }))
+
+    filters.rarities.forEach((r) => chips.push({
+      key: `rarity-${r}`,
+      label: RARITY_SHORT[r] || r,
+      onRemove: () => setFilters({ rarities: filters.rarities.filter((v) => v !== r) }),
+    }))
+
+    filters.attributes.forEach((a) => chips.push({
+      key: `attr-${a}`,
+      label: a,
+      onRemove: () => setFilters({ attributes: filters.attributes.filter((v) => v !== a) }),
+    }))
+
+    filters.sets.forEach((s) => chips.push({
+      key: `set-${s}`,
+      label: s,
+      onRemove: () => setFilters({ sets: filters.sets.filter((v) => v !== s) }),
+    }))
+
+    if (filters.blockMin != null || filters.blockMax != null) {
+      const label = [filters.blockMin ?? '1', filters.blockMax ?? '5'].join('–')
+      chips.push({ key: 'block', label: `Block ${label}`, onRemove: () => setFilters({ blockMin: null, blockMax: null }) })
+    }
+
+    if (filters.costMin != null || filters.costMax != null) {
+      const label = [filters.costMin ?? '0', filters.costMax ?? '10'].join('–')
+      chips.push({ key: 'cost', label: `Cost ${label}`, onRemove: () => setFilters({ costMin: null, costMax: null }) })
+    }
+
+    if (filters.powerMin != null || filters.powerMax != null) {
+      const min = filters.powerMin != null ? (filters.powerMin >= 1000 ? `${filters.powerMin / 1000}k` : filters.powerMin) : '0'
+      const max = filters.powerMax != null ? (filters.powerMax >= 1000 ? `${filters.powerMax / 1000}k` : filters.powerMax) : '13k'
+      chips.push({ key: 'power', label: `Power ${min}–${max}`, onRemove: () => setFilters({ powerMin: null, powerMax: null }) })
+    }
+
+    return chips
+  }, [filters, setFilters])
+
+  if (currentChips.length === 0 && exiting.length === 0) return null
+
+  const handleRemove = (chip: typeof currentChips[0]) => {
+    if (reducedMotion) {
+      chip.onRemove()
+      return
+    }
+    setExiting((prev) => [...prev, chip])
+    setTimeout(() => {
+      chip.onRemove()
+      setExiting((prev) => prev.filter((c) => c.key !== chip.key))
+    }, 180)
   }
 
-  filters.colors.forEach((c) => chips.push({
-    label: c,
-    onRemove: () => setFilters({ colors: filters.colors.filter((v) => v !== c) }),
-    color: COLOR_HEX[c],
-  }))
-
-  filters.categories.forEach((c) => chips.push({
-    label: c === 'Don' ? 'DON!!' : c,
-    onRemove: () => setFilters({ categories: filters.categories.filter((v) => v !== c) }),
-    color: CATEGORY_COLORS[c],
-  }))
-
-  filters.rarities.forEach((r) => chips.push({
-    label: RARITY_SHORT[r] || r,
-    onRemove: () => setFilters({ rarities: filters.rarities.filter((v) => v !== r) }),
-  }))
-
-  filters.attributes.forEach((a) => chips.push({
-    label: a,
-    onRemove: () => setFilters({ attributes: filters.attributes.filter((v) => v !== a) }),
-  }))
-
-  filters.sets.forEach((s) => chips.push({
-    label: s,
-    onRemove: () => setFilters({ sets: filters.sets.filter((v) => v !== s) }),
-  }))
-
-  if (filters.blockMin != null || filters.blockMax != null) {
-    const label = [filters.blockMin ?? '1', filters.blockMax ?? '5'].join('–')
-    chips.push({ label: `Block ${label}`, onRemove: () => setFilters({ blockMin: null, blockMax: null }) })
+  const handleReset = () => {
+    if (reducedMotion) {
+      resetFilters()
+      return
+    }
+    const toExit = currentChips
+    if (toExit.length === 0) return
+    setExiting((prev) => [...prev, ...toExit])
+    setTimeout(() => {
+      resetFilters()
+      setExiting((prev) => prev.filter((c) => !toExit.some((t) => t.key === c.key)))
+    }, 180)
   }
-
-  if (filters.costMin != null || filters.costMax != null) {
-    const label = [filters.costMin ?? '0', filters.costMax ?? '10'].join('–')
-    chips.push({ label: `Cost ${label}`, onRemove: () => setFilters({ costMin: null, costMax: null }) })
-  }
-
-  if (filters.powerMin != null || filters.powerMax != null) {
-    const min = filters.powerMin != null ? (filters.powerMin >= 1000 ? `${filters.powerMin / 1000}k` : filters.powerMin) : '0'
-    const max = filters.powerMax != null ? (filters.powerMax >= 1000 ? `${filters.powerMax / 1000}k` : filters.powerMax) : '13k'
-    chips.push({ label: `Power ${min}–${max}`, onRemove: () => setFilters({ powerMin: null, powerMax: null }) })
-  }
-
-  if (chips.length === 0) return null
 
   return (
     <div className="shrink-0 bg-slate-50/80 dark:bg-[#0f1117]/80 border-b border-slate-200/40 dark:border-[#2e303a]/40 px-3 sm:px-6 py-2">
       <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
-        {chips.map((chip, i) => (
+        {currentChips.map((chip) => (
           <button
-            key={`${chip.label}-${i}`}
-            onClick={chip.onRemove}
-            className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium transition-all active:scale-95 border"
+            key={chip.key}
+            onClick={() => handleRemove(chip)}
+            className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium active:scale-95 border animate-[chipIn_180ms_var(--ease-out-quart)_both]"
             style={chip.color
               ? { backgroundColor: chip.color + '18', borderColor: chip.color + '40', color: chip.color }
               : { backgroundColor: 'rgba(59,130,246,0.08)', borderColor: 'rgba(59,130,246,0.25)', color: '#3b82f6' }
@@ -458,10 +503,25 @@ function ActiveFilterChips() {
             </svg>
           </button>
         ))}
-        {chips.length > 1 && (
+        {exiting.map((chip) => (
           <button
-            onClick={resetFilters}
-            className="shrink-0 text-xs text-slate-400 dark:text-[#64748b] hover:text-slate-600 dark:hover:text-[#94a3b8] transition-colors ml-1"
+            key={chip.key}
+            className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border animate-[chipOut_180ms_var(--ease-out-quart)_both]"
+            style={chip.color
+              ? { backgroundColor: chip.color + '18', borderColor: chip.color + '40', color: chip.color }
+              : { backgroundColor: 'rgba(59,130,246,0.08)', borderColor: 'rgba(59,130,246,0.25)', color: '#3b82f6' }
+            }
+          >
+            {chip.label}
+            <svg className="w-3 h-3 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        ))}
+        {currentChips.length > 1 && (
+          <button
+            onClick={handleReset}
+            className="shrink-0 text-xs text-slate-400 dark:text-[#64748b] hover:text-slate-600 dark:hover:text-[#94a3b8] transition-colors ml-1 px-1.5 py-1"
           >
             Clear all
           </button>
@@ -520,13 +580,13 @@ function InstallBanner({ deferredPrompt, onInstall }: {
           </div>
           <button
             onClick={onInstall}
-            className="shrink-0 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#3b82f6] hover:bg-[#2563eb] active:bg-[#1d4ed8] rounded-lg transition-colors"
+            className="shrink-0 px-3.5 py-2.5 text-xs font-semibold text-white bg-[#3b82f6] hover:bg-[#2563eb] active:bg-[#1d4ed8] rounded-lg transition-colors"
           >
             Install
           </button>
           <button
             onClick={handleDismiss}
-            className="shrink-0 p-1.5 text-slate-400 dark:text-[#64748b] hover:text-slate-600 dark:hover:text-[#94a3b8] hover:bg-slate-100 dark:hover:bg-[#25283a] rounded-lg transition-colors"
+            className="shrink-0 p-2.5 text-slate-400 dark:text-[#64748b] hover:text-slate-600 dark:hover:text-[#94a3b8] hover:bg-slate-100 dark:hover:bg-[#25283a] rounded-lg transition-colors"
             aria-label="Dismiss"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -651,7 +711,7 @@ export default function Layout() {
 
       {/* Filter panel: bottom sheet on mobile, right drawer on desktop */}
       <aside
-        className={`fixed z-30 bg-white dark:bg-[#1a1d2e] border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-[#2e303a] overflow-y-auto overscroll-y-none shadow-xl inset-x-0 bottom-0 sm:inset-y-0 sm:inset-x-auto sm:top-0 sm:right-0 sm:bottom-0 sm:w-80 sm:h-screen rounded-t-2xl sm:rounded-none max-h-[70vh] sm:max-h-none ${
+        className={`fixed z-30 bg-white dark:bg-[#1a1d2e] border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-[#2e303a] overflow-y-auto overscroll-y-none shadow-xl inset-x-0 bottom-0 sm:inset-y-0 sm:inset-x-auto sm:top-0 sm:right-0 sm:bottom-0 sm:w-80 sm:h-screen rounded-t-2xl sm:rounded-none max-h-[70vh] landscape:max-h-[60vh] sm:max-h-none ${
           sidebarClosing
             ? 'translate-y-full sm:translate-x-full sm:translate-y-0'
             : sidebarOpen
@@ -707,14 +767,14 @@ export default function Layout() {
               {activeFilterCount > 0 && (
                 <button
                   onClick={resetFilters}
-                  className="rounded-lg px-2 py-2 text-xs font-semibold text-[#3b82f6] transition-colors hover:bg-slate-100 dark:text-[#60a5fa] dark:hover:bg-[#25283a]"
+                  className="rounded-lg px-3 py-3 text-xs font-semibold text-[#3b82f6] transition-colors hover:bg-slate-100 dark:text-[#60a5fa] dark:hover:bg-[#25283a]"
                 >
                   Clear all
                 </button>
               )}
               <button
                 onClick={() => { setSidebarClosing(true); setTimeout(() => { setSidebarOpen(false); setSidebarClosing(false) }, duration) }}
-                className="p-2 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#25283a] rounded-lg transition-colors"
+                className="p-3 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#25283a] rounded-lg transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -772,7 +832,7 @@ export default function Layout() {
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className="hidden sm:flex p-2 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] rounded-lg active:scale-95 transition-all"
+                className="hidden sm:flex p-3 text-slate-500 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1d2e] rounded-lg active:scale-95 transition-all"
                 style={{ transition: 'transform 150ms var(--ease-spring-tight), background-color 150ms, color 150ms' }}
                 aria-label="Open filters"
               >

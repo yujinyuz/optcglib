@@ -26,9 +26,6 @@ export interface Card {
   has_parallel: boolean;
 }
 
-export type CardCategory = 'Leader' | 'Character' | 'Event' | 'Stage' | 'Don';
-export type CardColor = 'Red' | 'Blue' | 'Green' | 'Purple' | 'Black' | 'Yellow';
-export type CardRarity = 'Common' | 'Uncommon' | 'Rare' | 'SuperRare' | 'SecretRare' | 'Leader' | 'Special' | 'TreasureRare' | 'Promo';
 export type SearchScope = 'name' | 'effect' | 'trigger' | 'type';
 
 export interface CardFilters {
@@ -67,9 +64,9 @@ export const DEFAULT_FILTERS: CardFilters = {
   blockMax: null,
 };
 
-export const ALL_COLORS: CardColor[] = ['Red', 'Blue', 'Green', 'Purple', 'Black', 'Yellow'];
-export const ALL_CATEGORIES: CardCategory[] = ['Leader', 'Character', 'Event', 'Stage', 'Don'];
-export const ALL_RARITIES: CardRarity[] = ['Common', 'Uncommon', 'Rare', 'SuperRare', 'SecretRare', 'Leader', 'Special', 'TreasureRare', 'Promo'];
+export const ALL_COLORS = ['Red', 'Blue', 'Green', 'Purple', 'Black', 'Yellow'];
+export const ALL_CATEGORIES = ['Leader', 'Character', 'Event', 'Stage', 'Don'];
+export const ALL_RARITIES = ['Common', 'Uncommon', 'Rare', 'SuperRare', 'SecretRare', 'Leader', 'Special', 'TreasureRare', 'Promo'];
 export const ALL_ATTRIBUTES = ['Strike', 'Slash', 'Ranged', 'Wisdom', 'Special'] as const;
 
 export const RARITY_SHORT: Record<string, string> = {
@@ -113,17 +110,3 @@ export const CATEGORY_COLORS: Record<string, string> = {
   Don: '#ec4899',       // pink
 };
 
-export const LANGUAGE_GROUPS = {
-  english: ['english', 'english-asia'],
-  japanese: ['japanese'],
-} as const;
-
-export const LANGUAGE_DISPLAY = {
-  english: 'EN',
-  japanese: 'JP',
-} as const;
-
-export const SEARCH_LANGUAGE_DISPLAY: Record<string, string> = {
-  english: 'English',
-  japanese: '日本語',
-};

@@ -94,16 +94,6 @@ export async function getCardPacks(cardId: string): Promise<{ packId: string; la
   return result;
 }
 
-export async function getCardImages(cardId: string): Promise<{ language: string; imgUrl: string | null }[]> {
-  const result = await sendRequest<{ language: string; imgUrl: string | null }[]>('getCardImages', { cardId });
-  return result;
-}
-
-export async function getRelatedCards(cardId: string, types: string[], limit?: number): Promise<Card[]> {
-  const result = await sendRequest<Card[]>('getRelatedCards', { cardId, types, limit });
-  return result;
-}
-
 export async function getCardVariants(cardId: string, preferredLanguage?: 'english' | 'japanese'): Promise<{ variants: { card: Card; images: { language: string; imgUrl: string | null }[]; packs: { title: string; language: string }[] }[] }> {
   const result = await sendRequest<{ variants: { card: Card; images: { language: string; imgUrl: string | null }[]; packs: { title: string; language: string }[] }[] }>('getCardVariants', { cardId, preferredLanguage });
   return result;

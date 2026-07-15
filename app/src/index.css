@@ -14,6 +14,7 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
   background: #f8fafc;
   color: #0f172a;
+  transition: background-color 200ms var(--ease-out-quart), color 200ms var(--ease-out-quart);
 }
 
 .dark body {
@@ -302,6 +303,24 @@ input[type="text"]:focus-visible {
   0% { transform: translateX(0); }
   50% { transform: translateX(4px); }
   100% { transform: translateX(0); }
+}
+
+/* Filter chip entrance / exit */
+@keyframes chipIn {
+  from { opacity: 0; transform: scale(0.92) translateY(2px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes chipOut {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 0; transform: scale(0.92) translateY(2px); }
+}
+
+/* Empty state illustration pulse */
+@keyframes emptyPulse {
+  0% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.03); }
+  100% { opacity: 0.4; transform: scale(1); }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -182,7 +182,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="h-screen bg-slate-50 dark:bg-[#0f1117] text-slate-900 dark:text-[#e2e8f0] flex flex-col overflow-hidden">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0f1117] text-slate-900 dark:text-[#e2e8f0] flex flex-col overflow-hidden">
         <UpdateBanner needRefresh={needRefresh} onUpdate={updateServiceWorker} />
         <Routes>
           <Route element={<Layout />}>

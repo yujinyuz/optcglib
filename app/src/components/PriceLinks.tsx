@@ -19,7 +19,7 @@ export default function PriceLinks({ baseId }: PriceLinksProps) {
           href={link.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2 py-1 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] hover:-translate-y-0.5 hover:shadow-sm transition-all"
+          className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] tracking-wider uppercase bg-white dark:bg-[#1a1d2e] border border-slate-200 dark:border-[#2e303a] rounded-md px-2.5 py-1.5 text-slate-600 dark:text-[#94a3b8] hover:text-slate-900 dark:hover:text-white hover:border-[#3b82f6] hover:-translate-y-0.5 hover:shadow-sm transition-all"
           style={{ transition: 'box-shadow 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart), border-color 150ms, color 150ms' }}
         >
           <img src={link.icon} alt="" className="w-4 h-4 rounded-sm shrink-0" />

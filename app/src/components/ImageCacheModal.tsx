@@ -1,18 +1,10 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useAppStore } from '../store'
 import { queryImageUrlsBySets, queryAllSetImageUrls } from '../db'
-import { getExternalImageUrl } from '../utils'
+import { getExternalImageUrl, formatBytes } from '../utils'
 import { prefersReducedMotion } from '../lib/spring'
 
 /* ── Helpers ─────────────────────────────────────────────────── */
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`
-}
 
 async function readCacheInfo(): Promise<{ count: number; size: number }> {
   if (!('caches' in window)) return { count: 0, size: 0 }
