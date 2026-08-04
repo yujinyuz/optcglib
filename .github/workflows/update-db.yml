@@ -1,0 +1,45 @@
+name: Update Database
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  update-db:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Clone punk-records
+        run: |
+          git clone --depth 1 https://github.com/buhbbl/punk-records.git vendor/punk-records
+
+      - name: Seed database
+        run: |
+          python3 seed.py --clean
+
+      - name: Copy database to app
+        run: |
+          cp optcg.db app/public/optcg.db
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add optcg.db
+          git add -f app/public/optcg.db
+          if git diff --cached --quiet; then
+            echo "No database changes to commit."
+            exit 0
+          fi
+          git commit -m "chore: update database from upstream"
+          git push
