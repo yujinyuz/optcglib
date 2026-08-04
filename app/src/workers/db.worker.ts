@@ -505,7 +505,7 @@ self.onmessage = async (e: MessageEvent<{ type: string; id: string; payload?: un
     // Special case: init doesn't need db guard and sets the db
     if (type === 'init') {
       const SQL = await initSqlJs({ locateFile: (file: string) => `/${file}` });
-      const response = await fetch('/optcg.db', { cache: 'no-store' });
+      const response = await fetch('/optcg.db');
       const buffer = await response.arrayBuffer();
       db = new SQL.Database(new Uint8Array(buffer));
 
