@@ -10,6 +10,8 @@ interface CacheInfo {
 
 interface DebugData {
   buildTime: string
+  gitCommit: string
+  gitCommitDate: string
   totalCards: number
   dbSize: number | null
   swState: string
@@ -126,6 +128,8 @@ export default function DebugInfo() {
 
         setData({
           buildTime: __BUILD_TIME__,
+          gitCommit: __GIT_COMMIT__,
+          gitCommitDate: __GIT_COMMIT_DATE__,
           totalCards: stats.totalCards,
           dbSize,
           swState,
@@ -165,14 +169,14 @@ export default function DebugInfo() {
   }
 
   const rows = [
-    { label: 'Build', value: formatDate(data.buildTime) },
+    { label: 'Build', value: `${formatDate(data.buildTime)} (${data.gitCommit})` },
     { label: 'Cards', value: data.totalCards.toLocaleString() },
     { label: 'DB size', value: data.dbSize ? formatBytes(data.dbSize) : 'unknown' },
     { label: 'Service worker', value: data.swState },
     { label: 'Standalone', value: data.isStandalone ? 'yes' : 'no' },
     { label: 'Storage', value: data.storageUsed && data.storageQuota ? `${formatBytes(data.storageUsed)} / ${formatBytes(data.storageQuota)}` : 'unavailable' },
     { label: 'Screen', value: `${data.screenSize} @ ${data.dpr}x` },
-    { label: 'Cached images', value: data.cacheCount > 0 ? `${data.cacheCount} · ${formatBytes(data.cacheSize)}` : 'none' },
+    { label: 'Cached images', value: data.cacheCount > 0 ? `${data.cacheCount}` : 'none' },
   ]
 
   return (

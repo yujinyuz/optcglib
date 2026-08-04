@@ -2,10 +2,29 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { execSync } from 'child_process'
+
+const gitCommit = (() => {
+  try {
+    return execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).trim()
+  } catch {
+    return 'unknown'
+  }
+})()
+
+const gitCommitDate = (() => {
+  try {
+    return execSync('git log -1 --format=%cI', { encoding: 'utf-8' }).trim()
+  } catch {
+    return ''
+  }
+})()
 
 export default defineConfig({
   define: {
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+    __GIT_COMMIT__: JSON.stringify(gitCommit),
+    __GIT_COMMIT_DATE__: JSON.stringify(gitCommitDate),
   },
   plugins: [
     react(),
