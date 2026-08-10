@@ -25,40 +25,39 @@ VENDOR = ROOT / "vendor" / "punk-records"
 DEFAULT_LANGUAGES = ["english", "english-asia", "japanese"]
 DEFAULT_DB = "optcg.db"
 SCHEMA_FILE = ROOT / "schema.sql"
+PACK_SORT_FILE = ROOT / "pack_sort_order.txt"
 
-# Manual display priority for pack labels (earlier in list = shown first).
-# Auto-derived from pack label if not listed here.
-PACK_SORT_ORDER: list[str] = [
-    "ST-36",
-    "ST-35",
-    "ST-34",
-    "ST-33",
-    "ST-32",
-    "ST-31",
-    "OP-16",
-    "ST-30",
-    "OP-15",
-    "EB-04",
-    "OP-14",
-    "PRB-02",
-    "OP-13",
-    "EB-03",
-    "OP-12",
-    "OP-11",
-    "EB-02",
-    "OP-10",
-    "OP-09",
-    "PRB-01",
-    "OP-08",
-    "OP-07",
-    "EB-01",
-    "OP-06",
-    "OP-05",
-    "OP-04",
-    "OP-03",
-    "OP-02",
-    "OP-01",
-]
+
+def load_pack_sort_order() -> list[str]:
+    """Load pack sort order from pack_sort_order.txt (newest first)."""
+    if not PACK_SORT_FILE.exists():
+        return []
+    with open(PACK_SORT_FILE) as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith("#")]
+
+
+def ensure_pack_in_sort_order(label: str) -> None:
+    """Append a pack to the top of pack_sort_order.txt if not already present."""
+    if not label:
+        return
+    current = load_pack_sort_order()
+    if label in current:
+        return  # Already tracked
+    # Prepend new pack (newest first)
+    with open(PACK_SORT_FILE, "r") as f:
+        lines = f.readlines()
+    # Insert after any leading comment lines
+    insert_at = 0
+    for i, line in enumerate(lines):
+        if line.strip().startswith("#"):
+            insert_at = i + 1
+        else:
+            break
+    lines.insert(insert_at, f"{label}\n")
+    with open(PACK_SORT_FILE, "w") as f:
+        f.writelines(lines)
+    print(f"  Added {label} to pack_sort_order.txt")
+
 
 # Base sort values for pack prefix types (higher = sorted later)
 PREFIX_BASE: dict[str, int] = {"OP": 1000, "ST": 2000, "EB": 3000, "PRB": 4000}
@@ -81,14 +80,15 @@ def extract_label_from_raw_title(raw_title: str) -> str:
 def compute_pack_sort_order(label: str) -> int:
     """Derive a sort order from a pack label.
 
-    Earlier entries in PACK_SORT_ORDER take precedence.
+    Earlier entries in pack_sort_order.txt take precedence.
     Unlisted labels get an auto-derived value; unrecognised labels fall back to 999.
     """
     if not label:
         return 999
 
+    pack_order = load_pack_sort_order()
     try:
-        return PACK_SORT_ORDER.index(label)
+        return pack_order.index(label)
     except ValueError:
         pass
 
@@ -132,7 +132,10 @@ def create_database(db_path: str, clean: bool = False):
 
 
 def seed_packs(conn: sqlite3.Connection, language: str) -> dict:
-    """Insert pack data for a language from local files."""
+    """Insert pack data for a language from local files.
+
+    New pack prefixes are automatically added to pack_sort_order.txt.
+    """
     print(f"  Loading packs for {language}...")
     packs: dict = load_json(VENDOR / language / "packs.json")
 
@@ -155,6 +158,8 @@ def seed_packs(conn: sqlite3.Connection, language: str) -> dict:
                 sort_order,
             ),
         )
+        # Auto-add new pack prefixes to sort order file
+        ensure_pack_in_sort_order(label)
         inserted += 1
 
     conn.commit()

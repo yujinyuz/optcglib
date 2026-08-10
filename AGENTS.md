@@ -22,6 +22,7 @@ See [`codemap.md`](codemap.md) for the full architectural atlas. Sub-maps exist 
 /
   schema.sql          — SQLite schema
   seed.py             — populate DB from vendor/punk-records JSON
+  pack_sort_order.txt — pack display order (newest first)
   optcg.db            — generated SQLite DB (root copy)
   vendor/             — punk-records clone (NOT tracked)
   app/
@@ -60,6 +61,14 @@ See [`codemap.md`](codemap.md) for the full architectural atlas. Sub-maps exist 
 - **Secondary sources**: `english`, `japanese`. Cards already in the primary table are **skipped**, but their pack memberships and image URLs are still recorded in `card_packs` and `card_images`.
 - Result: ~4,700 unique cards. ~13,000 pack memberships + image variants.
 - Deduplication happens at **seed time**, not query time.
+
+### Pack sort order (`pack_sort_order.txt`)
+
+- One prefix per line, **newest first** (e.g. OP-17 before OP-16)
+- `seed.py` reads this file to determine pack display order in the UI
+- When upstream adds new packs (e.g. OP17), `seed_packs()` auto-appends them to the top of the file
+- Duplicate detection prevents re-adding existing packs
+- Manual edits are safe — just keep newest at top
 
 ### Schema
 
@@ -151,6 +160,8 @@ cd vendor/punk-records && git pull && cd ../..
 python3 seed.py --clean
 cp optcg.db app/public/
 ```
+
+When upstream adds new packs (e.g. OP17), they are automatically added to `pack_sort_order.txt` at the top (newest first).
 
 ## Adding new features
 

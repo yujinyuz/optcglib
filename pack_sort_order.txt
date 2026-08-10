@@ -1,0 +1,31 @@
+# Pack sort order — newest first. One prefix per line.
+# When upstream adds a new pack, add it to the TOP of this file.
+ST-36
+ST-35
+ST-34
+ST-33
+ST-32
+ST-31
+OP-16
+ST-30
+OP-15
+EB-04
+OP-14
+PRB-02
+OP-13
+EB-03
+OP-12
+OP-11
+EB-02
+OP-10
+OP-09
+PRB-01
+OP-08
+OP-07
+EB-01
+OP-06
+OP-05
+OP-04
+OP-03
+OP-02
+OP-01
