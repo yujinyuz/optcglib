@@ -41,12 +41,25 @@ def load_pack_sort_order(pack_sort_file: Path | None = None) -> list[str]:
         return [line.strip() for line in f if line.strip() and not line.lstrip().startswith("#")]
 
 
+def parse_pack_label(label: str) -> tuple[str, int] | None:
+    """Parse a pack label into a family and release number."""
+    m = re.match(r"^(OP|ST|EB|PRB)-(\d+)$", label)
+    if m:
+        return m.group(1), int(m.group(2))
+
+    m = re.match(r"^OP(\d+)-EB(\d+)$", label)
+    if m:
+        return "OP", int(m.group(1))
+
+    return None
+
+
 def insert_pack_label_into_sort_order(
     label: str, pack_sort_file: Path | None = None
 ) -> bool:
     """Insert a new pack label into pack_sort_order.txt if it is missing.
 
-    New labels are prepended after the comment block so the file stays newest-first.
+    Only inserts source packs newer than the current newest pack for that family.
     """
     if not label:
         return False
@@ -54,6 +67,19 @@ def insert_pack_label_into_sort_order(
         pack_sort_file = PACK_SORT_FILE
     current = load_pack_sort_order(pack_sort_file)
     if label in current:
+        return False
+
+    parsed_label = parse_pack_label(label)
+    if not parsed_label:
+        return False
+
+    family, release_number = parsed_label
+    family_releases = [
+        parsed_existing[1]
+        for existing in current
+        if (parsed_existing := parse_pack_label(existing)) and parsed_existing[0] == family
+    ]
+    if family_releases and release_number <= max(family_releases):
         return False
 
     with open(pack_sort_file, "r") as f:

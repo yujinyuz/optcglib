@@ -76,7 +76,20 @@ class SeedPackSortOrderTests(unittest.TestCase):
             "OP-16\n",
         )
 
-    def test_asia_sources_prepend_new_pack(self) -> None:
+    def test_english_asia_older_pack_is_ignored(self) -> None:
+        self.write_packs("english-asia", "ST-30")
+
+        seed.seed_packs(self.conn, "english-asia")
+
+        self.assertEqual(
+            self.pack_sort_file.read_text(),
+            "# Pack sort order — newest first. One prefix per line.\n"
+            "# When upstream adds a new pack, add it to the TOP of this file.\n"
+            "ST-36\n"
+            "OP-16\n",
+        )
+
+    def test_english_asia_new_pack_prepends(self) -> None:
         self.write_packs("english-asia", "OP-17")
 
         seed.seed_packs(self.conn, "english-asia")
@@ -90,7 +103,7 @@ class SeedPackSortOrderTests(unittest.TestCase):
             "OP-16\n",
         )
 
-    def test_japanese_source_also_prepends_new_pack(self) -> None:
+    def test_japanese_new_pack_prepends(self) -> None:
         self.write_packs("japanese", "ST-37")
 
         seed.seed_packs(self.conn, "japanese")
