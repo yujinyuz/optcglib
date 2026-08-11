@@ -35,7 +35,7 @@ See [`codemap.md`](codemap.md) for the full architectural atlas. Sub-maps exist 
       utils.ts             — HTML entity decode, keyword highlighting
       components/          — React components
     public/
-      optcg.db          — DB served to browser (copied from root)
+      optcg.db          — generated DB served to browser (copied from root; ignored by git)
       sql-wasm-browser.wasm  — sql.js binary (auto-copied by build)
 ```
 
@@ -46,7 +46,7 @@ See [`codemap.md`](codemap.md) for the full architectural atlas. Sub-maps exist 
 | Build | `cd app && npm run build` | `tsc -b && vite build`. Must run from `app/`. |
 | Dev server | `cd app && npm run dev` | Vite dev server |
 | Re-seed DB | `python3 seed.py --clean` | Creates `optcg.db` at root. English-Asia is primary source; English and Japanese contribute images/pack memberships for existing cards. |
-| Copy DB to app | `cp optcg.db app/public/optcg.db` | Required after every re-seed. |
+| Copy DB to app | `cp optcg.db app/public/optcg.db` | Generates the browser DB after every re-seed; do not commit this copy. |
 | Lint | `cd app && npm run lint` | ESLint only. No test runner configured. |
 
 **Shortcut**: The user has an `rtk` alias that runs commands from the `app/` directory. Use `rtk npm run build` from root.
