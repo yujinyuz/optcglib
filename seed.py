@@ -28,62 +28,49 @@ SCHEMA_FILE = ROOT / "schema.sql"
 PACK_SORT_FILE = ROOT / "pack_sort_order.txt"
 
 
-def load_pack_sort_order() -> list[str]:
+SORT_ORDER_SOURCE_LANGUAGES = {"english-asia", "japanese"}
+
+
+def load_pack_sort_order(pack_sort_file: Path | None = None) -> list[str]:
     """Load pack sort order from pack_sort_order.txt (newest first)."""
-    if not PACK_SORT_FILE.exists():
+    if pack_sort_file is None:
+        pack_sort_file = PACK_SORT_FILE
+    if not pack_sort_file.exists():
         return []
-    with open(PACK_SORT_FILE) as f:
-        return [line.strip() for line in f if line.strip() and not line.startswith("#")]
+    with open(pack_sort_file) as f:
+        return [line.strip() for line in f if line.strip() and not line.lstrip().startswith("#")]
 
 
-def load_valid_pack_labels() -> set[str]:
-    """Load pack labels that are valid for sort order (from english-asia and japanese sources)."""
-    valid: set[str] = set()
-    for lang in ["english-asia", "japanese"]:
-        vendor_path = VENDOR / lang / "packs.json"
-        if not vendor_path.exists():
-            continue
-        data = load_json(vendor_path)
-        for pack_id, pack in data.items():
-            label = pack.get("title_parts", {}).get("label") or ""
-            if not label:
-                raw = pack.get("raw_title", "")
-                m = re.search(r"[\[\[]([A-Z0-9\-]+)[\]\]]", raw)
-                label = m.group(1) if m else ""
-            if label:
-                valid.add(label)
-    return valid
+def insert_pack_label_into_sort_order(
+    label: str, pack_sort_file: Path | None = None
+) -> bool:
+    """Insert a new pack label into pack_sort_order.txt if it is missing.
 
-
-def ensure_pack_in_sort_order(label: str, valid_labels: set[str] | None = None) -> None:
-    """Append a pack to the top of pack_sort_order.txt if not already present.
-
-    Only adds packs that are in the valid_labels set (asia-en and jp sources by default).
+    New labels are prepended after the comment block so the file stays newest-first.
     """
     if not label:
-        return
-    # Use default valid labels if not provided
-    if valid_labels is None:
-        valid_labels = load_valid_pack_labels()
-    if label not in valid_labels:
-        return  # Skip packs not from asia-en or jp sources
-    current = load_pack_sort_order()
+        return False
+    if pack_sort_file is None:
+        pack_sort_file = PACK_SORT_FILE
+    current = load_pack_sort_order(pack_sort_file)
     if label in current:
-        return  # Already tracked
-    # Prepend new pack (newest first)
-    with open(PACK_SORT_FILE, "r") as f:
+        return False
+
+    with open(pack_sort_file, "r") as f:
         lines = f.readlines()
-    # Insert after any leading comment lines
+
     insert_at = 0
     for i, line in enumerate(lines):
         if line.strip().startswith("#"):
             insert_at = i + 1
         else:
             break
+
     lines.insert(insert_at, f"{label}\n")
-    with open(PACK_SORT_FILE, "w") as f:
+    with open(pack_sort_file, "w") as f:
         f.writelines(lines)
     print(f"  Added {label} to pack_sort_order.txt")
+    return True
 
 
 # Base sort values for pack prefix types (higher = sorted later)
@@ -159,15 +146,9 @@ def create_database(db_path: str, clean: bool = False):
 
 
 def seed_packs(conn: sqlite3.Connection, language: str) -> dict:
-    """Insert pack data for a language from local files.
-
-    New pack prefixes are automatically added to pack_sort_order.txt.
-    """
+    """Insert pack data for a language from local files."""
     print(f"  Loading packs for {language}...")
     packs: dict = load_json(VENDOR / language / "packs.json")
-
-    # Pre-compute valid pack labels from asia-en and jp sources
-    valid_labels = load_valid_pack_labels()
 
     inserted = 0
     for pack_id, pack in packs.items():
@@ -188,8 +169,8 @@ def seed_packs(conn: sqlite3.Connection, language: str) -> dict:
                 sort_order,
             ),
         )
-        # Auto-add new pack prefixes to sort order file (only asia-en/jp packs)
-        ensure_pack_in_sort_order(label, valid_labels=valid_labels)
+        if language in SORT_ORDER_SOURCE_LANGUAGES:
+            insert_pack_label_into_sort_order(label)
         inserted += 1
 
     conn.commit()
