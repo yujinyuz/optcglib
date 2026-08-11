@@ -1,7 +1,5 @@
 # Pack sort order — newest first. One prefix per line.
 # When upstream adds a new pack, add it to the TOP of this file.
-OP15-EB04
-OP14-EB04
 ST-29
 ST-28
 ST-27
